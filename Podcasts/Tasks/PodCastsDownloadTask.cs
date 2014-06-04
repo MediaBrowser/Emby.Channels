@@ -122,7 +122,7 @@ namespace PodCasts.Tasks
                 }
 
                 var feed = new RssFeed(feedUrl);
-                await feed.Refresh(ProviderManager, cancellationToken).ConfigureAwait(false);
+                await feed.Refresh(ProviderManager, _httpClient, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
 

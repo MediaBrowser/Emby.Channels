@@ -1,26 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml;
-using System.ServiceModel.Syndication;
-using System.Diagnostics;
-using System.Xml.XPath;
+﻿using System.Net;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
-using System.Text.RegularExpressions;
-using System.IO;
-using System.Reflection;
-using System.Globalization;
-using System.Net;
-using System.Xml.Linq;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Notifications;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.ServiceModel.Syndication;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using System.Xml;
+using System.Xml.XPath;
 
 namespace PodCasts.Entities {
     public class RssFeed {
@@ -34,12 +32,11 @@ namespace PodCasts.Entities {
             this.url = url;
         }
 
-        public async Task Refresh(IProviderManager providerManager, CancellationToken cancellationToken)
+        public async Task Refresh(IProviderManager providerManager, IHttpClient httpClient, CancellationToken cancellationToken)
         {
             try
             {
-                using (var client = new WebClient())
-                using (XmlReader reader = new SyndicationFeedXmlReader(client.OpenRead(url)))
+                using (XmlReader reader = new SyndicationFeedXmlReader(await httpClient.Get(url, cancellationToken).ConfigureAwait(false)))
                 {
                     _feed = SyndicationFeed.Load(reader);
                     Children = await GetChildren(_feed, providerManager, cancellationToken);
@@ -119,7 +116,7 @@ namespace PodCasts.Entities {
                     // itunes podcasts sometimes don't have a summary 
                     if (item.Summary != null && item.Summary.Text != null)
                     {
-                        podcast.Overview = HttpUtility.HtmlDecode(Regex.Replace(item.Summary.Text, @"<(.|\n)*?>", string.Empty));
+                        podcast.Overview = WebUtility.HtmlDecode(Regex.Replace(item.Summary.Text, @"<(.|\n)*?>", string.Empty));
 
                         var match = Regex.Match(item.Summary.Text, @"<img src=[\""\']([^\'\""]+)", RegexOptions.IgnoreCase);
                         if (match.Groups.Count > 1)
