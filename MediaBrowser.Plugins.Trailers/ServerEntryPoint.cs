@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Plugins.Trailers.ScheduledTasks;
 using System.Linq;
 
 namespace MediaBrowser.Plugins.Trailers
@@ -37,20 +36,8 @@ namespace MediaBrowser.Plugins.Trailers
         /// </summary>
         public void Run()
         {
-            RunTaskIfNeverRun<LocalTrailerDownloadTask>();
+            
         }
-
-        private void RunTaskIfNeverRun<T>()
-            where T : IScheduledTask
-        {
-            var task = _taskManager.ScheduledTasks.FirstOrDefault(i => i.ScheduledTask is T);
-
-            if (task != null && task.LastExecutionResult == null)
-            {
-                _taskManager.QueueScheduledTask<T>();
-            }
-        }
-
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
