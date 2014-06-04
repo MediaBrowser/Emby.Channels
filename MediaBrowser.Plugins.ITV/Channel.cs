@@ -1,5 +1,7 @@
 ﻿using System.IO;
+using System.Net;
 using System.Text.RegularExpressions;
+using System.Xml;
 using HtmlAgilityPack;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
@@ -173,8 +175,15 @@ namespace MediaBrowser.Plugins.ITV
                 using (var reader = new StreamReader(site))
                 {
                     var html = await reader.ReadToEndAsync().ConfigureAwait(false);
+                    html = html.Replace("&#039", "'");
+
                     var productionNode = Regex.Match(html, "\"productionId\":\"(.*?)\"", RegexOptions.IgnoreCase);
                     var productionID = productionNode.Groups[0].Value;
+
+                    productionID = productionID.Replace(@"\", "");
+                    productionID = productionID.Replace("\"productionId\":\"", "");
+                    productionID = productionID.Replace("\"", "");
+
                     _logger.Debug("Production ID : " + productionID);
 
                     var SM_TEMPLATE =
@@ -220,21 +229,63 @@ namespace MediaBrowser.Plugins.ITV
 	                </soapenv:Envelope>
 	                ", productionID);
 
-                    var SoapMessage = new Dictionary<string, string>();
-                    SoapMessage.Add("", SM_TEMPLATE);
+                    // TODO: Need to convert this to httpclient for compatibility
 
-                    var request = new HttpRequestOptions
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://mercury.itv.com/PlaylistService.svc");
+                    request.ContentType = "text/xml; charset=utf-8";
+                    request.ContentLength = SM_TEMPLATE.Length;
+                    request.Referer = "http://www.itv.com/mercury/Mercury_VideoPlayer.swf?v=1.6.479/[[DYNAMIC]]/2";
+                    request.Headers.Add("SOAPAction", "http://tempuri.org/PlaylistService/GetPlaylist");
+                    request.Host = "mercury.itv.com";
+                    request.Method = "POST";
+
+                    StreamWriter requestWriter = new StreamWriter(request.GetRequestStream());
+
+                    try
+                    {
+                        requestWriter.Write(SM_TEMPLATE);
+                    }
+                    finally
+                    {
+                        requestWriter.Close();
+                        requestWriter = null;
+                    }
+
+                    var items = new List<ChannelMediaInfo>();
+
+
+                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                    using (StreamReader sr = new StreamReader(response.GetResponseStream()))
+                    {
+                        var document = new XmlDocument();
+                        document.LoadXml(sr.ReadToEnd());
+                        //var nsmgr = new XmlNamespaceManager(document.NameTable);
+                        //nsmgr.AddNamespace("s", "http://schemas.xmlsoap.org/soap/envelope/");
+
+                        var node = document.SelectSingleNode("VideoEntries/Video/MediaFiles");
+                        
+                       
+
+                        _logger.Debug(node.InnerText);
+                        
+                        
+                        _logger.Debug(sr.ReadToEnd());
+                    }
+
+
+                    /*var request = new HttpRequestOptions
                     {
                         Url = "http://mercury.itv.com/PlaylistService.svc",
                         Host = "mercury.itv.com",
                         RequestContentType = "text/xml; charset=utf-8",
-                        RequestContentBytes = BitConverter.GetBytes(SoapMessage[""].Length),
+                        RequestContentBytes = BitConverter.GetBytes(SM_TEMPLATE.Length),
+                        RequestContent = SM_TEMPLATE,
                         Referer = "http://www.itv.com/mercury/Mercury_VideoPlayer.swf?v=1.6.479/[[DYNAMIC]]/2"
                     };
                     
                     request.RequestHeaders.Add("SOAPAction", "http://tempuri.org/PlaylistService/GetPlaylist");
 
-                    using (var player = await _httpClient.Post(request, SoapMessage).ConfigureAwait(false))
+                    using (var player = _httpClient.SendAsync(request, "POST"))
                     {
                         using (var reader2 = new StreamReader(site))
                         {
@@ -242,7 +293,7 @@ namespace MediaBrowser.Plugins.ITV
 
                             _logger.Debug(html2);
                         }
-                    }
+                    }*/
 
                 }
               

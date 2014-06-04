@@ -20,15 +20,7 @@
                                 If specified, trailers older than this will not be presented
                             </div>
                         </li>
-                        <li>
-                            <label for="chkEnableLocalTrailerDownloads">
-                                Enable local trailer downloads for existing movies
-                            </label>
-                            <input id="chkEnableLocalTrailerDownloads" name="chkEnableLocalTrailerDownloads" type="checkbox" />
-                            <div class="fieldDescription">
-                                Trailers will be downloaded and saved within the movie folder for titles that do not already have local trailers.
-                            </div>
-                        </li>
+                  
                         <li>
                             <button type="submit" data-theme="b">Save</button>
                             <button type="button" onclick="history.back();">Cancel</button>
@@ -54,8 +46,6 @@
                 ApiClient.getPluginConfiguration(TrailersConfigurationPage.pluginUniqueId).done(function (config) {
 
                     $('#txtMaxTrailerAge', page).val(config.MaxTrailerAge || "");
-                    $('#chkEnableLocalTrailerDownloads', page).checked(config.EnableLocalTrailerDownloads).checkboxradio("refresh");
-
                     Dashboard.hideLoadingMsg();
                 });
             });
@@ -71,8 +61,6 @@
                     var maxTrailerAge = $('#txtMaxTrailerAge', form).val();
 
                     config.MaxTrailerAge = maxTrailerAge ? maxTrailerAge : null;
-
-                    config.EnableLocalTrailerDownloads = $('#chkEnableLocalTrailerDownloads', form).checked();
 
                     ApiClient.updatePluginConfiguration(TrailersConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
                 });

@@ -14,12 +14,6 @@ namespace MediaBrowser.Plugins.Trailers.Configuration
         public int? MaxTrailerAge { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable local trailer downloads].
-        /// </summary>
-        /// <value><c>true</c> if [enable local trailer downloads]; otherwise, <c>false</c>.</value>
-        public bool EnableLocalTrailerDownloads { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [enable trailer folder].
         /// </summary>
         /// <value><c>true</c> if [enable trailer folder]; otherwise, <c>false</c>.</value>
