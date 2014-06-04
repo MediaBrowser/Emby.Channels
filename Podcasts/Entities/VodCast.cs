@@ -40,29 +40,29 @@ namespace PodCasts.Entities
             var newItems = new ConcurrentBag<BaseItem>();
 
             var options = new ParallelOptions
-                              {
-                                  MaxDegreeOfParallelism = 20
-                              };
+            {
+                MaxDegreeOfParallelism = 20
+            };
 
             Parallel.ForEach(NonCachedChildren, options, child =>
-                                                             {
-                                                                 BaseItem currentChild;
+            {
+                BaseItem currentChild;
 
-                                                                 if (currentChildren.TryGetValue(child.Id, out currentChild))
-                                                                 {
-                                                                     //existing item - add and save if changed
-                                                                     validChildren.Add(currentChild);
-                                                                     if ((currentChild as IHasRemoteImage).HasChanged(child as IHasRemoteImage)) ServerEntryPoint.Instance.ItemRepository.SaveItem(child, CancellationToken.None).ConfigureAwait(false);
+                if (currentChildren.TryGetValue(child.Id, out currentChild))
+                {
+                    //existing item - add and save if changed
+                    validChildren.Add(currentChild);
+                    if ((currentChild as IHasRemoteImage).HasChanged(child as IHasRemoteImage)) 
+                        ServerEntryPoint.Instance.ItemRepository.SaveItem(child, CancellationToken.None).ConfigureAwait(false);
+                }
+                else
+                {
+                    //brand new item - needs to be added
+                    newItems.Add(child);
 
-                                                                 }
-                                                                 else
-                                                                 {
-                                                                     //brand new item - needs to be added
-                                                                     newItems.Add(child);
-
-                                                                     validChildren.Add(child);
-                                                                 }
-                                                             });
+                    validChildren.Add(child);
+                }
+            });
 
             // If any items were added or removed....
             if (!newItems.IsEmpty || currentChildren.Count != validChildren.Count)
