@@ -52,6 +52,11 @@ namespace MediaBrowser.Plugins.Vimeo
         }
     }
 
+    public class Vp6
+    {
+        public Sd sd { get; set; }
+    }
+
     public class Hls
     {
         public string all { get; set; }
@@ -62,6 +67,7 @@ namespace MediaBrowser.Plugins.Vimeo
     {
         public H264 h264 { get; set; }
         public Hls hls { get; set; }
+        public Vp6 vp6 { get; set; }
         public List<string> codecs { get; set; }
 
         public Files()
