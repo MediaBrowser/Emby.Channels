@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Security;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Providers;
@@ -21,6 +22,8 @@ namespace MediaBrowser.Plugins.Vimeo
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
+
+        private ISecurityManager _securityManager;
 
         public VimeoChannel(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager)
         {
@@ -426,6 +429,19 @@ namespace MediaBrowser.Plugins.Vimeo
                              );
                         }
                     }
+                }
+
+                try
+                {
+                    if (!_securityManager.IsMBSupporter)
+                    {
+                        // If not a supporter, only return the lowest quality version.
+                        return mediaInfo.OrderBy(i => i.Width ?? 0).Take(1);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    
                 }
 
                 return mediaInfo;

@@ -58,7 +58,7 @@ namespace PodCasts
             foreach (var feedUrl in Plugin.Instance.Configuration.Feeds)
             {
                 var feed = new RssFeed(feedUrl);
-                await feed.Refresh(_providerManager, cancellationToken).ConfigureAwait(false);
+                await feed.Refresh(_providerManager, _httpClient, cancellationToken).ConfigureAwait(false);
 
                 _logger.Debug(feedUrl);
 
@@ -89,7 +89,7 @@ namespace PodCasts
             var items = new List<ChannelItemInfo>();
 
             var feed = new RssFeed(query.FolderId);
-            await feed.Refresh(_providerManager, cancellationToken).ConfigureAwait(false);
+            await feed.Refresh(_providerManager, _httpClient, cancellationToken).ConfigureAwait(false);
 
             foreach (var child in feed.Children.Where(child => string.IsNullOrEmpty(child.PrimaryImagePath)))
             {
