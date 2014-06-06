@@ -107,7 +107,8 @@ namespace MediaBrowser.Plugins.ITV
 
                 foreach (var node in page.DocumentNode.SelectNodes("//div[@id='categories-content']/div[@class='item-list']/ul/li"))
                 {
-                    //var thumb = node.SelectSingleNode(".//img").Attributes["src"].Value.Replace("player_image_thumb_standard","posterframe");
+                    // TODO : FIX ME!!!
+                    //var thumb = node.SelectSingleNode(".//div[@class='min-container']//img").Attributes["src"].Value.Replace("player_image_thumb_standard", "posterframe");
                     var title = node.SelectSingleNode(".//div[@class='programme-title cell-title']/a").InnerText;
                     var url = "http://www.itv.com" + node.SelectSingleNode(".//div[@class='programme-title cell-title']/a").Attributes["href"].Value;
                    
@@ -252,21 +253,16 @@ namespace MediaBrowser.Plugins.ITV
                         requestWriter = null;
                     }
 
-                    
-
-
-                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                    using (StreamReader sr = new StreamReader(response.GetResponseStream()))
+                    var response = (HttpWebResponse)request.GetResponse();
+                    using (var sr = new StreamReader(response.GetResponseStream()))
                     {
                         var videoNode = Regex.Match(sr.ReadToEnd(), "<VideoEntries>(.*?)</VideoEntries>",
                             RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
                         var video = videoNode.Groups[0].Value;
 
-                        var page2 = new HtmlDocument();
+                        page.LoadHtml(video);
 
-                        page2.LoadHtml(video);
-
-                        var videoPageNode = page2.DocumentNode.SelectSingleNode("/videoentries/video/mediafiles");
+                        var videoPageNode = page.DocumentNode.SelectSingleNode("/videoentries/video/mediafiles");
                         var rtmp = videoPageNode.Attributes["base"].Value;
                         _logger.Debug(rtmp);
 
@@ -282,7 +278,7 @@ namespace MediaBrowser.Plugins.ITV
                             items.Add(new ChannelMediaInfo
                             {
                                 Path = playURL,
-                                //VideoBitrate = Convert.ToInt16(bitrate)
+                                VideoBitrate = Convert.ToInt32(bitrate)
                             });
                             _logger.Debug(strippedURL);
                         }
@@ -313,7 +309,7 @@ namespace MediaBrowser.Plugins.ITV
 
                 }
 
-                return items;
+                return items.OrderBy(i => i.VideoBitrate ?? 0);
 
             }
 
