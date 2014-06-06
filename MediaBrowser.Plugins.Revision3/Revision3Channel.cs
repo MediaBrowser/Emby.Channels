@@ -45,11 +45,6 @@ namespace MediaBrowser.Plugins.Revision3
             get { return "http://revision3.com"; }
         }
 
-        public async Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, User user, CancellationToken cancellationToken)
-        {
-            return null;
-        }
-
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
             ChannelItemResult result;
@@ -85,8 +80,7 @@ namespace MediaBrowser.Plugins.Revision3
             return new ChannelItemResult
             {
                 Items = shows.ToList(),
-                TotalRecordCount = channels.total,
-                CacheLength = TimeSpan.FromDays(3)
+                TotalRecordCount = channels.total
             };
         }
 
@@ -117,8 +111,7 @@ namespace MediaBrowser.Plugins.Revision3
             return new ChannelItemResult
             {
                 Items = episodes.ToList(),
-                TotalRecordCount = videos.total,
-                CacheLength = TimeSpan.FromDays(3)
+                TotalRecordCount = videos.total
             };
         }
 
@@ -214,13 +207,10 @@ namespace MediaBrowser.Plugins.Revision3
             get { return "Revision 3"; }
         }
 
-
-
         public InternalChannelFeatures GetChannelFeatures()
         {
             return new InternalChannelFeatures
             {
-                CanSearch = false,
                 MaxPageSize = 25,
                 ContentTypes = new List<ChannelMediaContentType>
                 {
@@ -243,7 +233,7 @@ namespace MediaBrowser.Plugins.Revision3
             };
         }
 
-        public bool IsEnabledFor(User user)
+        public bool IsEnabledFor(string userId)
         {
             return true;
         }
@@ -319,10 +309,9 @@ namespace MediaBrowser.Plugins.Revision3
             return items.OrderBy(i => i.Name);
         }
 
-
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        public ChannelParentalRating ParentalRating
         {
-            throw new NotImplementedException();
+            get { return ChannelParentalRating.GeneralAudience; }
         }
     }
 }

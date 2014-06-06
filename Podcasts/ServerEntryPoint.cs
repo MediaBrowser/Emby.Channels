@@ -74,7 +74,7 @@ namespace PodCasts
         /// </summary>
         public void Run()
         {
-            if (Plugin.Instance.Configuration.Feeds.Count > 0 && (DateTime.Now - Plugin.Instance.Configuration.LastFeedUpdate).TotalHours > 24)
+            if (Plugin.Instance.Configuration.Feeds.Length > 0 && (DateTime.Now - Plugin.Instance.Configuration.LastFeedUpdate).TotalHours > 24)
             {
                 //Run the download task
                 _taskManager.QueueScheduledTask<PodCastsDownloadTask>();

@@ -8,7 +8,5 @@ namespace MediaBrowser.Plugins.CNETTV.Configuration
     /// </summary>
     public class PluginConfiguration : BasePluginConfiguration
     {
-
-        public String Username { get; set; }
     }
 }

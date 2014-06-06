@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -42,11 +41,6 @@ namespace MediaBrowser.Plugins.UStream
         public string HomePageUrl
         {
             get { return "http://ustream.tv"; }
-        }
-
-        public async Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, User user, CancellationToken cancellationToken)
-        {
-            return null;
         }
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
@@ -106,8 +100,7 @@ namespace MediaBrowser.Plugins.UStream
 
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -137,8 +130,7 @@ namespace MediaBrowser.Plugins.UStream
 
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -174,8 +166,7 @@ namespace MediaBrowser.Plugins.UStream
 
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -239,13 +230,10 @@ namespace MediaBrowser.Plugins.UStream
             get { return "UStream"; }
         }
 
-
-
         public InternalChannelFeatures GetChannelFeatures()
         {
             return new InternalChannelFeatures
             {
-                CanSearch = false,
                 MaxPageSize = 25,
                 ContentTypes = new List<ChannelMediaContentType>
                 {
@@ -268,7 +256,7 @@ namespace MediaBrowser.Plugins.UStream
             };
         }
 
-        public bool IsEnabledFor(User user)
+        public bool IsEnabledFor(string userId)
         {
             return true;
         }
@@ -344,12 +332,9 @@ namespace MediaBrowser.Plugins.UStream
             return items.OrderBy(i => i.Name);
         }
 
-
-
-
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        public ChannelParentalRating ParentalRating
         {
-            throw new NotImplementedException();
+            get { return ChannelParentalRating.GeneralAudience; }
         }
     }
 }

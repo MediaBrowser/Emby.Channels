@@ -105,7 +105,7 @@ namespace PodCasts.Tasks
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var totalFeeds = Plugin.Instance.Configuration.Feeds.Count;
+            var totalFeeds = Plugin.Instance.Configuration.Feeds.Length;
             var currentFeedIds = new List<Guid>();
             var numComplete = 0;
 

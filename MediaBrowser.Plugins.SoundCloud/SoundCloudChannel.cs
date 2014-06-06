@@ -36,14 +36,9 @@ namespace MediaBrowser.Plugins.SoundCloud
             }
         }
 
-        public bool IsEnabledFor(Controller.Entities.User user)
+        public bool IsEnabledFor(string userId)
         {
             return true;
-        }
-
-        public async Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, Controller.Entities.User user, CancellationToken cancellationToken)
-        {
-            return null;
         }
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
@@ -80,8 +75,7 @@ namespace MediaBrowser.Plugins.SoundCloud
 
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3),
+                Items = items.ToList()
             };
         }
 
@@ -117,7 +111,6 @@ namespace MediaBrowser.Plugins.SoundCloud
             return new ChannelItemResult
             {
                 Items = channelItemInfos.ToList(),
-                CacheLength = TimeSpan.FromDays(3),
                 TotalRecordCount = channelItemInfos.Count() + offset + 1
 
             };
@@ -158,14 +151,10 @@ namespace MediaBrowser.Plugins.SoundCloud
             get { return "SoundCloud"; }
         }
 
-
-
         public InternalChannelFeatures GetChannelFeatures()
         {
             return new InternalChannelFeatures
             {
-                CanSearch = false,
-
                 ContentTypes = new List<ChannelMediaContentType>
                  {
                      ChannelMediaContentType.Song
@@ -184,10 +173,9 @@ namespace MediaBrowser.Plugins.SoundCloud
             get { return "http://www.soundcloud.com/"; }
         }
 
-
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        public ChannelParentalRating ParentalRating
         {
-            throw new NotImplementedException();
+            get { return ChannelParentalRating.GeneralAudience; }
         }
     }
 }

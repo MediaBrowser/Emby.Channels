@@ -38,11 +38,6 @@ namespace MediaBrowser.Plugins.Twitch
             }
         }
 
-        public async Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, User user, CancellationToken cancellationToken)
-        {
-            return null;
-        }
-
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
             ChannelItemResult result;
@@ -80,8 +75,7 @@ namespace MediaBrowser.Plugins.Twitch
             return new ChannelItemResult
             {
                 Items = items.ToList(),
-                TotalRecordCount = channels._total,
-                CacheLength = TimeSpan.FromDays(3)
+                TotalRecordCount = channels._total
             };
         }
 
@@ -111,8 +105,7 @@ namespace MediaBrowser.Plugins.Twitch
             return new ChannelItemResult
             {
                 Items = items.ToList(),
-                TotalRecordCount = videos._total,
-                CacheLength = TimeSpan.FromDays(3)
+                TotalRecordCount = videos._total
             };
         }
 
@@ -190,8 +183,6 @@ namespace MediaBrowser.Plugins.Twitch
         {
             return new InternalChannelFeatures
             {
-                CanSearch = false,
-
                 ContentTypes = new List<ChannelMediaContentType>
                 {
                     ChannelMediaContentType.Clip
@@ -212,20 +203,19 @@ namespace MediaBrowser.Plugins.Twitch
             };
         }
 
-        public bool IsEnabledFor(User user)
-        {
-            return true;
-        }
-
         public string HomePageUrl
         {
             get { return "http://www.twitch.tv/"; }
         }
 
-
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        public bool IsEnabledFor(string userId)
         {
-            throw new NotImplementedException();
+            return true;
+        }
+
+        public ChannelParentalRating ParentalRating
+        {
+            get { return ChannelParentalRating.GeneralAudience; }
         }
     }
 }

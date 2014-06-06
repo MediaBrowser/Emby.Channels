@@ -1,12 +1,7 @@
-﻿using System.IO;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -15,9 +10,9 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace MediaBrowser.Plugins.CNETTV
 {
@@ -46,11 +41,6 @@ namespace MediaBrowser.Plugins.CNETTV
         public string HomePageUrl
         {
             get { return "http://www.cnet.com/"; }
-        }
-
-        public async Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, User user, CancellationToken cancellationToken)
-        {
-            return null;
         }
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
@@ -140,8 +130,7 @@ namespace MediaBrowser.Plugins.CNETTV
             return new ChannelItemResult
             {
                 Items = items.ToList(),
-                //TotalRecordCount = channels.total,
-                CacheLength = TimeSpan.FromDays(3)
+                //TotalRecordCount = channels.total
             };
         }
 
@@ -171,8 +160,7 @@ namespace MediaBrowser.Plugins.CNETTV
             return new ChannelItemResult
             {
                 Items = items.ToList(),
-                //TotalRecordCount = channels.total,
-                CacheLength = TimeSpan.FromDays(3)
+                //TotalRecordCount = channels.total
             };
         }
 
@@ -206,8 +194,7 @@ namespace MediaBrowser.Plugins.CNETTV
 
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -287,8 +274,7 @@ namespace MediaBrowser.Plugins.CNETTV
 
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -361,13 +347,10 @@ namespace MediaBrowser.Plugins.CNETTV
             get { return "CNET-TV"; }
         }
 
-
-
         public InternalChannelFeatures GetChannelFeatures()
         {
             return new InternalChannelFeatures
             {
-                CanSearch = false,
                 MaxPageSize = 25,
                 ContentTypes = new List<ChannelMediaContentType>
                 {
@@ -390,7 +373,7 @@ namespace MediaBrowser.Plugins.CNETTV
             };
         }
 
-        public bool IsEnabledFor(User user)
+        public bool IsEnabledFor(string userId)
         {
             return true;
         }
@@ -466,10 +449,9 @@ namespace MediaBrowser.Plugins.CNETTV
             return items.OrderBy(i => i.Name);
         }
 
-
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        public ChannelParentalRating ParentalRating
         {
-            throw new NotImplementedException();
+            get { return ChannelParentalRating.GeneralAudience; }
         }
     }
 }

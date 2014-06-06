@@ -1,13 +1,7 @@
-﻿using System.IO;
-using System.Net;
-using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.Linq;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -15,8 +9,11 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -48,8 +45,6 @@ namespace MediaBrowser.Plugins.ITV
         {
             get { return "http://www.itv.com"; }
         }
-
-        
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
@@ -91,8 +86,7 @@ namespace MediaBrowser.Plugins.ITV
 
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -124,8 +118,7 @@ namespace MediaBrowser.Plugins.ITV
 
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -163,8 +156,7 @@ namespace MediaBrowser.Plugins.ITV
 
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -312,12 +304,6 @@ namespace MediaBrowser.Plugins.ITV
                 return items.OrderByDescending(i => i.VideoBitrate ?? 0);
 
             }
-
-        }
-
-        public async Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, User user, CancellationToken cancellationToken)
-        {
-            return null;
         }
 
         public Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken)
@@ -360,7 +346,6 @@ namespace MediaBrowser.Plugins.ITV
         {
             return new InternalChannelFeatures
             {
-                CanSearch = false,
                 MaxPageSize = 25,
                 ContentTypes = new List<ChannelMediaContentType>
                 {
@@ -383,15 +368,14 @@ namespace MediaBrowser.Plugins.ITV
             };
         }
 
-        public bool IsEnabledFor(User user)
+        public bool IsEnabledFor(string userId)
         {
             return true;
         }
 
-
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        public ChannelParentalRating ParentalRating
         {
-            throw new NotImplementedException();
+            get { return ChannelParentalRating.GeneralAudience; }
         }
     }
 }

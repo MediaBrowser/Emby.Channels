@@ -1,23 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
 using PodCasts.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PodCasts
 {
-    class Channel : IChannel
+    class Channel : IChannel, IHasCacheKey
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
@@ -79,8 +76,7 @@ namespace PodCasts
             }
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -118,8 +114,7 @@ namespace PodCasts
             }
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -137,27 +132,15 @@ namespace PodCasts
             get { return ""; }
         }
 
-        public bool IsEnabledFor(User user)
-        {
-            return true;
-        }
-
         public string Name
         {
             get { return "Podcasts"; }
-        }
-
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
-        {
-            throw new System.NotImplementedException();
         }
 
         public InternalChannelFeatures GetChannelFeatures()
         {
             return new InternalChannelFeatures
             {
-                CanSearch = false,
-
                 ContentTypes = new List<ChannelMediaContentType>
                 {
                     ChannelMediaContentType.Podcast
@@ -167,8 +150,6 @@ namespace PodCasts
                 {
                     ChannelMediaType.Audio
                 },
-
-                
             };
         }
 
@@ -193,9 +174,19 @@ namespace PodCasts
             }
         }
 
-        public Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, User user, CancellationToken cancellationToken)
+        public bool IsEnabledFor(string userId)
         {
-            throw new System.NotImplementedException();
+            return true;
+        }
+
+        public ChannelParentalRating ParentalRating
+        {
+            get { return ChannelParentalRating.GeneralAudience; }
+        }
+
+        public string GetCacheKey(string userId)
+        {
+            return string.Join(",", Plugin.Instance.Configuration.Feeds.ToArray());
         }
     }
 }
