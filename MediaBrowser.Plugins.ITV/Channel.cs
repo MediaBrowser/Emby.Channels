@@ -233,7 +233,7 @@ namespace MediaBrowser.Plugins.ITV
 
                     // TODO: Need to convert this to httpclient for compatibility
 
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://mercury.itv.com/PlaylistService.svc");
+                    var request = (HttpWebRequest)WebRequest.Create("http://mercury.itv.com/PlaylistService.svc");
                     request.ContentType = "text/xml; charset=utf-8";
                     request.ContentLength = SM_TEMPLATE.Length;
                     request.Referer = "http://www.itv.com/mercury/Mercury_VideoPlayer.swf?v=1.6.479/[[DYNAMIC]]/2";
@@ -241,7 +241,7 @@ namespace MediaBrowser.Plugins.ITV
                     request.Host = "mercury.itv.com";
                     request.Method = "POST";
 
-                    StreamWriter requestWriter = new StreamWriter(request.GetRequestStream());
+                    var requestWriter = new StreamWriter(request.GetRequestStream());
 
                     try
                     {
@@ -309,7 +309,7 @@ namespace MediaBrowser.Plugins.ITV
 
                 }
 
-                return items.OrderBy(i => i.VideoBitrate ?? 0);
+                return items.OrderByDescending(i => i.VideoBitrate ?? 0);
 
             }
 
