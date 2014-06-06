@@ -2,6 +2,7 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Xml.Linq;
 using HtmlAgilityPack;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
@@ -169,7 +170,7 @@ namespace MediaBrowser.Plugins.ITV
         public async Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo(string id, CancellationToken cancellationToken)
         {
             var page = new HtmlDocument();
-
+            var items = new List<ChannelMediaInfo>();
             using (var site = await _httpClient.Get(id, CancellationToken.None).ConfigureAwait(false))
             {
                 using (var reader = new StreamReader(site))
@@ -251,25 +252,40 @@ namespace MediaBrowser.Plugins.ITV
                         requestWriter = null;
                     }
 
-                    var items = new List<ChannelMediaInfo>();
+                    
 
 
                     HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                     using (StreamReader sr = new StreamReader(response.GetResponseStream()))
                     {
-                        var document = new XmlDocument();
-                        document.LoadXml(sr.ReadToEnd());
-                        //var nsmgr = new XmlNamespaceManager(document.NameTable);
-                        //nsmgr.AddNamespace("s", "http://schemas.xmlsoap.org/soap/envelope/");
+                        var videoNode = Regex.Match(sr.ReadToEnd(), "<VideoEntries>(.*?)</VideoEntries>",
+                            RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
+                        var video = videoNode.Groups[0].Value;
 
-                        var node = document.SelectSingleNode("VideoEntries/Video/MediaFiles");
-                        
-                       
+                        var page2 = new HtmlDocument();
 
-                        _logger.Debug(node.InnerText);
-                        
-                        
-                        _logger.Debug(sr.ReadToEnd());
+                        page2.LoadHtml(video);
+
+                        var videoPageNode = page2.DocumentNode.SelectSingleNode("/videoentries/video/mediafiles");
+                        var rtmp = videoPageNode.Attributes["base"].Value;
+                        _logger.Debug(rtmp);
+
+                        foreach (var node in videoPageNode.SelectNodes(".//mediafile"))
+                        {
+                            var bitrate = node.Attributes["bitrate"].Value;
+                            var url = node.SelectSingleNode(".//url").InnerText;
+                            var strippedURL = url.Replace("<![CDATA[", "").Replace("]]>", "");
+
+                            var playURL = rtmp + " swfurl=http://www.itv.com/mercury/Mercury_VideoPlayer.swf playpath=" +
+                                          strippedURL + " swfvfy=true";
+
+                            items.Add(new ChannelMediaInfo
+                            {
+                                Path = playURL,
+                                //VideoBitrate = Convert.ToInt16(bitrate)
+                            });
+                            _logger.Debug(strippedURL);
+                        }
                     }
 
 
@@ -296,16 +312,9 @@ namespace MediaBrowser.Plugins.ITV
                     }*/
 
                 }
-              
-                return new List<ChannelMediaInfo>
-                {
-                    //new ChannelMediaInfo
-                    //{
-                    //    
-                   // }
 
-                };
-               
+                return items;
+
             }
 
         }

@@ -429,6 +429,20 @@ namespace MediaBrowser.Plugins.Vimeo
                              );
                         }
                     }
+                    else if (r.request.files.vp6 != null)
+                    {
+                        var sd = r.request.files.vp6.sd;
+                        if (sd != null && !string.IsNullOrEmpty(sd.url))
+                        {
+                            mediaInfo.Add(
+                                new ChannelMediaInfo
+                                {
+                                    Height = sd.height,
+                                    Width = sd.width,
+                                    Path = sd.url
+                                });
+                        }
+                    }
                 }
 
                 try
