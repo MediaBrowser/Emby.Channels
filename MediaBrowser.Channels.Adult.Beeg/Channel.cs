@@ -1,10 +1,7 @@
-﻿using System.IO;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using HtmlAgilityPack;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -12,10 +9,12 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
 
 namespace MediaBrowser.Channels.Adult.Beeg
 {
@@ -37,11 +36,6 @@ namespace MediaBrowser.Channels.Adult.Beeg
                 // Increment as needed to invalidate all caches
                 return "2";
             }
-        }
-
-        public async Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, User user, CancellationToken cancellationToken)
-        {
-            return null;
         }
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
@@ -92,8 +86,7 @@ namespace MediaBrowser.Channels.Adult.Beeg
 
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -125,8 +118,7 @@ namespace MediaBrowser.Channels.Adult.Beeg
 
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -163,8 +155,7 @@ namespace MediaBrowser.Channels.Adult.Beeg
            
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -230,8 +221,6 @@ namespace MediaBrowser.Channels.Adult.Beeg
         {
             return new InternalChannelFeatures
             {
-                CanSearch = false,
-
                 ContentTypes = new List<ChannelMediaContentType>
                 {
                     ChannelMediaContentType.Clip
@@ -244,9 +233,8 @@ namespace MediaBrowser.Channels.Adult.Beeg
             };
         }
 
-        public bool IsEnabledFor(User user)
+        public bool IsEnabledFor(string userId)
         {
-
             return true;
         }
 
@@ -255,10 +243,9 @@ namespace MediaBrowser.Channels.Adult.Beeg
             get { return "http://www.beeg.com"; }
         }
 
-
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        public ChannelParentalRating ParentalRating
         {
-            throw new NotImplementedException();
+            get { return ChannelParentalRating.Adult; }
         }
     }
 }

@@ -8,7 +8,5 @@ namespace MediaBrowser.Plugins.Revision3.Configuration
     /// </summary>
     public class PluginConfiguration : BasePluginConfiguration
     {
-
-        public String Username { get; set; }
     }
 }

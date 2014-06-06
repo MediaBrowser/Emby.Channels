@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using MediaBrowser.Model.Plugins;
+﻿using MediaBrowser.Model.Plugins;
+using System;
 
 namespace PodCasts.Configuration
 {
@@ -14,7 +13,7 @@ namespace PodCasts.Configuration
         /// List of feeds
         /// </summary>
         /// <value>urls of xml podcast feeds</value>
-        public List<string> Feeds { get; set; }
+        public string[] Feeds { get; set; }
 
         /// <summary>
         /// Tracks the last time we successfully updates the feeds
@@ -26,8 +25,8 @@ namespace PodCasts.Configuration
         /// </summary>
         public PluginConfiguration()
         {
-            Feeds = new List<string>();
-            
+            Feeds = new string[] {};
+
         }
     }
 }

@@ -17,19 +17,20 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Plugins.Vimeo
 {
-    public class VimeoChannel : IChannel, IRequiresMediaInfoCallback
+    public class VimeoChannel : IChannel, IRequiresMediaInfoCallback, IHasCacheKey
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
 
-        private ISecurityManager _securityManager;
+        private readonly ISecurityManager _securityManager;
 
-        public VimeoChannel(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager)
+        public VimeoChannel(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager, ISecurityManager securityManager)
         {
             _httpClient = httpClient;
             _logger = logManager.GetLogger(GetType().Name);
             _jsonSerializer = jsonSerializer;
+            _securityManager = securityManager;
         }
 
         public string DataVersion
@@ -132,7 +133,6 @@ namespace MediaBrowser.Plugins.Vimeo
             return new ChannelItemResult
             {
                 Items = items,
-                CacheLength = TimeSpan.FromDays(1),
                 TotalRecordCount = channels.total
             };
         }
@@ -163,8 +163,7 @@ namespace MediaBrowser.Plugins.Vimeo
 
             return new ChannelItemResult
             {
-                Items = items,
-                CacheLength = TimeSpan.FromDays(1),
+                Items = items
             };
         }
 
@@ -212,7 +211,6 @@ namespace MediaBrowser.Plugins.Vimeo
             return new ChannelItemResult
             {
                 Items = items,
-                CacheLength = TimeSpan.FromDays(1),
                 TotalRecordCount = channels == null ? videos.total : channels.total
             };
         }
@@ -253,7 +251,6 @@ namespace MediaBrowser.Plugins.Vimeo
             return new ChannelItemResult
             {
                 Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(1),
                 TotalRecordCount = videos.total
             };
         }
@@ -276,7 +273,6 @@ namespace MediaBrowser.Plugins.Vimeo
             return new ChannelItemResult
             {
                 Items = items,
-                CacheLength = TimeSpan.FromDays(1),
                 TotalRecordCount = pChannels.total
             };
         }
@@ -338,13 +334,10 @@ namespace MediaBrowser.Plugins.Vimeo
             get { return "Vimeo"; }
         }
 
-
-
         public InternalChannelFeatures GetChannelFeatures()
         {
             return new InternalChannelFeatures
             {
-                CanSearch = true,
                 MaxPageSize = 50,
 
                 ContentTypes = new List<ChannelMediaContentType>
@@ -368,7 +361,7 @@ namespace MediaBrowser.Plugins.Vimeo
             };
         }
 
-        public bool IsEnabledFor(Controller.Entities.User user)
+        public bool IsEnabledFor(string userId)
         {
             return true;
         }
@@ -495,10 +488,14 @@ namespace MediaBrowser.Plugins.Vimeo
             return items.OrderBy(i => i.Name);
         }
 
-
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        public ChannelParentalRating ParentalRating
         {
-            throw new NotImplementedException();
+            get { return ChannelParentalRating.GeneralAudience; }
+        }
+
+        public string GetCacheKey(string userId)
+        {
+            return Plugin.Instance.Configuration.Username ?? string.Empty;
         }
     }
 }

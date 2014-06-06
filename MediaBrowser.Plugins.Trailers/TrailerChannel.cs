@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -18,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Plugins.Trailers
 {
-    public class TrailerChannel : IChannel
+    public class TrailerChannel : IChannel, IIndexableChannel, IHasCacheKey
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
@@ -89,8 +88,7 @@ namespace MediaBrowser.Plugins.Trailers
 
             return new ChannelItemResult
             {
-                Items = items.ToList(),
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items.ToList()
             };
         }
 
@@ -221,7 +219,7 @@ namespace MediaBrowser.Plugins.Trailers
             get { return "http://mediabrowser3.com"; }
         }
 
-        public bool IsEnabledFor(User user)
+        public bool IsEnabledFor(string userId)
         {
             return true;
         }
@@ -231,18 +229,10 @@ namespace MediaBrowser.Plugins.Trailers
             get { return "Trailers"; }
         }
 
-        public Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, User user, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
         public InternalChannelFeatures GetChannelFeatures()
         {
             return new InternalChannelFeatures
             {
-                CanSearch = false,
-                CanGetAllMedia = true,
-
                 ContentTypes = new List<ChannelMediaContentType>
                  {
                      ChannelMediaContentType.Trailer
@@ -266,14 +256,23 @@ namespace MediaBrowser.Plugins.Trailers
             };
         }
 
-
         public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
         {
             return GetChannelItems(new InternalChannelItemQuery
             {
-                User = query.User
+                UserId = query.UserId
 
             }, cancellationToken);
+        }
+
+        public ChannelParentalRating ParentalRating
+        {
+            get { return ChannelParentalRating.GeneralAudience; }
+        }
+
+        public string GetCacheKey(string userId)
+        {
+            return (Plugin.Instance.Configuration.MaxTrailerAge ?? -1).ToString(CultureInfo.InvariantCulture);
         }
     }
 }

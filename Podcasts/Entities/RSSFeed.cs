@@ -1,5 +1,4 @@
-﻿using System.Net;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -11,12 +10,12 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.ServiceModel.Syndication;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using System.Xml;
 using System.Xml.XPath;
 
@@ -36,26 +35,38 @@ namespace PodCasts.Entities {
         {
             try
             {
-                using (XmlReader reader = new SyndicationFeedXmlReader(await httpClient.Get(url, cancellationToken).ConfigureAwait(false)))
+                using (
+                    XmlReader reader =
+                        new SyndicationFeedXmlReader(await httpClient.Get(url, cancellationToken).ConfigureAwait(false))
+                    )
                 {
                     _feed = SyndicationFeed.Load(reader);
                     Children = await GetChildren(_feed, providerManager, cancellationToken);
                 }
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception e)
             {
                 Plugin.Logger.ErrorException("Error loading feed {0}", e, url);
-                ServerEntryPoint.Instance.NotificationManager.SendNotification(new NotificationRequest
-                                                                                   {
-                                                                                       SendToUserMode = SendToUserType.Admins,
-                                                                                       Level = NotificationLevel.Error,
-                                                                                       NotificationType = "PluginError",
-                                                                                       Name = "Podcasts: Error processing feed",
-                                                                                       Description = "Could not process feed " + url
-                                                                                   }, cancellationToken).ConfigureAwait(false);
 
-
+                SendFailureNotification(url, cancellationToken);
             }
+        }
+
+        private async void SendFailureNotification(string url, CancellationToken cancellationToken)
+        {
+            await ServerEntryPoint.Instance.NotificationManager.SendNotification(new NotificationRequest
+            {
+                SendToUserMode = SendToUserType.Admins,
+                Level = NotificationLevel.Error,
+                NotificationType = "PluginError",
+                Name = "Podcasts: Error processing feed",
+                Description = "Could not process feed " + url
+
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         public string ImageUrl {

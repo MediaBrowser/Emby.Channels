@@ -37,14 +37,9 @@ namespace MediaBrowser.Plugins.TuneIn
             }
         }
 
-        public bool IsEnabledFor(Controller.Entities.User user)
+        public bool IsEnabledFor(string userId)
         {
             return true;
-        }
-
-        public async Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, Controller.Entities.User user, CancellationToken cancellationToken)
-        {
-            return null;
         }
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
@@ -105,8 +100,7 @@ namespace MediaBrowser.Plugins.TuneIn
 
             return new ChannelItemResult
             {
-                Items = items,
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items
             };
         }
 
@@ -137,8 +131,7 @@ namespace MediaBrowser.Plugins.TuneIn
 
             return new ChannelItemResult
             {
-                Items = items,
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items
             };
         }
 
@@ -169,8 +162,7 @@ namespace MediaBrowser.Plugins.TuneIn
 
             return new ChannelItemResult
             {
-                Items = items,
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items
             };
         }
 
@@ -204,8 +196,7 @@ namespace MediaBrowser.Plugins.TuneIn
 
             return new ChannelItemResult
             {
-                Items = items,
-                CacheLength = TimeSpan.FromDays(3)
+                Items = items
             };
         }
 
@@ -272,14 +263,10 @@ namespace MediaBrowser.Plugins.TuneIn
             get { return "TuneIn"; }
         }
 
-
-
         public InternalChannelFeatures GetChannelFeatures()
         {
             return new InternalChannelFeatures
             {
-                CanSearch = false,
-
                 ContentTypes = new List<ChannelMediaContentType>
                  {
                      ChannelMediaContentType.Song
@@ -297,12 +284,9 @@ namespace MediaBrowser.Plugins.TuneIn
             get { return "http://www.tunein.com/"; }
         }
 
-
-
-
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        public ChannelParentalRating ParentalRating
         {
-            throw new NotImplementedException();
+            get { return ChannelParentalRating.GeneralAudience; }
         }
     }
 }
