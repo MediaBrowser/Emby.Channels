@@ -104,7 +104,9 @@ namespace MediaBrowser.Plugins.CNETTV
 
                         var title = titlenode.InnerText;
 
-                        if (title.Contains("Featured") || title.Contains("New Releases"))
+                        if (title.Contains("Featured")) continue;
+
+                        if (title.Contains("New Releases"))
                         {
                             items.Add(new ChannelItemInfo
                             {
@@ -224,26 +226,61 @@ namespace MediaBrowser.Plugins.CNETTV
 
                     if (firstVideo != null)
                     {
-                        var json = _jsonSerializer.DeserializeFromString<RootObject>(firstVideo.Attributes["data-cnet-video-options"].Value);
+                        _logger.Debug("PASS1");
+                        var json =
+                            _jsonSerializer.DeserializeFromString<RootObject>(
+                                firstVideo.Attributes["data-cnet-video-options"].Value);
                         if (json.videos != null)
                         {
+                            _logger.Debug("PASS2");
                             foreach (var v in json.videos)
                             {
-                                var thumb = page.DocumentNode.SelectSingleNode("//a[contains(@href,(\""+ v.slug +"\"))]/img").Attributes["src"].Value;
+                                _logger.Debug("PASS3");
 
-                                items.Add(new ChannelItemInfo
+                                _logger.Debug("PASS4");
+                                var item = new ChannelItemInfo
                                 {
                                     Name = v.title,
                                     Id = "http://www.cnet.com/videos/" + v.slug,
-                                    ImageUrl = thumb,
                                     Type = ChannelItemType.Media,
                                     ContentType = ChannelMediaContentType.Clip,
                                     MediaType = ChannelMediaType.Video,
                                     IsInfiniteStream = false
-                                });
+                                };
+
+                                var thumb =
+                                    page.DocumentNode.SelectSingleNode("//a[contains(@href,(\"" + v.slug + "\"))]/img");
+                                if (thumb != null)
+                                {
+                                    item.ImageUrl = thumb.Attributes["src"].Value;
+                                }
+
+                                items.Add(item);
 
                             }
                         }
+                    }
+                    else
+                    {
+                        foreach (var node in page.DocumentNode.SelectNodes("//li/a[@class=\"imageLinkWrapper\"]"))
+                        {
+                            var url = node.Attributes["href"].Value;
+                            var title = node.SelectSingleNode(".//div[@class=\"headline\"]//text()").InnerText;
+                            var thumb = node.SelectSingleNode(".//img").Attributes["src"].Value;
+
+                            var item = new ChannelItemInfo
+                            {
+                                Name = title,
+                                Id = "http://www.cnet.com" + url,
+                                ImageUrl = thumb,
+                                Type = ChannelItemType.Media,
+                                ContentType = ChannelMediaContentType.Clip,
+                                MediaType = ChannelMediaType.Video,
+                                IsInfiniteStream = false
+                            };
+                            items.Add(item);
+                        }
+
                     }
                 }
             }
