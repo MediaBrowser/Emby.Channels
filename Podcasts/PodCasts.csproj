@@ -54,19 +54,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
     <Compile Include="Channel.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
     <Compile Include="Configuration\MyConfigurationPage.cs" />
     <Compile Include="Entities\IHasRemoteImage.cs" />
     <Compile Include="Entities\PodCastAudio.cs" />
-    <Compile Include="Entities\PodCastsCollectionFolder.cs" />
     <Compile Include="Entities\RSSFeed.cs" />
-    <Compile Include="Entities\VodCast.cs" />
     <Compile Include="Entities\VodCastVideo.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerEntryPoint.cs" />
-    <Compile Include="Tasks\PodCastsDownloadTask.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Configuration\configPage.html" />

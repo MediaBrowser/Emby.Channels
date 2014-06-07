@@ -15,7 +15,6 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Entities;
 using PodCasts.Configuration;
 using MediaBrowser.Model.Logging;
-using PodCasts.Tasks;
 
 namespace PodCasts
 {
@@ -74,11 +73,7 @@ namespace PodCasts
         /// </summary>
         public void Run()
         {
-            if (Plugin.Instance.Configuration.Feeds.Length > 0 && (DateTime.Now - Plugin.Instance.Configuration.LastFeedUpdate).TotalHours > 24)
-            {
-                //Run the download task
-                _taskManager.QueueScheduledTask<PodCastsDownloadTask>();
-            }
+           
         }
 
         /// <summary>
@@ -88,9 +83,7 @@ namespace PodCasts
         /// <param name="newConfig">The new config.</param>
         public void OnConfigurationUpdated(PluginConfiguration oldConfig, PluginConfiguration newConfig)
         {
-            //Run the download task
-            _taskManager.QueueScheduledTask<PodCastsDownloadTask>();
-
+            
         }
 
         /// <summary>
