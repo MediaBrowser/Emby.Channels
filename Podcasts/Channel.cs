@@ -52,6 +52,12 @@ namespace PodCasts
         {
             var items = new List<ChannelItemInfo>();
 
+            if (!Plugin.Instance.Registration.IsValid)
+            {
+                Plugin.Logger.Warn("PodCasts trial has expired.");
+                throw new ApplicationException("PodCasts Expired.");
+            }
+
             foreach (var feedUrl in Plugin.Instance.Configuration.Feeds)
             {
                 var feed = new RssFeed(feedUrl);
