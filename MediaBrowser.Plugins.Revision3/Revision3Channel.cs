@@ -40,6 +40,11 @@ namespace MediaBrowser.Plugins.Revision3
             }
         }
 
+        public string Description
+        {
+            get { return string.Empty; }
+        }
+
         public string HomePageUrl
         {
             get { return "http://revision3.com"; }

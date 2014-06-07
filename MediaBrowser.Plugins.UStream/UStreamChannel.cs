@@ -336,5 +336,10 @@ namespace MediaBrowser.Plugins.UStream
         {
             get { return ChannelParentalRating.GeneralAudience; }
         }
+
+        public string Description
+        {
+            get { return string.Empty; }
+        }
     }
 }

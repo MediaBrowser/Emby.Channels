@@ -41,6 +41,11 @@ namespace MediaBrowser.Plugins.ITV
             }
         }
 
+        public string Description
+        {
+            get { return string.Empty; }
+        }
+
         public string HomePageUrl
         {
             get { return "http://www.itv.com"; }

@@ -38,6 +38,11 @@ namespace MediaBrowser.Plugins.CNETTV
             }
         }
 
+        public string Description
+        {
+            get { return string.Empty; }
+        }
+
         public string HomePageUrl
         {
             get { return "http://www.cnet.com/"; }

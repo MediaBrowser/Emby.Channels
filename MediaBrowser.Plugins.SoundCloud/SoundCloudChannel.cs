@@ -36,6 +36,11 @@ namespace MediaBrowser.Plugins.SoundCloud
             }
         }
 
+        public string Description
+        {
+            get { return string.Empty; }
+        }
+
         public bool IsEnabledFor(string userId)
         {
             return true;

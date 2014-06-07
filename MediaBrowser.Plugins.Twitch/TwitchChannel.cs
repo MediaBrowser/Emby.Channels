@@ -38,6 +38,11 @@ namespace MediaBrowser.Plugins.Twitch
             }
         }
 
+        public string Description
+        {
+            get { return string.Empty; }
+        }
+
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
             ChannelItemResult result;

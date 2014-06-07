@@ -188,5 +188,10 @@ namespace PodCasts
         {
             return string.Join(",", Plugin.Instance.Configuration.Feeds.ToArray());
         }
+
+        public string Description
+        {
+            get { return string.Empty; }
+        }
     }
 }

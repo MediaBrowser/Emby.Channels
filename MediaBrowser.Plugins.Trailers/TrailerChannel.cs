@@ -32,8 +32,13 @@ namespace MediaBrowser.Plugins.Trailers
         {
             get
             {
-                return "8-" + (Plugin.Instance.Configuration.MaxTrailerAge ?? 0).ToString(CultureInfo.InvariantCulture);
+                return "8";
             }
+        }
+
+        public string Description
+        {
+            get { return string.Empty; }
         }
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)

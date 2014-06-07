@@ -497,5 +497,10 @@ namespace MediaBrowser.Plugins.Vimeo
         {
             return Plugin.Instance.Configuration.Username ?? string.Empty;
         }
+
+        public string Description
+        {
+            get { return string.Empty; }
+        }
     }
 }
