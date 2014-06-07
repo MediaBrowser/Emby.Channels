@@ -95,8 +95,6 @@
     <Compile Include="HtmlAgilityPack\Trace.FullFramework.cs" />
     <Compile Include="HtmlAgilityPack\Utilities.cs" />
     <Compile Include="UStreamInfo.cs" />
-    <Compile Include="UStreamChannelDownloader.cs" />
-    <Compile Include="UStreamListingDownloader.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

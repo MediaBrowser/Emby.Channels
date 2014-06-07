@@ -34,7 +34,7 @@ namespace MediaBrowser.Channels.Adult.Beeg
             get
             {
                 // Increment as needed to invalidate all caches
-                return "2";
+                return "4";
             }
         }
 
@@ -139,15 +139,19 @@ namespace MediaBrowser.Channels.Adult.Beeg
 
                     for (var x = 0; x < videoIDs.Count(); x++)
                     {
-                        items.Add(new ChannelItemInfo
+                        if (videoIDs[x] != null && videoNames[x] != null)
                         {
-                            Type = ChannelItemType.Media,
-                            ContentType = ChannelMediaContentType.Clip,
-                            MediaType = ChannelMediaType.Video,
-                            ImageUrl = "http://cdn.anythumb.com/640x360/" + videoIDs[x] + ".jpg",
-                            Name = videoNames[x],
-                            Id = videoIDs[x]
-                        });
+                            _logger.Debug(videoIDs[x] + " - " + videoNames[x]);
+                            items.Add(new ChannelItemInfo
+                            {
+                                Type = ChannelItemType.Media,
+                                ContentType = ChannelMediaContentType.Clip,
+                                MediaType = ChannelMediaType.Video,
+                                ImageUrl = "http://cdn.anythumb.com/640x360/" + videoIDs[x] + ".jpg",
+                                Name = videoNames[x],
+                                Id = videoIDs[x]
+                            });
+                        }
                     }
                    
                 }
