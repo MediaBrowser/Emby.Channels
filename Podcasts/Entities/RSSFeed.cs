@@ -41,6 +41,7 @@ namespace PodCasts.Entities {
                     )
                 {
                     _feed = SyndicationFeed.Load(reader);
+
                     Children = await GetChildren(_feed, providerManager, cancellationToken);
                 }
             }
