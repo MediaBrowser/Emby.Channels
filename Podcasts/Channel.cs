@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -32,7 +33,7 @@ namespace PodCasts
             get
             {
                 // Increment as needed to invalidate all caches
-                return "3";
+                return "4";
             }
         }
 
@@ -102,10 +103,10 @@ namespace PodCasts
                     Name = child.Name,
                     Overview = feed.Description,
                     ImageUrl = podcast.RemoteImagePath,
-                    Id = child.Name,
+                    Id = child.Id.ToString("N"),
                     Type = ChannelItemType.Media,
                     ContentType = ChannelMediaContentType.Podcast,
-                    MediaType = ChannelMediaType.Audio,
+                    MediaType = child is Video ? ChannelMediaType.Video : ChannelMediaType.Audio,
 
                     MediaSources = new List<ChannelMediaInfo>
                     {
@@ -113,7 +114,13 @@ namespace PodCasts
                         {
                             Path = child.Path
                         }  
-                    }
+                    },
+
+                    DateCreated = child.DateCreated,
+                    PremiereDate = child.PremiereDate,
+
+                    RunTimeTicks = child.RunTimeTicks,
+                    OfficialRating = child.OfficialRating
                 };
                     
                 items.Add(item);
