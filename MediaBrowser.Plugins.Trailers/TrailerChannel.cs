@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Plugins.Trailers
 {
-    public class TrailerChannel : IChannel, IIndexableChannel, IHasCacheKey
+    public class TrailerChannel : IChannel, IIndexableChannel, IHasCacheKey, ISupportsLatestMedia
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
@@ -278,6 +278,19 @@ namespace MediaBrowser.Plugins.Trailers
         public string GetCacheKey(string userId)
         {
             return (Plugin.Instance.Configuration.MaxTrailerAge ?? -1).ToString(CultureInfo.InvariantCulture);
+        }
+
+        public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
+        {
+            var result = await GetChannelItems(new InternalChannelItemQuery
+            {
+                SortBy = ChannelItemSortField.DateCreated,
+                SortDescending = true,
+                UserId = request.UserId
+
+            }, cancellationToken).ConfigureAwait(false);
+
+            return result.Items.Take(10);
         }
     }
 }
