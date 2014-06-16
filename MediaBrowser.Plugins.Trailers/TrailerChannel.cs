@@ -290,7 +290,7 @@ namespace MediaBrowser.Plugins.Trailers
 
             }, cancellationToken).ConfigureAwait(false);
 
-            return result.Items.Take(10);
+            return result.Items;
         }
     }
 }
