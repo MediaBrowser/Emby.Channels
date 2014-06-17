@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Channels.iPlayer.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.iPlayer.Configuration;
 
 namespace MediaBrowser.Channels.iPlayer
 {

@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Model.Plugins;
 using System;
 
-namespace MediaBrowser.Plugins.iPlayer.Configuration
+namespace MediaBrowser.Channels.iPlayer.Configuration
 {
     /// <summary>
     /// Class PluginConfiguration

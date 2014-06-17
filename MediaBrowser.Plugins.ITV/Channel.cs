@@ -38,7 +38,7 @@ namespace MediaBrowser.Plugins.ITV
             get
             {
                 // Increment as needed to invalidate all caches
-                return "3";
+                return "4";
             }
         }
 
@@ -72,6 +72,14 @@ namespace MediaBrowser.Plugins.ITV
             {
                 return await GetEpisodeList(query, cancellationToken).ConfigureAwait(false);
             }
+            if (folderID[0] == "genres")
+            {
+                return await GetGenreList(query, cancellationToken).ConfigureAwait(false);
+            }
+            if (folderID[0] == "tvchannels")
+            {
+                return await GetTVChannelList(query, cancellationToken).ConfigureAwait(false);
+            }
 
 
             return null;
@@ -86,6 +94,18 @@ namespace MediaBrowser.Plugins.ITV
                 {
                     Name = "Most Popular Programmes",
                     Id = "programs_" + "https://www.itv.com/itvplayer/categories/browse/popular/catch-up",
+                    Type = ChannelItemType.Folder
+                },
+                new ChannelItemInfo
+                {
+                    Name = "Genres",
+                    Id = "genres_",
+                    Type = ChannelItemType.Folder
+                },
+                new ChannelItemInfo
+                {
+                    Name = "TV Channels",
+                    Id = "tvchannels_",
                     Type = ChannelItemType.Folder
                 }
             };
@@ -107,15 +127,14 @@ namespace MediaBrowser.Plugins.ITV
 
                 foreach (var node in page.DocumentNode.SelectNodes("//div[@id='categories-content']/div[@class='item-list']/ul/li"))
                 {
-                    // TODO : FIX ME!!!
-                    //var thumb = node.SelectSingleNode(".//div[@class='min-container']//img").Attributes["src"].Value.Replace("player_image_thumb_standard", "posterframe");
-                    var title = node.SelectSingleNode(".//div[@class='programme-title cell-title']/a").InnerText;
+                    var thumb = node.SelectSingleNode(".//div[@class='min-container']//img");
+                    var title = node.SelectSingleNode(".//div[@class='programme-title cell-title']/a").InnerText.Replace("&#039", "'");
                     var url = "http://www.itv.com" + node.SelectSingleNode(".//div[@class='programme-title cell-title']/a").Attributes["href"].Value;
 
                     items.Add(new ChannelItemInfo
                     {
                         Name = title,
-                        //ImageUrl = thumb,
+                        ImageUrl = thumb != null ? thumb.Attributes["src"].Value.Replace("player_image_thumb_standard", "posterframe") : "",
                         Id = "episodes_" + url,
                         Type = ChannelItemType.Folder
                     });
@@ -140,14 +159,15 @@ namespace MediaBrowser.Plugins.ITV
                 foreach (var node in page.DocumentNode.SelectNodes("//div[@class='view-content']/div[@class='views-row']"))
                 {
                     var id = "http://www.itv.com" + node.SelectSingleNode(".//div[contains(@class, 'node-episode')]/a[1]").Attributes["href"].Value;
-                    var title = node.SelectSingleNode("//h2[@class='title episode-title']").InnerText;
+                    var title = node.SelectSingleNode("//h2[@class='title episode-title']").InnerText.Replace("&#039", "'");
                     var seasonNumber = node.SelectSingleNode(".//div[contains(@class, 'field-name-field-season-number')]//text()").InnerText;
                     var episodeNumber = node.SelectSingleNode(".//div[contains(@class, 'field-name-field-episode-number')]//text()").InnerText;
                     var overview = node.SelectSingleNode(".//div[contains(@class,'field-name-field-short-synopsis')]//text()").InnerText;
                     var thumb = node.SelectSingleNode(".//div[contains(@class,'field-name-field-image')]//img").Attributes["src"].Value.Replace("player_image_thumb_standard", "posterframe");
-                    var duration = node.SelectSingleNode(".//div[contains(@class,'field-name-field-duration')]//div[contains(@class, 'field-item')]").InnerText;
+                    // TODO : FIX ME !
+                    //var duration = node.SelectSingleNode(".//div[contains(@class,'field-name-field-duration')]//div[contains(@class, 'field-item')]").InnerText;
 
-                    duration = duration.Replace(" hours ", "").Replace(" minutes ", "").Replace(" hour ", "");
+                    //duration = duration.Replace(" hours ", "").Replace(" minutes ", "").Replace(" hour ", "");
 
                     items.Add(new ChannelItemInfo
                     {
@@ -162,6 +182,49 @@ namespace MediaBrowser.Plugins.ITV
 
                     });
                 }
+            }
+
+            return new ChannelItemResult
+            {
+                Items = items.ToList()
+            };
+        }
+
+        private async Task<ChannelItemResult> GetGenreList(InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            var data = new Data();
+            var items = new List<ChannelItemInfo>();
+
+            foreach (var genre in data.Genres)
+            { 
+                items.Add(new ChannelItemInfo
+                {
+                    Name = genre.name,
+                    Id = "programs_" + "https://www.itv.com/itvplayer/categories/" + genre.fname + "/popular/catch-up",
+                    Type = ChannelItemType.Folder
+                });
+            }
+
+            return new ChannelItemResult
+            {
+                Items = items.ToList()
+            };
+        }
+
+        private async Task<ChannelItemResult> GetTVChannelList(InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            var data = new Data();
+            var items = new List<ChannelItemInfo>();
+
+            foreach (var channel in data.TVChannel)
+            {
+                items.Add(new ChannelItemInfo
+                {
+                    Name = channel.name,
+                    ImageUrl = channel.thumb,
+                    Id = "programs_" + "https://www.itv.com/itvplayer/categories/" + channel.fname + "/popular/catch-up",
+                    Type = ChannelItemType.Folder
+                });
             }
 
             return new ChannelItemResult
