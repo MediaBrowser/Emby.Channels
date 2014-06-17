@@ -33,7 +33,7 @@ namespace PodCasts
             get
             {
                 // Increment as needed to invalidate all caches
-                return "4";
+                return "5";
             }
         }
 
@@ -101,7 +101,7 @@ namespace PodCasts
                 var item = new ChannelItemInfo
                 {
                     Name = child.Name,
-                    Overview = feed.Description,
+                    Overview = child.Overview,
                     ImageUrl = podcast.RemoteImagePath,
                     Id = child.Id.ToString("N"),
                     Type = ChannelItemType.Media,

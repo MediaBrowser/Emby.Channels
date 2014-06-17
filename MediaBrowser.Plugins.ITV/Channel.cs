@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -59,7 +60,7 @@ namespace MediaBrowser.Plugins.ITV
             {
                 return await GetMainMenu(cancellationToken).ConfigureAwait(false);
             }
-            
+
             var folderID = query.FolderId.Split('_');
             query.FolderId = folderID[1];
 
@@ -71,7 +72,7 @@ namespace MediaBrowser.Plugins.ITV
             {
                 return await GetEpisodeList(query, cancellationToken).ConfigureAwait(false);
             }
-            
+
 
             return null;
         }
@@ -110,7 +111,7 @@ namespace MediaBrowser.Plugins.ITV
                     //var thumb = node.SelectSingleNode(".//div[@class='min-container']//img").Attributes["src"].Value.Replace("player_image_thumb_standard", "posterframe");
                     var title = node.SelectSingleNode(".//div[@class='programme-title cell-title']/a").InnerText;
                     var url = "http://www.itv.com" + node.SelectSingleNode(".//div[@class='programme-title cell-title']/a").Attributes["href"].Value;
-                   
+
                     items.Add(new ChannelItemInfo
                     {
                         Name = title,
@@ -144,7 +145,7 @@ namespace MediaBrowser.Plugins.ITV
                     var episodeNumber = node.SelectSingleNode(".//div[contains(@class, 'field-name-field-episode-number')]//text()").InnerText;
                     var overview = node.SelectSingleNode(".//div[contains(@class,'field-name-field-short-synopsis')]//text()").InnerText;
                     var thumb = node.SelectSingleNode(".//div[contains(@class,'field-name-field-image')]//img").Attributes["src"].Value.Replace("player_image_thumb_standard", "posterframe");
-                   
+
                     items.Add(new ChannelItemInfo
                     {
                         Name = title + " (Season: " + seasonNumber + ", Ep: " + episodeNumber + ")",
@@ -275,7 +276,8 @@ namespace MediaBrowser.Plugins.ITV
                             items.Add(new ChannelMediaInfo
                             {
                                 Path = playURL,
-                                VideoBitrate = Convert.ToInt32(bitrate)
+                                VideoBitrate = Convert.ToInt32(bitrate),
+                                Protocol = MediaProtocol.Rtmp
                             });
                             _logger.Debug(strippedURL);
                         }
