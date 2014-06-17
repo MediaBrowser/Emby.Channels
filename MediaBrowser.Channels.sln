@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PodCasts", "Podcasts\PodCasts.csproj", "{30B2A395-5E43-454F-8093-DAF307D6D4FB}"
 EndProject
@@ -31,6 +31,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Plugins.ITV", "MediaBrowser.Plugins.ITV\MediaBrowser.Plugins.ITV.csproj", "{D90C091D-4863-4383-9D96-20EB824286F9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.Adult.Beeg", "MediaBrowser.Channels.Adult.Beeg\MediaBrowser.Channels.Adult.Beeg.csproj", "{8D49805A-AB0D-44A5-A253-C94D8EC0BDE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.iPlayer", "MediaBrowser.Channels.iPlayer\MediaBrowser.Channels.iPlayer.csproj", "{0A11D8D9-F7BC-4333-8128-CDBAFA563446}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.Adult.RedTube", "MediaBrowser.Channels.Adult.RedTube\MediaBrowser.Channels.Adult.RedTube.csproj", "{F41EE7B5-1437-4C25-86CC-495F58D8532B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -82,6 +86,14 @@ Global
 		{8D49805A-AB0D-44A5-A253-C94D8EC0BDE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D49805A-AB0D-44A5-A253-C94D8EC0BDE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D49805A-AB0D-44A5-A253-C94D8EC0BDE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A11D8D9-F7BC-4333-8128-CDBAFA563446}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A11D8D9-F7BC-4333-8128-CDBAFA563446}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A11D8D9-F7BC-4333-8128-CDBAFA563446}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A11D8D9-F7BC-4333-8128-CDBAFA563446}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F41EE7B5-1437-4C25-86CC-495F58D8532B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F41EE7B5-1437-4C25-86CC-495F58D8532B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F41EE7B5-1437-4C25-86CC-495F58D8532B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F41EE7B5-1437-4C25-86CC-495F58D8532B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

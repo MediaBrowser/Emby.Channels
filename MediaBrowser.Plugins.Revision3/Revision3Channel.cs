@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Plugins.Revision3
 {
-    public class Revision3Channel : IChannel, IRequiresMediaInfoCallback
+    public class Revision3Channel : IChannel, IRequiresMediaInfoCallback, ISupportsLatestMedia
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
@@ -118,6 +118,27 @@ namespace MediaBrowser.Plugins.Revision3
                 Items = episodes.ToList(),
                 TotalRecordCount = videos.total
             };
+        }
+
+        public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
+        {
+            var downloader = new Revision3ListingDownloader(_logger, _jsonSerializer, _httpClient);
+            var videos = await downloader.GetLatestEpisodeList(cancellationToken)
+                .ConfigureAwait(false);
+
+            return videos.episodes.Select(i => new ChannelItemInfo
+            {
+                ContentType = ChannelMediaContentType.Clip,
+                ImageUrl = !String.IsNullOrEmpty(i.images.medium) ? i.images.medium : "",
+                MediaType = ChannelMediaType.Video,
+                Name = i.show.name + " - " + i.name,
+                Type = ChannelItemType.Media,
+                Id = i.slug,
+                RunTimeTicks = TimeSpan.FromSeconds(i.duration).Ticks,
+                DateCreated = !String.IsNullOrEmpty(i.published) ?
+                    Convert.ToDateTime(i.published) : DateTime.MinValue,
+                Overview = !String.IsNullOrEmpty(i.summary) ? i.summary : ""
+            }).OrderByDescending(i => i.DateCreated);
         }
 
         public async Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo(string id, CancellationToken cancellationToken)
@@ -318,5 +339,7 @@ namespace MediaBrowser.Plugins.Revision3
         {
             get { return ChannelParentalRating.GeneralAudience; }
         }
+
+        
     }
 }

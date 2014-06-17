@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -18,13 +17,16 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Plugins.ITV
+namespace MediaBrowser.Channels.iPlayer
 {
     public class Channel : IChannel, IRequiresMediaInfoCallback
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
+
+
+        private String feedURL = "http://feeds.bbc.co.uk";
 
         public Channel(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager)
         {
@@ -38,7 +40,7 @@ namespace MediaBrowser.Plugins.ITV
             get
             {
                 // Increment as needed to invalidate all caches
-                return "3";
+                return "1";
             }
         }
 
@@ -49,52 +51,50 @@ namespace MediaBrowser.Plugins.ITV
 
         public string HomePageUrl
         {
-            get { return "http://www.itv.com"; }
+            get { return "http://www.bbc.co.uk"; }
         }
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
+            var menu = new MenuSystem();
+
             _logger.Debug("cat ID : " + query.FolderId);
 
             if (query.FolderId == null)
             {
-                return await GetMainMenu(cancellationToken).ConfigureAwait(false);
+                return await menu.GetMainMenu(cancellationToken).ConfigureAwait(false);
             }
-
+            
             var folderID = query.FolderId.Split('_');
             query.FolderId = folderID[1];
 
-            if (folderID[0] == "programs")
+            if (folderID[0] == "video")
             {
                 return await GetProgramList(query, cancellationToken).ConfigureAwait(false);
             }
-            if (folderID[0] == "episodes")
+            if (folderID[0] == "tvChannels")
             {
-                return await GetEpisodeList(query, cancellationToken).ConfigureAwait(false);
+                return await menu.GetTVChannels(cancellationToken).ConfigureAwait(false);
             }
+            if (folderID[0] == "categories")
+            {
+                return await menu.GetCategories("", "", cancellationToken).ConfigureAwait(false);
+            }
+            if (folderID[0] == "category")
+            {
 
+                return await menu.GetCategory(query.FolderId, "", cancellationToken).ConfigureAwait(false);
+            }
+            if (folderID[0] == "a-z")
+            {
+                return await menu.GetAToZ(cancellationToken).ConfigureAwait(false);
+            }
+            
 
             return null;
         }
 
-        private async Task<ChannelItemResult> GetMainMenu(CancellationToken cancellationToken)
-        {
-            // Add more items here.
-            var items = new List<ChannelItemInfo>
-            {
-                new ChannelItemInfo
-                {
-                    Name = "Most Popular Programmes",
-                    Id = "programs_" + "https://www.itv.com/itvplayer/categories/browse/popular/catch-up",
-                    Type = ChannelItemType.Folder
-                }
-            };
-
-            return new ChannelItemResult
-            {
-                Items = items.ToList()
-            };
-        }
+        
 
         private async Task<ChannelItemResult> GetProgramList(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
@@ -111,7 +111,7 @@ namespace MediaBrowser.Plugins.ITV
                     //var thumb = node.SelectSingleNode(".//div[@class='min-container']//img").Attributes["src"].Value.Replace("player_image_thumb_standard", "posterframe");
                     var title = node.SelectSingleNode(".//div[@class='programme-title cell-title']/a").InnerText;
                     var url = "http://www.itv.com" + node.SelectSingleNode(".//div[@class='programme-title cell-title']/a").Attributes["href"].Value;
-
+                   
                     items.Add(new ChannelItemInfo
                     {
                         Name = title,
@@ -145,10 +145,7 @@ namespace MediaBrowser.Plugins.ITV
                     var episodeNumber = node.SelectSingleNode(".//div[contains(@class, 'field-name-field-episode-number')]//text()").InnerText;
                     var overview = node.SelectSingleNode(".//div[contains(@class,'field-name-field-short-synopsis')]//text()").InnerText;
                     var thumb = node.SelectSingleNode(".//div[contains(@class,'field-name-field-image')]//img").Attributes["src"].Value.Replace("player_image_thumb_standard", "posterframe");
-                    var duration = node.SelectSingleNode(".//div[contains(@class,'field-name-field-duration')]//div[contains(@class, 'field-item')]").InnerText;
-
-                    duration = duration.Replace(" hours ", "").Replace(" minutes ", "").Replace(" hour ", "");
-
+                   
                     items.Add(new ChannelItemInfo
                     {
                         Name = title + " (Season: " + seasonNumber + ", Ep: " + episodeNumber + ")",
@@ -159,7 +156,6 @@ namespace MediaBrowser.Plugins.ITV
                         ContentType = ChannelMediaContentType.Episode,
                         IsInfiniteStream = false,
                         MediaType = ChannelMediaType.Video,
-
                     });
                 }
             }
@@ -280,8 +276,7 @@ namespace MediaBrowser.Plugins.ITV
                             items.Add(new ChannelMediaInfo
                             {
                                 Path = playURL,
-                                VideoBitrate = Convert.ToInt32(bitrate),
-                                Protocol = MediaProtocol.Rtmp
+                                VideoBitrate = Convert.ToInt32(bitrate)
                             });
                             _logger.Debug(strippedURL);
                         }
@@ -350,7 +345,7 @@ namespace MediaBrowser.Plugins.ITV
 
         public string Name
         {
-            get { return "ITV UK"; }
+            get { return "BBC iPlayer"; }
         }
 
         public InternalChannelFeatures GetChannelFeatures()
@@ -388,5 +383,8 @@ namespace MediaBrowser.Plugins.ITV
         {
             get { return ChannelParentalRating.GeneralAudience; }
         }
+
+        
+
     }
 }

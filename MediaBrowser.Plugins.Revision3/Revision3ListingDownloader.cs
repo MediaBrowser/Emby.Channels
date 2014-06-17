@@ -30,6 +30,14 @@ namespace MediaBrowser.Plugins.Revision3
                 return _jsonSerializer.DeserializeFromStream<RootObject>(json);
             }
         }
+
+        public async Task<RootObject> GetLatestEpisodeList(CancellationToken cancellationToken)
+        {
+            using (var json = await _httpClient.Get("http://revision3.com/api/getEpisodes.json?api_key=0b1faede6785d04b78735b139ddf2910f34ad601&grouping=latest", CancellationToken.None).ConfigureAwait(false))
+            {
+                return _jsonSerializer.DeserializeFromStream<RootObject>(json);
+            }
+        }
        
     }
 }
