@@ -171,7 +171,6 @@ namespace MediaBrowser.Plugins.Trailers
                 Path = info.TrailerUrl,
                 Width = isHd ? 1280 : 720,
                 Height = isHd ? 720 : 480,
-                IsRemote = true,
                 Container = Path.GetExtension(info.TrailerUrl),
                 AudioCodec = AudioCodec.AAC,
                 VideoCodec = VideoCodec.H264,
