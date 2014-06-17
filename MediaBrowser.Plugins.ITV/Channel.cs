@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+﻿using System.Runtime.InteropServices;
+using HtmlAgilityPack;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
@@ -156,31 +157,67 @@ namespace MediaBrowser.Plugins.ITV
             {
                 page.Load(site);
 
-                foreach (var node in page.DocumentNode.SelectNodes("//div[@class='view-content']/div[@class='views-row']"))
+                var nodes = page.DocumentNode.SelectNodes("//div[@class='view-content']/div[@class='views-row']");
+
+                // Cant find multiple episodes so means only one episode in program so look at main video on page
+                if (nodes == null)
+                    nodes = page.DocumentNode.SelectNodes("//div[@class='hero']");
+
+                if (nodes != null)
                 {
-                    var id = "http://www.itv.com" + node.SelectSingleNode(".//div[contains(@class, 'node-episode')]/a[1]").Attributes["href"].Value;
-                    var title = node.SelectSingleNode("//h2[@class='title episode-title']").InnerText.Replace("&#039", "'");
-                    var seasonNumber = node.SelectSingleNode(".//div[contains(@class, 'field-name-field-season-number')]//text()").InnerText;
-                    var episodeNumber = node.SelectSingleNode(".//div[contains(@class, 'field-name-field-episode-number')]//text()").InnerText;
-                    var overview = node.SelectSingleNode(".//div[contains(@class,'field-name-field-short-synopsis')]//text()").InnerText;
-                    var thumb = node.SelectSingleNode(".//div[contains(@class,'field-name-field-image')]//img").Attributes["src"].Value.Replace("player_image_thumb_standard", "posterframe");
-                    // TODO : FIX ME !
-                    //var duration = node.SelectSingleNode(".//div[contains(@class,'field-name-field-duration')]//div[contains(@class, 'field-item')]").InnerText;
-
-                    //duration = duration.Replace(" hours ", "").Replace(" minutes ", "").Replace(" hour ", "");
-
-                    items.Add(new ChannelItemInfo
+                    foreach (var node in nodes)
                     {
-                        Name = title + " (Season: " + seasonNumber + ", Ep: " + episodeNumber + ")",
-                        ImageUrl = thumb,
-                        Id = id,
-                        Overview = overview,
-                        Type = ChannelItemType.Media,
-                        ContentType = ChannelMediaContentType.Episode,
-                        IsInfiniteStream = false,
-                        MediaType = ChannelMediaType.Video,
+                        var id = query.FolderId;
+                        if (node.SelectSingleNode(".//div[contains(@class, 'node-episode')]/a[1]") != null)
+                            id = node.SelectSingleNode(".//div[contains(@class, 'node-episode')]/a[1]").Attributes["href"].Value;
+                        else if (node.SelectSingleNode("./a") != null)
+                            id = node.SelectSingleNode("./a[1]").Attributes["href"].Value;
 
-                    });
+                        var title = "Unknown";
+                        if (node.SelectSingleNode("//h2[@class='title episode-title']") != null)
+                            title = node.SelectSingleNode("//h2[@class='title episode-title']").InnerText.Replace("&#039;", "'");
+                        else if (node.SelectSingleNode(".//div[@class='programme-title']//text()") != null)
+                            title = node.SelectSingleNode(".//div[@class='programme-title']//text()").InnerText.Replace("&#039;", "'");
+                      
+                        var seasonNumber = "";
+                        if (node.SelectSingleNode(".//div[contains(@class, 'field-name-field-season-number')]//text()") != null)
+                            seasonNumber = node.SelectSingleNode(".//div[contains(@class, 'field-name-field-season-number')]//text()").InnerText;
+                       
+                        var episodeNumber = "";
+                        if (node.SelectSingleNode(".//div[contains(@class, 'field-name-field-episode-number')]//text()") != null)
+                            episodeNumber = node.SelectSingleNode(".//div[contains(@class, 'field-name-field-episode-number')]//text()").InnerText;
+
+                        var overview = "";
+                        if (node.SelectSingleNode(".//div[contains(@class,'field-name-field-short-synopsis')]//text()") != null)
+                            overview = node.SelectSingleNode(".//div[contains(@class,'field-name-field-short-synopsis')]//text()").InnerText;
+
+                        var thumb = "";
+                        if (node.SelectSingleNode(".//div[contains(@class,'field-name-field-image')]//img") != null)
+                            thumb = node.SelectSingleNode(".//div[contains(@class,'field-name-field-image')]//img").Attributes["src"].Value;
+                        else if (node.SelectSingleNode(".//param[@name='poster']") != null)
+                            thumb = node.SelectSingleNode(".//param[@name='poster']").Attributes["value"].Value;
+
+                        // TODO : FIX ME !
+                        //var duration = node.SelectSingleNode(".//div[contains(@class,'field-name-field-duration')]//div[contains(@class, 'field-item')]").InnerText;
+
+                        //duration = duration.Replace(" hours ", "").Replace(" minutes ", "").Replace(" hour ", "");
+
+                        items.Add(new ChannelItemInfo
+                        {
+                            Name = title + " (Season: " + seasonNumber + ", Ep: " + episodeNumber + ")",
+                            ImageUrl = thumb != "" ? thumb.Replace("player_image_thumb_standard", "posterframe") : "",
+                            Id = "http://www.itv.com" + id,
+                            Overview = overview,
+                            Type = ChannelItemType.Media,
+                            ContentType = ChannelMediaContentType.Episode,
+                            IsInfiniteStream = false,
+                            MediaType = ChannelMediaType.Video
+                        });
+                    }
+                }
+                else
+                {
+                    // No Episodes Found! Return Error
                 }
             }
 

@@ -52,11 +52,11 @@ namespace MediaBrowser.Plugins.ITV
             TVChannel = new List<TVChannel>
             {
                 // TODO : Move Images to github
-                new TVChannel("ITV","itv", "http://thumbs.tvgenius.net/512x512/bds-itv.jpg"),
-                new TVChannel("ITV 2","itv2", "http://thumbs.tvgenius.net/512x512/bds-itv2.jpg"),
-                new TVChannel("ITV 3","itv3", "http://thumbs.tvgenius.net/512x512/bds-itv3.jpg"),
-                new TVChannel("ITV 4","itv4", "http://thumbs.tvgenius.net/512x512/bds-itv4.jpg"),
-                new TVChannel("CITV","citv", "http://thumbs.tvgenius.net/512x512/bds-citv.jpg")
+                new TVChannel("ITV","itv", "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/5b58af81eea61acd4e72d9d5c045cc923cfbdda3/MediaBrowser.Plugins.ITV/Images/itv.png"),
+                new TVChannel("ITV 2","itv2", "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/5b58af81eea61acd4e72d9d5c045cc923cfbdda3/MediaBrowser.Plugins.ITV/Images/itv2.png"),
+                new TVChannel("ITV 3","itv3", "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/5b58af81eea61acd4e72d9d5c045cc923cfbdda3/MediaBrowser.Plugins.ITV/Images/itv3.png"),
+                new TVChannel("ITV 4","itv4", "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/5b58af81eea61acd4e72d9d5c045cc923cfbdda3/MediaBrowser.Plugins.ITV/Images/itv4.png"),
+                new TVChannel("CITV","citv", "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/5b58af81eea61acd4e72d9d5c045cc923cfbdda3/MediaBrowser.Plugins.ITV/Images/citv.png")
             };
         }
     }
