@@ -36,7 +36,7 @@ namespace MediaBrowser.Channels.Adult.RedTube
             get
             {
                 // Increment as needed to invalidate all caches
-                return "4";
+                return "6";
             }
         }
 
