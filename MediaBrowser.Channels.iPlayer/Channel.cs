@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+﻿using System.Xml;
+using HtmlAgilityPack;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
@@ -16,6 +17,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.ServiceModel.Syndication;
 
 namespace MediaBrowser.Channels.iPlayer
 {
@@ -56,7 +58,7 @@ namespace MediaBrowser.Channels.iPlayer
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
-            var menu = new MenuSystem();
+            var menu = new MenuSystem(_httpClient, _jsonSerializer, _logger);
 
             _logger.Debug("cat ID : " + query.FolderId);
 
@@ -70,7 +72,7 @@ namespace MediaBrowser.Channels.iPlayer
 
             if (folderID[0] == "video")
             {
-                return await GetProgramList(query, cancellationToken).ConfigureAwait(false);
+                return await GetVideos(query, cancellationToken).ConfigureAwait(false);
             }
             if (folderID[0] == "tvChannels")
             {
@@ -128,188 +130,29 @@ namespace MediaBrowser.Channels.iPlayer
             };
         }
 
-        private async Task<ChannelItemResult> GetEpisodeList(InternalChannelItemQuery query, CancellationToken cancellationToken)
+        private async Task<ChannelItemResult> GetVideos(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
-            var page = new HtmlDocument();
-            var items = new List<ChannelItemInfo>();
+            var rss = new RSS(query.FolderId, _httpClient, _jsonSerializer, _logger);
+            var items = new List<ChannelMediaInfo>();
 
-            using (var site = await _httpClient.Get(query.FolderId, CancellationToken.None).ConfigureAwait(false))
-            {
-                page.Load(site);
-
-                foreach (var node in page.DocumentNode.SelectNodes("//div[@class='view-content']/div[@class='views-row']"))
-                {
-                    var id = "http://www.itv.com" + node.SelectSingleNode(".//div[contains(@class, 'node-episode')]/a[1]").Attributes["href"].Value;
-                    var title = node.SelectSingleNode("//h2[@class='title episode-title']").InnerText;
-                    var seasonNumber = node.SelectSingleNode(".//div[contains(@class, 'field-name-field-season-number')]//text()").InnerText;
-                    var episodeNumber = node.SelectSingleNode(".//div[contains(@class, 'field-name-field-episode-number')]//text()").InnerText;
-                    var overview = node.SelectSingleNode(".//div[contains(@class,'field-name-field-short-synopsis')]//text()").InnerText;
-                    var thumb = node.SelectSingleNode(".//div[contains(@class,'field-name-field-image')]//img").Attributes["src"].Value.Replace("player_image_thumb_standard", "posterframe");
-                   
-                    items.Add(new ChannelItemInfo
-                    {
-                        Name = title + " (Season: " + seasonNumber + ", Ep: " + episodeNumber + ")",
-                        ImageUrl = thumb,
-                        Id = id,
-                        Overview = overview,
-                        Type = ChannelItemType.Media,
-                        ContentType = ChannelMediaContentType.Episode,
-                        IsInfiniteStream = false,
-                        MediaType = ChannelMediaType.Video,
-                    });
-                }
-            }
+            await rss.Refresh(cancellationToken);
 
             return new ChannelItemResult
             {
-                Items = items.ToList()
+               // Items = items.ToList()
             };
         }
 
         public async Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo(string id, CancellationToken cancellationToken)
         {
-            var page = new HtmlDocument();
+            var rss = new RSS(id, _httpClient, _jsonSerializer, _logger);
             var items = new List<ChannelMediaInfo>();
-            using (var site = await _httpClient.Get(id, CancellationToken.None).ConfigureAwait(false))
-            {
-                using (var reader = new StreamReader(site))
-                {
-                    var html = await reader.ReadToEndAsync().ConfigureAwait(false);
-                    html = html.Replace("&#039", "'");
 
-                    var productionNode = Regex.Match(html, "\"productionId\":\"(.*?)\"", RegexOptions.IgnoreCase);
-                    var productionID = productionNode.Groups[0].Value;
-
-                    productionID = productionID.Replace(@"\", "");
-                    productionID = productionID.Replace("\"productionId\":\"", "");
-                    productionID = productionID.Replace("\"", "");
-
-                    _logger.Debug("Production ID : " + productionID);
-
-                    var SM_TEMPLATE =
-                        String.Format(@"<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:tem=""http://tempuri.org/"" xmlns:itv=""http://schemas.datacontract.org/2004/07/Itv.BB.Mercury.Common.Types"" xmlns:com=""http://schemas.itv.com/2009/05/Common"">
-	                  <soapenv:Header/>
-	                  <soapenv:Body>
-		                <tem:GetPlaylist>
-		                  <tem:request>
-		                <itv:ProductionId>{0}</itv:ProductionId>
-		                <itv:RequestGuid>FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF</itv:RequestGuid>
-		                <itv:Vodcrid>
-		                  <com:Id/>
-		                  <com:Partition>itv.com</com:Partition>
-		                </itv:Vodcrid>
-		                  </tem:request>
-		                  <tem:userInfo>
-		                <itv:Broadcaster>Itv</itv:Broadcaster>
-		                <itv:GeoLocationToken>
-		                  <itv:Token/>
-		                </itv:GeoLocationToken>
-		                <itv:RevenueScienceValue>ITVPLAYER.12.18.4</itv:RevenueScienceValue>
-		                <itv:SessionId/>
-		                <itv:SsoToken/>
-		                <itv:UserToken/>
-		                  </tem:userInfo>
-		                  <tem:siteInfo>
-		                <itv:AdvertisingRestriction>None</itv:AdvertisingRestriction>
-		                <itv:AdvertisingSite>ITV</itv:AdvertisingSite>
-		                <itv:AdvertisingType>Any</itv:AdvertisingType>
-		                <itv:Area>ITVPLAYER.VIDEO</itv:Area>
-		                <itv:Category/>
-		                <itv:Platform>DotCom</itv:Platform>
-		                <itv:Site>ItvCom</itv:Site>
-	                  </tem:siteInfo>
-	                  <tem:deviceInfo>
-		                <itv:ScreenSize>Big</itv:ScreenSize>
-	                  </tem:deviceInfo>
-	                  <tem:playerInfo>
-		                <itv:Version>2</itv:Version>
-	                  </tem:playerInfo>
-		                </tem:GetPlaylist>
-	                  </soapenv:Body>
-	                </soapenv:Envelope>
-	                ", productionID);
-
-                    // TODO: Need to convert this to httpclient for compatibility
-
-                    var request = (HttpWebRequest)WebRequest.Create("http://mercury.itv.com/PlaylistService.svc");
-                    request.ContentType = "text/xml; charset=utf-8";
-                    request.ContentLength = SM_TEMPLATE.Length;
-                    request.Referer = "http://www.itv.com/mercury/Mercury_VideoPlayer.swf?v=1.6.479/[[DYNAMIC]]/2";
-                    request.Headers.Add("SOAPAction", "http://tempuri.org/PlaylistService/GetPlaylist");
-                    request.Host = "mercury.itv.com";
-                    request.Method = "POST";
-
-                    var requestWriter = new StreamWriter(request.GetRequestStream());
-
-                    try
-                    {
-                        requestWriter.Write(SM_TEMPLATE);
-                    }
-                    finally
-                    {
-                        requestWriter.Close();
-                        requestWriter = null;
-                    }
-
-                    var response = (HttpWebResponse)request.GetResponse();
-                    using (var sr = new StreamReader(response.GetResponseStream()))
-                    {
-                        var videoNode = Regex.Match(sr.ReadToEnd(), "<VideoEntries>(.*?)</VideoEntries>",
-                            RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
-                        var video = videoNode.Groups[0].Value;
-
-                        page.LoadHtml(video);
-
-                        var videoPageNode = page.DocumentNode.SelectSingleNode("/videoentries/video/mediafiles");
-                        var rtmp = videoPageNode.Attributes["base"].Value;
-                        _logger.Debug(rtmp);
-
-                        foreach (var node in videoPageNode.SelectNodes(".//mediafile"))
-                        {
-                            var bitrate = node.Attributes["bitrate"].Value;
-                            var url = node.SelectSingleNode(".//url").InnerText;
-                            var strippedURL = url.Replace("<![CDATA[", "").Replace("]]>", "");
-
-                            var playURL = rtmp + " swfurl=http://www.itv.com/mercury/Mercury_VideoPlayer.swf playpath=" +
-                                          strippedURL + " swfvfy=true";
-
-                            items.Add(new ChannelMediaInfo
-                            {
-                                Path = playURL,
-                                VideoBitrate = Convert.ToInt32(bitrate)
-                            });
-                            _logger.Debug(strippedURL);
-                        }
-                    }
-
-
-                    /*var request = new HttpRequestOptions
-                    {
-                        Url = "http://mercury.itv.com/PlaylistService.svc",
-                        Host = "mercury.itv.com",
-                        RequestContentType = "text/xml; charset=utf-8",
-                        RequestContentBytes = BitConverter.GetBytes(SM_TEMPLATE.Length),
-                        RequestContent = SM_TEMPLATE,
-                        Referer = "http://www.itv.com/mercury/Mercury_VideoPlayer.swf?v=1.6.479/[[DYNAMIC]]/2"
-                    };
-                    
-                    request.RequestHeaders.Add("SOAPAction", "http://tempuri.org/PlaylistService/GetPlaylist");
-
-                    using (var player = _httpClient.SendAsync(request, "POST"))
-                    {
-                        using (var reader2 = new StreamReader(site))
-                        {
-                            var html2 = await reader2.ReadToEndAsync().ConfigureAwait(false);
-
-                            _logger.Debug(html2);
-                        }
-                    }*/
-
-                }
+            await rss.Refresh(cancellationToken);
 
                 return items.OrderByDescending(i => i.VideoBitrate ?? 0);
 
-            }
+            
         }
 
         public Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken)
