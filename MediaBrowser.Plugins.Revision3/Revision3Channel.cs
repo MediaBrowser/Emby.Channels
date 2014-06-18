@@ -204,6 +204,7 @@ namespace MediaBrowser.Plugins.Revision3
             {
                 case ImageType.Thumb:
                 case ImageType.Backdrop:
+                case ImageType.Primary:
                     {
                         var path = GetType().Namespace + ".Images." + type.ToString().ToLower() + ".png";
 
@@ -224,7 +225,8 @@ namespace MediaBrowser.Plugins.Revision3
             return new List<ImageType>
             {
                 ImageType.Thumb,
-                ImageType.Backdrop
+                ImageType.Backdrop,
+                ImageType.Primary
             };
         }
 

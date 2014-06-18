@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
@@ -8,7 +7,6 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -79,7 +77,6 @@ namespace MediaBrowser.Plugins.ITV
             {
                 return await GetTVChannelList(query, cancellationToken).ConfigureAwait(false);
             }
-
 
             return null;
         }
