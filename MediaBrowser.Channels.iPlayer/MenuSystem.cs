@@ -4,14 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.iPlayer
 {
     internal class MenuSystem
     {
         private String feedURL = "http://feeds.bbc.co.uk";
-
+        private readonly IHttpClient _httpClient;
+        private readonly ILogger _logger;
+        private readonly IJsonSerializer _jsonSerializer;
+        public MenuSystem(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogger logger)
+        {
+            _httpClient = httpClient;
+            _logger = logger;
+            _jsonSerializer = jsonSerializer;
+        }
 
         public async Task<ChannelItemResult> GetMainMenu(CancellationToken cancellationToken)
         {
@@ -33,24 +44,13 @@ namespace MediaBrowser.Channels.iPlayer
 
         public async Task<ChannelItemResult> GetTVChannels(CancellationToken cancellationToken)
         {
-            var tvChannels = new List<BBCChannel>
-            {
-                new BBCChannel("BBC One", "bbc_one", "bbcone"),
-                new BBCChannel("BBC Two", "bbc_two", "bbctwo"),
-                new BBCChannel("BBC Three", "bbc_three", "bbcthree"),
-                new BBCChannel("BBC Four", "bbc_four", "bbcfour"),
-                new BBCChannel("CBBC", "cbbc", "cbbc"),
-                new BBCChannel("CBeebies", "cbeebies_1", "cbeebies"),
-                new BBCChannel("BBC News Channel", "bbc_news24", "bbcnews"),
-                new BBCChannel("BBC Parliament", "bbc_parliament_1", "bbcparliament"),
-                new BBCChannel("BBC HD", "bbc_hd_1", "bbchd"),
-                new BBCChannel("BBC Alba", "bbc_alba", "bbcalba")
-            };
+            var data = new Data();
+            var channels = data.Channels;
 
             // Add more items here.
             var items = new List<ChannelItemInfo>();
 
-            foreach (var c in tvChannels)
+            foreach (var c in channels)
             {
                 items.Add(CreateMenu(c.title, "channel", c.id, c.thumb));
             }
@@ -84,17 +84,8 @@ namespace MediaBrowser.Channels.iPlayer
 
         public async Task<ChannelItemResult> GetCategories(String channelID, String thumb, CancellationToken cancellationToken)
         {
-            var categories = new List<BBCCategory>
-            {
-                new BBCCategory("Children's", new[] {"Animation", "Drama", "Entertainment & Comedy", "Factual", "Games & Quizzes", "Music", "Other"}),
-                new BBCCategory("Comedy", new[] {"Music", "Satire", "Sitcoms", "Sketch", "Spoof", "Standup", "Other"}),
-                new BBCCategory("Drama", new[] {"Action & Adventure", "Biographical", "Classic & Period", "Crime", "Historical", "Horror & Supernatural", "Legal & Courtroom", "Medical", "Musical", "Psychological", "Relationships & Romance", "SciFi & Fantasy", "Soaps", "Thriller", "War & Disaster", "Other"}),
-                new BBCCategory("Entertainment", new[] { "Discussion & Talk Shows", "Games & Quizzes", "Makeovers", "Phone-ins", "Reality", "Talent Shows", "Variety Shows", "Other"}),
-                new BBCCategory("Factual", new[] { "Antiques", "Arts, Culture & the Media", "Beauty & Style", "Cars & Motors", "Cinema", "Consumer", "Crime & Justice", "Disability", "Families & Relationships", "Food & Drink", "Health & Wellbeing", "History", "Homes & Gardens", "Life Stories", "Money", "Pets & Animals", "Politics", "Science & Nature", "Travel", "Other"}),
-                new BBCCategory("Learning", new[] {"Pre-School", "5-11", "Adult", "Other" }),
-                new BBCCategory("Music", new[] {"Classic Pop & Rock", "Classical", "Country", "Dance & Electronica", "Desi", "Easy Listening, Soundtracks & Musicals", "Folk", "Hip Hop, R'n'B & Dancehall", "Jazz & Blues", "Pop & Chart", "Rock & Indie", "Soul & Reggae", "World", "Other" }),
-                new BBCCategory("Sport", new[] {"Boxing", "Cricket", "Cycling", "Equestrian", "Football", "Formula One", "Golf", "Horse Racing", "Motorsport", "Olympics", "Rugby League", "Rugby Union", "Tennis", "Other" })
-            };
+            var data = new Data();
+            var categories = data.Categories;
 
             // Add more items here.
             var items = new List<ChannelItemInfo>();
@@ -113,17 +104,8 @@ namespace MediaBrowser.Channels.iPlayer
         public async Task<ChannelItemResult> GetCategory(String categoryID, String channelID, CancellationToken cancellationToken)
         {
             var items = new List<ChannelItemInfo>();
-            var categories = new List<BBCCategory>
-            {
-                new BBCCategory("Children's", new[] {"Animation", "Drama", "Entertainment & Comedy", "Factual", "Games & Quizzes", "Music", "Other"}),
-                new BBCCategory("Comedy", new[] {"Music", "Satire", "Sitcoms", "Sketch", "Spoof", "Standup", "Other"}),
-                new BBCCategory("Drama", new[] {"Action & Adventure", "Biographical", "Classic & Period", "Crime", "Historical", "Horror & Supernatural", "Legal & Courtroom", "Medical", "Musical", "Psychological", "Relationships & Romance", "SciFi & Fantasy", "Soaps", "Thriller", "War & Disaster", "Other"}),
-                new BBCCategory("Entertainment", new[] { "Discussion & Talk Shows", "Games & Quizzes", "Makeovers", "Phone-ins", "Reality", "Talent Shows", "Variety Shows", "Other"}),
-                new BBCCategory("Factual", new[] { "Antiques", "Arts, Culture & the Media", "Beauty & Style", "Cars & Motors", "Cinema", "Consumer", "Crime & Justice", "Disability", "Families & Relationships", "Food & Drink", "Health & Wellbeing", "History", "Homes & Gardens", "Life Stories", "Money", "Pets & Animals", "Politics", "Science & Nature", "Travel", "Other"}),
-                new BBCCategory("Learning", new[] {"Pre-School", "5-11", "Adult", "Other" }),
-                new BBCCategory("Music", new[] {"Classic Pop & Rock", "Classical", "Country", "Dance & Electronica", "Desi", "Easy Listening, Soundtracks & Musicals", "Folk", "Hip Hop, R'n'B & Dancehall", "Jazz & Blues", "Pop & Chart", "Rock & Indie", "Soul & Reggae", "World", "Other" }),
-                new BBCCategory("Sport", new[] {"Boxing", "Cricket", "Cycling", "Equestrian", "Football", "Formula One", "Golf", "Horse Racing", "Motorsport", "Olympics", "Rugby League", "Rugby Union", "Tennis", "Other" })
-            };
+            var data = new Data();
+            var categories = data.Categories;
 
             var category = categories.Find(i => i.id == categoryID);
 
@@ -139,6 +121,7 @@ namespace MediaBrowser.Channels.iPlayer
 
                 foreach (var subCat in category.subCategories)
                 {
+                    _logger.Debug("URL : " + category.subcategory_url(subCat.id));
                     items.Add(CreateMenu(subCat.title, "video", category.subcategory_url(subCat.id)));
                 }
             }
@@ -148,8 +131,6 @@ namespace MediaBrowser.Channels.iPlayer
                 Items = items.ToList()
             };
         }
-
-
 
         // Create Menu Entry
         private ChannelItemInfo CreateMenu(String title, String menu, String id, String thumb = "")
@@ -162,7 +143,5 @@ namespace MediaBrowser.Channels.iPlayer
                 ImageUrl = thumb
             };
         }
-
-        
     }
 }

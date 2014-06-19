@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
@@ -8,7 +7,6 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,13 +23,11 @@ namespace MediaBrowser.Plugins.ITV
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
-        private readonly IJsonSerializer _jsonSerializer;
 
-        public Channel(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager)
+        public Channel(IHttpClient httpClient, ILogManager logManager)
         {
             _httpClient = httpClient;
             _logger = logManager.GetLogger(GetType().Name);
-            _jsonSerializer = jsonSerializer;
         }
 
         public string DataVersion
@@ -39,7 +35,7 @@ namespace MediaBrowser.Plugins.ITV
             get
             {
                 // Increment as needed to invalidate all caches
-                return "4";
+                return "5";
             }
         }
 
@@ -81,7 +77,6 @@ namespace MediaBrowser.Plugins.ITV
             {
                 return await GetTVChannelList(query, cancellationToken).ConfigureAwait(false);
             }
-
 
             return null;
         }
@@ -198,9 +193,13 @@ namespace MediaBrowser.Plugins.ITV
                             thumb = node.SelectSingleNode(".//param[@name='poster']").Attributes["value"].Value;
 
                         // TODO : FIX ME !
-                        //var duration = node.SelectSingleNode(".//div[contains(@class,'field-name-field-duration')]//div[contains(@class, 'field-item')]").InnerText;
+                        //var durText = node.SelectSingleNode(".//div[contains(@class,'field-name-field-duration')]//div[contains(@class, 'field-item')]").InnerText;
 
-                        //duration = duration.Replace(" hours ", "").Replace(" minutes ", "").Replace(" hour ", "");
+                        //var durNode = Regex.Match(durText, "[0-9]");
+                        //_logger.Debug("Duration" +  durNode.Groups[0].Value);
+                        //_logger.Debug("Duration" + durNode.Groups[1].Value);
+                        //var d1 = Convert.ToDouble(durNode.Groups[0].Value) * 60;
+                        //var d2 = Convert.ToDouble(durNode.Groups[1].Value);
 
                         items.Add(new ChannelItemInfo
                         {
@@ -211,7 +210,8 @@ namespace MediaBrowser.Plugins.ITV
                             Type = ChannelItemType.Media,
                             ContentType = ChannelMediaContentType.Episode,
                             IsInfiniteStream = false,
-                            MediaType = ChannelMediaType.Video
+                            MediaType = ChannelMediaType.Video,
+                            //RunTimeTicks = TimeSpan.FromMinutes(d1 + d2).Ticks
                         });
                     }
                 }
@@ -238,6 +238,44 @@ namespace MediaBrowser.Plugins.ITV
                 {
                     Name = genre.name,
                     Id = "programs_" + "https://www.itv.com/itvplayer/categories/" + genre.fname + "/popular/catch-up",
+                    Type = ChannelItemType.Folder, 
+                    ImageUrl = genre.thumb
+                });
+            }
+
+            return new ChannelItemResult
+            {
+                Items = items.ToList()
+            };
+        }
+
+        private async Task<ChannelItemResult> GetDateList(InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            var items = new List<ChannelItemInfo>
+            {
+                new ChannelItemInfo
+                {
+                    Name = "Today",
+                    Id = "date_" + "https://www.itv.com/itvplayer/by-day/today",
+                    Type = ChannelItemType.Folder
+                },
+                new ChannelItemInfo
+                {
+                    Name = "Yesturday",
+                    Id = "date_" + "https://www.itv.com/itvplayer/by-day/yesturday",
+                    Type = ChannelItemType.Folder
+                }
+            };
+
+            var today = DateTime.Now;
+
+            for (int i = 0; i < 31; i++)
+            {
+                var d = today.AddDays(-i);
+                items.Add(new ChannelItemInfo
+                {
+                    Name = d.ToString("ddd, d MMM yyyy"),
+                    Id = "date_" + "https://www.itv.com/itvplayer/by-day/" + d.ToString("d-MMM-yyyy"),
                     Type = ChannelItemType.Folder
                 });
             }
@@ -457,7 +495,6 @@ namespace MediaBrowser.Plugins.ITV
         {
             return new InternalChannelFeatures
             {
-                MaxPageSize = 25,
                 ContentTypes = new List<ChannelMediaContentType>
                 {
                     ChannelMediaContentType.Clip
@@ -466,16 +503,7 @@ namespace MediaBrowser.Plugins.ITV
                 MediaTypes = new List<ChannelMediaType>
                 {
                     ChannelMediaType.Video
-                },
-
-                SupportsSortOrderToggle = true,
-
-                DefaultSortFields = new List<ChannelItemSortField>
-                {
-                    ChannelItemSortField.DateCreated,
-                    ChannelItemSortField.Name,
-                    ChannelItemSortField.Runtime
-                },
+                }
             };
         }
 

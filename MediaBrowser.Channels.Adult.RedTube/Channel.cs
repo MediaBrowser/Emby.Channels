@@ -36,7 +36,7 @@ namespace MediaBrowser.Channels.Adult.RedTube
             get
             {
                 // Increment as needed to invalidate all caches
-                return "4";
+                return "7";
             }
         }
 
@@ -145,14 +145,16 @@ namespace MediaBrowser.Channels.Adult.RedTube
 
                 foreach (var v in videos.videos)
                 {
-                    var time = Convert.ToDouble(v.video.duration.Replace(":", "."));
+                    var durationNode = v.video.duration.Split(':');
+                    _logger.Debug(durationNode[0] + "." + durationNode[1]);
+                    var time = Convert.ToDouble(durationNode[0] + "." + durationNode[1]);
 
                     items.Add(new ChannelItemInfo
                     {
                         Type = ChannelItemType.Media,
                         ContentType = ChannelMediaContentType.Clip,
                         MediaType = ChannelMediaType.Video,
-                        ImageUrl = v.video.default_thumb,
+                        ImageUrl = v.video.default_thumb.Replace("m.jpg", "b.jpg"),
                         Name = v.video.title,
                         Id = v.video.url,
                         RunTimeTicks = TimeSpan.FromMinutes(time).Ticks,
