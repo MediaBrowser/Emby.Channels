@@ -2,8 +2,6 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Notifications;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,74 +20,29 @@ using System.Xml.XPath;
 namespace PodCasts.Entities {
     public class RssFeed {
 
-        public IEnumerable<BaseItem> Children { get; private set; }
-
-        string url;
-        SyndicationFeed _feed;
-
-        public RssFeed(string url) {
-            this.url = url;
-        }
-
-        public async Task Refresh(IProviderManager providerManager, IHttpClient httpClient, CancellationToken cancellationToken)
+        public async Task<IEnumerable<BaseItem>> Refresh(IProviderManager providerManager, 
+            IHttpClient httpClient, 
+            string url,
+            CancellationToken cancellationToken)
         {
-            try
+            using (XmlReader reader = new SyndicationFeedXmlReader(await httpClient.Get(url, cancellationToken).ConfigureAwait(false)))
             {
-                using (
-                    XmlReader reader =
-                        new SyndicationFeedXmlReader(await httpClient.Get(url, cancellationToken).ConfigureAwait(false))
-                    )
-                {
-                    _feed = SyndicationFeed.Load(reader);
+                var feed = SyndicationFeed.Load(reader);
 
-                    Children = await GetChildren(_feed, providerManager, cancellationToken);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception e)
-            {
-                Plugin.Logger.ErrorException("Error loading feed {0}", e, url);
-
-                SendFailureNotification(url, cancellationToken);
+                return await GetChildren(feed, providerManager, cancellationToken);
             }
         }
 
-        private async void SendFailureNotification(string url, CancellationToken cancellationToken)
+        public async Task<SyndicationFeed> GetFeed(IProviderManager providerManager,
+            IHttpClient httpClient,
+            string url,
+            CancellationToken cancellationToken)
         {
-            await ServerEntryPoint.Instance.NotificationManager.SendNotification(new NotificationRequest
+            using (XmlReader reader = new SyndicationFeedXmlReader(await httpClient.Get(url, cancellationToken).ConfigureAwait(false)))
             {
-                SendToUserMode = SendToUserType.Admins,
-                Level = NotificationLevel.Error,
-                NotificationType = "PluginError",
-                Name = "Podcasts: Error processing feed",
-                Description = "Could not process feed " + url
-
-            }, cancellationToken).ConfigureAwait(false);
-        }
-
-        public string ImageUrl {
-            get {
-                if (_feed == null || _feed.ImageUrl == null) return null;
-                return _feed.ImageUrl.AbsoluteUri;
+                return SyndicationFeed.Load(reader);
             }
         }
-
-        public string Title {
-            get {
-                if (_feed == null) return "";
-                return _feed.Title.Text;
-            }
-        }
-
-        public string Description {
-            get {
-                if (_feed == null) return null;
-                return _feed.Description.Text;
-            } 
-        } 
 
         private static async Task<IEnumerable<BaseItem>> GetChildren(SyndicationFeed feed, IProviderManager providerManager, CancellationToken cancellationToken) {
             var podcasts = new List<BaseItem>();
