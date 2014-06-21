@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace PodCasts
 {
-    class Channel : IChannel, IHasCacheKey
+    class Channel : IChannel, IHasCacheKey, ISupportsLatestMedia, IIndexableChannel
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
@@ -33,7 +33,7 @@ namespace PodCasts
             get
             {
                 // Increment as needed to invalidate all caches
-                return "5";
+                return "6";
             }
         }
 
@@ -45,7 +45,7 @@ namespace PodCasts
             {
                 return await GetChannels(cancellationToken).ConfigureAwait(false);
             }
-            
+
             return await GetChannelItemsInternal(query, cancellationToken).ConfigureAwait(false);
         }
 
@@ -56,29 +56,31 @@ namespace PodCasts
             if (!Plugin.Instance.Registration.IsValid)
             {
                 Plugin.Logger.Warn("PodCasts trial has expired.");
-                throw new ApplicationException("PodCasts Expired.");
+                return new ChannelItemResult
+                {
+                    Items = items.ToList()
+                };
             }
 
             foreach (var feedUrl in Plugin.Instance.Configuration.Feeds)
             {
-                var feed = new RssFeed(feedUrl);
-                await feed.Refresh(_providerManager, _httpClient, cancellationToken).ConfigureAwait(false);
+                var feed = await new RssFeed().GetFeed(_providerManager, _httpClient, feedUrl, cancellationToken).ConfigureAwait(false);
 
                 _logger.Debug(feedUrl);
 
                 var item = new ChannelItemInfo
                 {
-                    Name = feed.Title,
-                    Overview = feed.Description,
+                    Name = feed.Title == null ? null : feed.Title.Text,
+                    Overview = feed.Description == null ? null : feed.Description.Text,
                     Id = feedUrl,
                     Type = ChannelItemType.Folder
                 };
 
                 if (feed.ImageUrl != null)
                 {
-                    item.ImageUrl = feed.ImageUrl;
+                    item.ImageUrl = feed.ImageUrl.AbsoluteUri;
                 }
-                    
+
                 items.Add(item);
             }
             return new ChannelItemResult
@@ -89,14 +91,72 @@ namespace PodCasts
 
         private async Task<ChannelItemResult> GetChannelItemsInternal(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
+            var items = await GetChannelItemsInternal(query.FolderId, cancellationToken).ConfigureAwait(false);
+
+            if (query.SortBy.HasValue)
+            {
+                if (query.SortDescending)
+                {
+                    switch (query.SortBy.Value)
+                    {
+                        case ChannelItemSortField.Runtime:
+                            items = items.OrderByDescending(i => i.RunTimeTicks ?? 0);
+                            break;
+                        case ChannelItemSortField.PremiereDate:
+                            items = items.OrderByDescending(i => i.PremiereDate ?? DateTime.MinValue);
+                            break;
+                        case ChannelItemSortField.DateCreated:
+                            items = items.OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
+                            break;
+                        case ChannelItemSortField.CommunityRating:
+                            items = items.OrderByDescending(i => i.CommunityRating ?? 0);
+                            break;
+                        default:
+                            items = items.OrderByDescending(i => i.Name);
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (query.SortBy.Value)
+                    {
+                        case ChannelItemSortField.Runtime:
+                            items = items.OrderBy(i => i.RunTimeTicks ?? 0);
+                            break;
+                        case ChannelItemSortField.PremiereDate:
+                            items = items.OrderBy(i => i.PremiereDate ?? DateTime.MinValue);
+                            break;
+                        case ChannelItemSortField.DateCreated:
+                            items = items.OrderBy(i => i.DateCreated ?? DateTime.MinValue);
+                            break;
+                        case ChannelItemSortField.CommunityRating:
+                            items = items.OrderBy(i => i.CommunityRating ?? 0);
+                            break;
+                        default:
+                            items = items.OrderBy(i => i.Name);
+                            break;
+                    }
+                }
+            }
+
+            var list = items.ToList();
+
+            return new ChannelItemResult
+            {
+                Items = list,
+                TotalRecordCount = list.Count
+            };
+        }
+
+        private async Task<IEnumerable<ChannelItemInfo>> GetChannelItemsInternal(string feedUrl, CancellationToken cancellationToken)
+        {
             var items = new List<ChannelItemInfo>();
 
-            var feed = new RssFeed(query.FolderId);
-            await feed.Refresh(_providerManager, _httpClient, cancellationToken).ConfigureAwait(false);
+            var rssItems = await new RssFeed().Refresh(_providerManager, _httpClient, feedUrl, cancellationToken).ConfigureAwait(false);
 
-            foreach (var child in feed.Children.Where(child => string.IsNullOrEmpty(child.PrimaryImagePath)))
+            foreach (var child in rssItems)
             {
-                var podcast = child as IHasRemoteImage;
+                var podcast = (IHasRemoteImage)child;
 
                 var item = new ChannelItemInfo
                 {
@@ -122,13 +182,10 @@ namespace PodCasts
                     RunTimeTicks = child.RunTimeTicks,
                     OfficialRating = child.OfficialRating
                 };
-                    
+
                 items.Add(item);
             }
-            return new ChannelItemResult
-            {
-                Items = items.ToList()
-            };
+            return items;
         }
 
         public IEnumerable<ImageType> GetSupportedChannelImages()
@@ -161,8 +218,20 @@ namespace PodCasts
 
                 MediaTypes = new List<ChannelMediaType>
                 {
-                    ChannelMediaType.Audio
+                    ChannelMediaType.Audio,
+                    ChannelMediaType.Video
                 },
+
+                SupportsSortOrderToggle = true,
+
+                DefaultSortFields = new List<ChannelItemSortField>
+                   {
+                        ChannelItemSortField.CommunityRating,
+                        ChannelItemSortField.Name,
+                        ChannelItemSortField.DateCreated,
+                        ChannelItemSortField.PremiereDate,
+                        ChannelItemSortField.Runtime
+                   }
             };
         }
 
@@ -205,6 +274,47 @@ namespace PodCasts
         public string Description
         {
             get { return string.Empty; }
+        }
+
+        public async Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        {
+            var tasks = Plugin.Instance.Configuration.Feeds.Select(async i =>
+            {
+
+                try
+                {
+                    return await GetChannelItemsInternal(i, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Logger.ErrorException("Error getting channel items", ex);
+
+                    return new List<ChannelItemInfo>();
+                }
+            });
+
+            var items = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            var all = items.SelectMany(i => i).ToList();
+
+            return new ChannelItemResult
+            {
+                Items = all,
+                TotalRecordCount = all.Count
+            };
+        }
+
+        public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
+        {
+            // Looks like the only way we can do this is by getting all, then sorting
+
+            var all = await GetAllMedia(new InternalAllChannelMediaQuery
+            {
+                UserId = request.UserId
+
+            }, cancellationToken).ConfigureAwait(false);
+
+            return all.Items.OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
         }
     }
 }
