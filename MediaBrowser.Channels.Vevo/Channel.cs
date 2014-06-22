@@ -15,7 +15,7 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.Vevo
 {
-    public class Channel : IChannel, IRequiresMediaInfoCallback
+    public class Channel : IChannel, IRequiresMediaInfoCallback, ISupportsLatestMedia
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
@@ -84,10 +84,15 @@ namespace MediaBrowser.Channels.Vevo
 
             if (channel[0] == "artist" || channel[0] == "video")
             {
-                return
+                var i = 
                     await
                         GetVideoListing((channel[0] == "artist" ? "artist" : "video"), channel[1], channel[2], query,
                             cancellationToken).ConfigureAwait(false);
+                return new ChannelItemResult
+                {
+                    Items = i.ToList(),
+                    TotalRecordCount = i.Count()
+                };
             }
 
             return null;
@@ -201,31 +206,36 @@ namespace MediaBrowser.Channels.Vevo
                 {
                     Name = "Most recent",
                     Id = type + "_MostRecent_" + genre,
-                    Type = ChannelItemType.Folder
+                    Type = ChannelItemType.Folder,
+                    ImageUrl = "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/37c7ac817c9222a6ab4d4cef9440d7e3d844a00f/MediaBrowser.Channels.Vevo/Images/most-recent.png"
                 },
                 new ChannelItemInfo
                 {
                     Name = "Most viewed today",
                     Id = type + "_MostViewedToday_" + genre,
-                    Type = ChannelItemType.Folder 
+                    Type = ChannelItemType.Folder,
+                    ImageUrl = "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/37c7ac817c9222a6ab4d4cef9440d7e3d844a00f/MediaBrowser.Channels.Vevo/Images/most-viewed-today.png"
                 },
                 new ChannelItemInfo
                 {
                     Name = "Most viewed this week",
                     Id = type + "_MostViewedThisWeek_" + genre,
-                    Type = ChannelItemType.Folder
+                    Type = ChannelItemType.Folder,
+                    ImageUrl = "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/37c7ac817c9222a6ab4d4cef9440d7e3d844a00f/MediaBrowser.Channels.Vevo/Images/most-viewed-week.png"
                 },
                 new ChannelItemInfo
                 {
                     Name = "Most viewed this month",
                     Id = type + "_MostViewedThisMonth_" + genre,
-                    Type = ChannelItemType.Folder
+                    Type = ChannelItemType.Folder,
+                    ImageUrl = "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/37c7ac817c9222a6ab4d4cef9440d7e3d844a00f/MediaBrowser.Channels.Vevo/Images/most-viewed-month.png"
                 },
                 new ChannelItemInfo
                 {
                     Name = "Most viewed of all time",
                     Id = type + "_MostViewedAllTime_" + genre,
-                    Type = ChannelItemType.Folder 
+                    Type = ChannelItemType.Folder,
+                    ImageUrl = "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/37c7ac817c9222a6ab4d4cef9440d7e3d844a00f/MediaBrowser.Channels.Vevo/Images/most-viewed-all.png"
                 }
             };
 
@@ -268,12 +278,12 @@ namespace MediaBrowser.Channels.Vevo
             return new ChannelItemResult
             {
                 Items = items.ToList(),
-                TotalRecordCount = info.result.Count()
+                TotalRecordCount = info.result.Count() 
             };
         }
 
 
-        private async Task<ChannelItemResult> GetVideoListing(String type, String request, String genre, InternalChannelItemQuery query, CancellationToken cancellationToken)
+        private async Task<IEnumerable<ChannelItemInfo>> GetVideoListing(String type, String request, String genre, InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
             var offset = query.StartIndex.GetValueOrDefault();
             var items = new List<ChannelItemInfo>();
@@ -353,11 +363,7 @@ namespace MediaBrowser.Channels.Vevo
                 }
             }
 
-            return new ChannelItemResult
-            {
-                Items = items.ToList(),
-                TotalRecordCount = items.Count()
-            };
+            return items;
         }
 
        
@@ -401,6 +407,12 @@ namespace MediaBrowser.Channels.Vevo
                 }
             }
             return items;
+        }
+
+        public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
+        {
+            return await GetVideoListing("video", "MostRecent", "nogenre", new InternalChannelItemQuery { Limit = 6 },
+                           cancellationToken).ConfigureAwait(false);
         }
 
 

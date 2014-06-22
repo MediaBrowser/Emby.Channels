@@ -125,7 +125,7 @@ namespace MediaBrowser.Plugins.SoundCloud
         public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
         {
             var downloader = new SoundCloudListingDownloader(_logger, _jsonSerializer, _httpClient);
-            var songs = await downloader.GetTrackList(new InternalChannelItemQuery {FolderId = "latest", Limit = 10}, cancellationToken).ConfigureAwait(false);
+            var songs = await downloader.GetTrackList(new InternalChannelItemQuery {FolderId = "latest", Limit = 6}, cancellationToken).ConfigureAwait(false);
 
             return songs.Select(i => new ChannelItemInfo
             {
