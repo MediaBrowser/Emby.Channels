@@ -101,19 +101,22 @@ namespace MediaBrowser.Channels.Vevo
                 {
                     Name = "Videos",
                     Id = "videos_",
-                    Type = ChannelItemType.Folder
+                    Type = ChannelItemType.Folder,
+                    ImageUrl = "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/9c823cbc120fee7f96ac01af1c1ee31fd823d98d/MediaBrowser.Channels.Vevo/Images/videos.png"
                 },
                 new ChannelItemInfo
                 {
                     Name = "Artists",
                     Id = "artists_",
-                    Type = ChannelItemType.Folder
+                    Type = ChannelItemType.Folder,
+                    ImageUrl = "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/9c823cbc120fee7f96ac01af1c1ee31fd823d98d/MediaBrowser.Channels.Vevo/Images/artists.png"
                 },
                 new ChannelItemInfo
                 {
                     Name = "Genres",
                     Id = "genres_",
-                    Type = ChannelItemType.Folder
+                    Type = ChannelItemType.Folder,
+                    ImageUrl = "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/9c823cbc120fee7f96ac01af1c1ee31fd823d98d/MediaBrowser.Channels.Vevo/Images/genres.png"
                 }
             };
 
@@ -168,13 +171,15 @@ namespace MediaBrowser.Channels.Vevo
                 {
                     Name = "Videos",
                     Id = "video_norequest_" + genre,
-                    Type = ChannelItemType.Folder
+                    Type = ChannelItemType.Folder,
+                    ImageUrl = "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/9c823cbc120fee7f96ac01af1c1ee31fd823d98d/MediaBrowser.Channels.Vevo/Images/videos.png"
                 },
                 new ChannelItemInfo
                 {
                     Name = "Artists",
                     Id = "video_MostViewedToday_" + genre,
-                    Type = ChannelItemType.Folder 
+                    Type = ChannelItemType.Folder,
+                    ImageUrl = "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/9c823cbc120fee7f96ac01af1c1ee31fd823d98d/MediaBrowser.Channels.Vevo/Images/artists.png"
                 }
             };
 
