@@ -214,8 +214,7 @@ namespace MediaBrowser.Plugins.TuneIn
 
                                             items.Add(new ChannelMediaInfo
                                             {
-                                                Path = file.ToLower(),
-                                                AudioCodec = AudioCodec.MP3
+                                                Path = file.ToLower()
                                             });
                                         }
                                     }
@@ -229,8 +228,7 @@ namespace MediaBrowser.Plugins.TuneIn
                             {
                                 items.Add(new ChannelMediaInfo
                                 {
-                                    Path = url,
-                                    AudioCodec = AudioCodec.MP3
+                                    Path = url
                                 });
                             }
                         }
@@ -240,8 +238,7 @@ namespace MediaBrowser.Plugins.TuneIn
 
                             items.Add(new ChannelMediaInfo
                             {
-                                Path = url,
-                                AudioCodec = AudioCodec.MP3
+                                Path = url
                             });
                         }
                     }

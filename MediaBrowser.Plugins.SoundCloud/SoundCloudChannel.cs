@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Plugins.SoundCloud
 {
-    public class SoundCloudChannel : IChannel
+    public class SoundCloudChannel : IChannel, ISupportsLatestMedia
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
@@ -32,13 +32,13 @@ namespace MediaBrowser.Plugins.SoundCloud
             get
             {
                 // Increment as needed to invalidate all caches
-                return "4";
+                return "5";
             }
         }
 
         public string Description
         {
-            get { return string.Empty; }
+            get { return "SoundCloud is the world’s leading social sound platform where anyone can create sounds and share them everywhere."; }
         }
 
         public bool IsEnabledFor(string userId)
@@ -101,6 +101,7 @@ namespace MediaBrowser.Plugins.SoundCloud
                 Type = ChannelItemType.Media,
                 Id = i.id.ToString(),
                 RunTimeTicks = TimeSpan.FromMilliseconds(i.duration).Ticks,
+                DateCreated = DateTime.Parse(i.created_at),
 
                 MediaSources = new List<ChannelMediaInfo>
                 {
@@ -119,6 +120,33 @@ namespace MediaBrowser.Plugins.SoundCloud
                 TotalRecordCount = channelItemInfos.Count() + offset + 1
 
             };
+        }
+
+        public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
+        {
+            var downloader = new SoundCloudListingDownloader(_logger, _jsonSerializer, _httpClient);
+            var songs = await downloader.GetTrackList(new InternalChannelItemQuery {FolderId = "latest", Limit = 10}, cancellationToken).ConfigureAwait(false);
+
+            return songs.Select(i => new ChannelItemInfo
+            {
+                ContentType = ChannelMediaContentType.Song,
+                ImageUrl = i.artwork_url,
+                IsInfiniteStream = false,
+                MediaType = ChannelMediaType.Audio,
+                Name = i.title,
+                Type = ChannelItemType.Media,
+                Id = i.id.ToString(),
+                RunTimeTicks = TimeSpan.FromMilliseconds(i.duration).Ticks,
+                DateCreated = DateTime.Parse(i.created_at),
+
+                MediaSources = new List<ChannelMediaInfo>
+                {
+                    new ChannelMediaInfo
+                    {
+                        Path = i.stream_url + "?client_id=78fd88dde7ebf8fdcad08106f6d56ab6"
+                    }
+                }
+            }).OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
         }
 
         public Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken)
