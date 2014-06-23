@@ -227,7 +227,7 @@ namespace MediaBrowser.Channels.Vineco
 
         public string Name
         {
-            get { return "Vine.co"; }
+            get { return "Vine"; }
         }
 
         public InternalChannelFeatures GetChannelFeatures()

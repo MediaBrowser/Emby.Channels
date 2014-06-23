@@ -24,7 +24,7 @@ namespace MediaBrowser.Channels.Vineco
         /// <value>The name.</value>
         public override string Name
         {
-            get { return "Vine.co"; }
+            get { return "Vine"; }
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace MediaBrowser.Channels.Vineco
         {
             get
             {
-                return "Vine.co Videos in your collection.";
+                return "Vine Videos in your collection.";
             }
         }
 
