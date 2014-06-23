@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.Adult
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.Vevo", "MediaBrowser.Channels.Vevo\MediaBrowser.Channels.Vevo.csproj", "{671AB37B-4FB5-4D74-8C5E-132A0A7122E6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.Vine-co", "MediaBrowser.Channels.Vine-co\MediaBrowser.Channels.Vine-co.csproj", "{4CAFCFB6-EE86-46D8-B710-45F516A4CD95}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -100,6 +102,10 @@ Global
 		{671AB37B-4FB5-4D74-8C5E-132A0A7122E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{671AB37B-4FB5-4D74-8C5E-132A0A7122E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{671AB37B-4FB5-4D74-8C5E-132A0A7122E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CAFCFB6-EE86-46D8-B710-45F516A4CD95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CAFCFB6-EE86-46D8-B710-45F516A4CD95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CAFCFB6-EE86-46D8-B710-45F516A4CD95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CAFCFB6-EE86-46D8-B710-45F516A4CD95}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

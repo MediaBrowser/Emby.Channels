@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+﻿using System.Runtime.CompilerServices;
+using HtmlAgilityPack;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
@@ -35,7 +36,7 @@ namespace MediaBrowser.Plugins.ITV
             get
             {
                 // Increment as needed to invalidate all caches
-                return "5";
+                return "6";
             }
         }
 
@@ -67,6 +68,8 @@ namespace MediaBrowser.Plugins.ITV
             }
             if (folderID[0] == "episodes")
             {
+                query.SortDescending = true;
+                query.SortBy = ChannelItemSortField.PremiereDate;
                 return await GetEpisodeList(query, cancellationToken).ConfigureAwait(false);
             }
             if (folderID[0] == "genres")
@@ -124,7 +127,7 @@ namespace MediaBrowser.Plugins.ITV
                 foreach (var node in page.DocumentNode.SelectNodes("//div[@id='categories-content']/div[@class='item-list']/ul/li"))
                 {
                     var thumb = node.SelectSingleNode(".//div[@class='min-container']//img");
-                    var title = node.SelectSingleNode(".//div[@class='programme-title cell-title']/a").InnerText.Replace("&#039", "'");
+                    var title = node.SelectSingleNode(".//div[@class='programme-title cell-title']/a").InnerText.Replace("&#039;", "'");
                     var url = "http://www.itv.com" + node.SelectSingleNode(".//div[@class='programme-title cell-title']/a").Attributes["href"].Value;
 
                     items.Add(new ChannelItemInfo
@@ -192,6 +195,10 @@ namespace MediaBrowser.Plugins.ITV
                         else if (node.SelectSingleNode(".//param[@name='poster']") != null)
                             thumb = node.SelectSingleNode(".//param[@name='poster']").Attributes["value"].Value;
 
+                        var date = "";
+                        if (node.SelectSingleNode(".//span[contains(@class,'date-display-single')]") != null)
+                            date = node.SelectSingleNode(".//span[contains(@class,'date-display-single')]").Attributes["content"].Value;
+                        
                         // TODO : FIX ME !
                         //var durText = node.SelectSingleNode(".//div[contains(@class,'field-name-field-duration')]//div[contains(@class, 'field-item')]").InnerText;
 
@@ -211,14 +218,18 @@ namespace MediaBrowser.Plugins.ITV
                             ContentType = ChannelMediaContentType.Episode,
                             IsInfiniteStream = false,
                             MediaType = ChannelMediaType.Video,
+                            PremiereDate = date != "" ? DateTime.Parse(date) : DateTime.MinValue
                             //RunTimeTicks = TimeSpan.FromMinutes(d1 + d2).Ticks
                         });
                     }
+
+                    items = items.OrderByDescending(i => i.PremiereDate).ToList();
                 }
                 else
                 {
                     // No Episodes Found! Return Error
                 }
+
             }
 
             return new ChannelItemResult
