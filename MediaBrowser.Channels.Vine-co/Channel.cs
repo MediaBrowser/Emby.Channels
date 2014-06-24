@@ -152,6 +152,8 @@ namespace MediaBrowser.Channels.Vineco
                 }
             }
 
+            items = items.OrderByDescending(i => i.DateCreated).ToList();
+
             return new ChannelItemResult
             {
                 Items = items.ToList()
