@@ -226,12 +226,10 @@ namespace MediaBrowser.Channels.CBS
                         {
                             page.Load(site);
 
-                            //var nodes = page.DocumentNode.SelectNodes("//div[starts-with(@id, \"id-carousel\")]"))
-                           // ;
                             _logger.Debug("URL 2 ! : " + url);
                             items.Add(new ChannelItemInfo
                             {
-                                Name = show,
+                                Name = show + " " + t,
                                 Id = "http://www.cbs.com" + url,
                                 Type = ChannelItemType.Media,
                                 MediaType = ChannelMediaType.Video,

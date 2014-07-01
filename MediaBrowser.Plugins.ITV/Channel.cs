@@ -200,13 +200,21 @@ namespace MediaBrowser.Plugins.ITV
                             date = node.SelectSingleNode(".//span[contains(@class,'date-display-single')]").Attributes["content"].Value;
                         
                         // TODO : FIX ME !
-                        //var durText = node.SelectSingleNode(".//div[contains(@class,'field-name-field-duration')]//div[contains(@class, 'field-item')]").InnerText;
+                        var durText = node.SelectSingleNode(".//div[contains(@class,'field-name-field-duration')]//div[contains(@class, 'field-item')]").InnerText;
 
-                        //var durNode = Regex.Match(durText, "[0-9]");
-                        //_logger.Debug("Duration" +  durNode.Groups[0].Value);
-                        //_logger.Debug("Duration" + durNode.Groups[1].Value);
-                        //var d1 = Convert.ToDouble(durNode.Groups[0].Value) * 60;
-                        //var d2 = Convert.ToDouble(durNode.Groups[1].Value);
+                        var hour = 0;
+                        var hourNode = Regex.Match(durText, "([1-9][0-9]*) hour");
+                        if (hourNode.Success)
+                        {
+                            hour = Convert.ToInt16(hourNode.Groups[0].Value.Replace(" hour", "")) * 60;
+                        }
+
+                        var minute = 0;
+                        var minuteNode = Regex.Match(durText, "([1-9][0-9]*) minute");
+                        if (minuteNode.Success)
+                        {
+                            minute = Convert.ToInt16(minuteNode.Groups[0].Value.Replace(" minute", ""));
+                        }
 
                         items.Add(new ChannelItemInfo
                         {
@@ -218,8 +226,8 @@ namespace MediaBrowser.Plugins.ITV
                             ContentType = ChannelMediaContentType.Episode,
                             IsInfiniteStream = false,
                             MediaType = ChannelMediaType.Video,
-                            PremiereDate = date != "" ? DateTime.Parse(date) : DateTime.MinValue
-                            //RunTimeTicks = TimeSpan.FromMinutes(d1 + d2).Ticks
+                            PremiereDate = date != "" ? DateTime.Parse(date) : DateTime.MinValue,
+                            RunTimeTicks = TimeSpan.FromMinutes(hour + minute).Ticks
                         });
                     }
 
