@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>IPTV Configuration</title>
+</head>
+<body>
+    <div id="IPTVConfigurationPage" data-role="page" class="page type-interior pluginConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="IPTVConfigurationForm">
+
+                    <p>
+                        Add the URLs of PodCast feeds you would like to track here.
+                    </p>
+                    <ul id="ulStreams" data-role="listview" data-inset="true" data-auto-enhanced="false" data-split-icon="minus"></ul>
+
+                    <button type="submit" data-theme="b">Save</button>
+                    <button type="button" onclick="history.back();">Cancel</button>
+
+                </form>
+            </div>
+
+            <div data-role="popup" id="streamPopup" class="ui-content" style="max-width:90%; min-width: 400px" data-overlay-theme="a" data-dismissible="false">
+                <h3 style="text-align: center">New PodCast</h3>
+                <p style="margin-bottom: 20px">
+                    Type or paste in an URL for a valid xml RSS feed.
+                </p>
+                <form id="streamForm">
+                    <label for="name">Name:</label>
+                    <input id="name" type="text" style="min-width: 90%" required />
+
+                    <label for="url">Url:</label>
+                    <input id="url" type="url" style="min-width: 90%" required />
+
+                    <button type="submit" data-theme="b">Add</button>
+                    <button type="button" data-theme="c" onclick="$('#streamPopup').popup('close')">Cancel</button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        <script type="text/javascript">
+
+            var IPTVConfigurationPage = {
+                pluginUniqueId: "c333f63b-83e9-48d2-8b9a-c5aba546fb1e",
+
+                load: function () {
+                    IPTVConfigurationPage.populateStreamList();
+                },
+
+                populateStreamList: function () {
+
+                    var page = $($.mobile.activePage);
+                    var streams = IPTVConfigurationPage.config.streams;
+
+                    var html = "";
+
+                    html += '<li data-role="list-divider" class="mediaLocationsHeader"><h3>Pod Cast Feeds</h3>';
+                    html += '<span data-corners="true" data-shadow="true" data-iconshadow="true" data-wrapperels="span" data-icon="plus" data-iconpos="notext" data-theme="a" data-inline="true" data-mini="true" ';
+                    html += 'class="ui-btn ui-btn-up-c ui-shadow ui-btn-corner-all ui-mini ui-btn-inline ui-btn-icon-notext ui-icon-plus" data-icon="plus" onclick="IPTVConfigurationPage.addStreamPopup();">&nbsp;</span>';
+
+                    for (var i = 0; i < streams.length; i++) {
+
+                        var stream = streams[i];
+
+                        if (stream) {
+
+                            html += "<li>";
+
+                            html += "<a><h3>" + stream.Name + "</h3></a>";
+
+                            html += "<a data-streamname='" + stream.Name + "' onclick='IPTVConfigurationPage.deleteStream(this);' href='#'>Delete</a>";
+
+                            html += "</li>";
+                        }
+                    }
+
+                    $('#ulStreams', page).html(html).listview('refresh');
+
+                },
+
+                deleteStream: function (link) {
+
+                    var name = link.getAttribute('data-streamname');
+
+                    var msg = "Are you sure you wish to delete the " + name + " IPTV stream?";
+
+                    Dashboard.confirm(msg, "Delete Stream", function (result) {
+
+                        if (result) {
+
+                            console.log("Deleting stream " + name);
+
+                            IPTVConfigurationPage.config.streams = $.grep(IPTVConfigurationPage.config.streams, function (value) {
+                                return value != name;
+                            });
+
+                            IPTVConfigurationPage.populateStreamList();
+                        }
+                    });
+                },
+
+                addStreamPopup: function () {
+                    var page = $($.mobile.activePage);
+                    $('#name', page).val("").focus();
+                    $('#streamPopup', page).popup('open');
+                    $('#name', page).focus();
+                },
+
+            };
+
+            $('#IPTVConfigurationPage').on('pageshow', function (event) {
+
+                Dashboard.showLoadingMsg();
+
+                var page = this;
+
+                ApiClient.getPluginConfiguration(IPTVConfigurationPage.pluginUniqueId).done(function (config) {
+
+                    IPTVConfigurationPage.config = config;
+
+                    IPTVConfigurationPage.load();
+
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+
+            $('#streamForm').on('submit', function (e) {
+                var page = $($.mobile.activePage);
+                $('#streamPopup', page).popup('close');
+                var form = this;
+                IPTVConfigurationPage.config.streams.push($('#stream', form).val());
+                IPTVConfigurationPage.populateStreamList();
+                return false;
+            });
+
+            $('#IPTVConfigurationForm').on('submit', function (e) {
+
+                Dashboard.showLoadingMsg();
+
+
+                ApiClient.getPluginConfiguration(IPTVConfigurationPage.pluginUniqueId).done(function (config) {
+                    var page = $($.mobile.activePage);
+
+                    config.Streams = IPTVConfigurationPage.config.streams;
+
+                    ApiClient.updatePluginConfiguration(IPTVConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                });
+
+                // Disable default form submission
+                return false;
+            });
+        </script>
+    </div>
+</body>
+</html>

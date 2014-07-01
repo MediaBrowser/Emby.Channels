@@ -8,5 +8,8 @@ namespace MediaBrowser.Plugins.SoundCloud.Configuration
     /// </summary>
     public class PluginConfiguration : BasePluginConfiguration
     {
+        public String Username { get; set; }
+        public String Password { get; set; }
+        public String PwData { get; set; }
     }
 }

@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Serialization;
+using HtmlAgilityPack;
 
 namespace MediaBrowser.Channels.Vevo
 {
@@ -372,6 +373,7 @@ namespace MediaBrowser.Channels.Vevo
         {
             var items = new List<ChannelMediaInfo>();
             Info.VideoNode info;
+            var page = new HtmlDocument();
 
             using (var site = await _httpClient.Get("http://videoplayer.vevo.com/VideoService/AuthenticateVideo?isrc=" + id, CancellationToken.None).ConfigureAwait(false))
             {
@@ -390,23 +392,48 @@ namespace MediaBrowser.Channels.Vevo
                     foreach (var v in info.video.videoVersions)
                     {
                         var data = v.data;
-
-                        if (v.sourceType == 4)
+        
+                        if (v.sourceType == 2)
                         {
-                            var urlNode = Regex.Match(data, "url=\"(.*?)\"", RegexOptions.IgnoreCase);
-                            var url = urlNode.Groups[0].Value.Replace(@"\", "").Replace("url=", "").Replace("\"", "");
+                            page.LoadHtml(data);
 
-                            if (url == "") continue;
-
-                            items.Add(new ChannelMediaInfo
+                            foreach (var node in page.DocumentNode.SelectNodes("//rendition"))
                             {
-                                Path = url
-                            });
+                                var url = node.Attributes["url"].Value;
+                                var width = node.Attributes["frameWidth"].Value;
+                                var height = node.Attributes["frameheight"].Value;
+                                var vBit = node.Attributes["videoBitrate"].Value;
+                                var aBit = node.Attributes["audioBitrate"].Value;
+                                var vCodec = node.Attributes["videoCodec"].Value;
+                                var aCodec = node.Attributes["audioCodec"].Value;
+                                var aSample = node.Attributes["audioSampleRate"].Value;
+
+                                if (!url.Contains("http://h264-aka.vevo.com") && url != "")
+                                {
+
+                                    _logger.Debug("url - " + url);
+                                    _logger.Debug("width - " + width);
+                                    _logger.Debug("height - " + height);
+                                    _logger.Debug("bitrate  - " + vBit);
+
+                                    items.Add(new ChannelMediaInfo
+                                    {
+                                        Path = url,
+                                        Width = Convert.ToInt16(width),
+                                        Height = Convert.ToInt16(height),
+                                        VideoBitrate = Convert.ToInt32(vBit),
+                                        AudioBitrate = Convert.ToInt32(aBit),
+                                        VideoCodec = vCodec,
+                                        AudioCodec = aCodec,
+                                        AudioSampleRate = Convert.ToInt32(aSample)
+                                    });
+                                }
+                            }
                         }
                     }
                 }
             }
-            return items;
+            return items.OrderByDescending(i => i.VideoBitrate);
         }
 
         public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)

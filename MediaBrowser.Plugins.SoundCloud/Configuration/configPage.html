@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>SoundCloud</title>
+</head>
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage soundcloudConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <form class="soundcloudConfigurationForm">
+
+                    <ul class="ulForm" data-role="listview">
+                        <li>
+                            <label for="txtUsername">
+                                Username :
+                            </label>
+                            <input type="text" id="txtUsername" name="txtUsername" />
+                        </li>
+
+                        <li>
+                            <label for="txtPassword">
+                                Password :
+                            </label>
+                            <input type="password" id="txtPassword" name="txtPassword" />
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b">Save</button>
+                            <button type="button" onclick="history.back();">Cancel</button>
+                        </li>
+                    </ul>
+
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            
+            var VimeoConfigurationPage = {
+                pluginUniqueId: "bb250039-f5b1-45e2-b10a-a64ae170411b"
+            };
+
+            $('.soundcloudConfigurationPage').on('pageshow', function (event) {
+
+                var page = this;
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.getPluginConfiguration(VimeoConfigurationPage.pluginUniqueId).done(function (config) {
+
+                    $('#txtUsername', page).val(config.Username || '');
+                    $('#txtPassword', page).val(config.Password || '');
+                });
+
+                Dashboard.hideLoadingMsg();
+            });
+
+            $('.soundcloudConfigurationForm').on('submit', function (e) {
+
+                Dashboard.showLoadingMsg();
+
+                var form = this;
+
+                ApiClient.getPluginConfiguration(VimeoConfigurationPage.pluginUniqueId).done(function (config) {
+
+                    var Username = $('#txtUsername', form).val();
+                    var Password = $('#txtPassword', form).val();
+
+                    config.Username = Username ? Username : null;
+                    config.Password = Password ? Password : null;
+                    
+                    ApiClient.updatePluginConfiguration(VimeoConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                    
+                    Dashboard.hideLoadingMsg();
+                });
+
+                // Disable default form submission
+                return false;
+            });
+        </script>
+    </div>
+</body>
+</html>

@@ -226,12 +226,10 @@ namespace MediaBrowser.Channels.CBS
                         {
                             page.Load(site);
 
-                            //var nodes = page.DocumentNode.SelectNodes("//div[starts-with(@id, \"id-carousel\")]"))
-                           // ;
                             _logger.Debug("URL 2 ! : " + url);
                             items.Add(new ChannelItemInfo
                             {
-                                Name = show,
+                                Name = show + " " + t,
                                 Id = "http://www.cbs.com" + url,
                                 Type = ChannelItemType.Media,
                                 MediaType = ChannelMediaType.Video,
@@ -272,12 +270,18 @@ namespace MediaBrowser.Channels.CBS
                     {
                         page.Load(xmlSite);
 
-                        /*var xmlNgr = new XmlNamespaceManager(page.NameTable);
-                        xmlNgr.AddNamespace("a", "http://www.w3.org/2005/SMIL21/Language");
+                        var geoNode = page.DocumentNode.SelectSingleNode("//seq/ref[@title=\"Geographic Restriction\"]");
 
-                        var rtmp_urlNode = page.DocumentElement.SelectSingleNode("//a:meta[starts-with(@base, \"rtmp\")]",
-                            xmlNgr);*/
-
+                        if (geoNode == null)
+                        {
+                            items.Add(new ChannelMediaInfo
+                            {
+                                Path = geoNode.Attributes["src"].Value,
+                                Protocol = MediaProtocol.Http
+                            });
+                            return items;
+                        }
+                        
                         
                         var rtmp_urlNode = page.DocumentNode.SelectSingleNode("//meta[starts-with(@base, \"rtmp\")]");
                         var rtmp_url = "";
@@ -308,29 +312,6 @@ namespace MediaBrowser.Channels.CBS
                         }
 
                     }
-
-                    /*var request = new HttpRequestOptions
-                    {
-                        Url = "http://mercury.itv.com/PlaylistService.svc",
-                        Host = "mercury.itv.com",
-                        RequestContentType = "text/xml; charset=utf-8",
-                        RequestContentBytes = BitConverter.GetBytes(SM_TEMPLATE.Length),
-                        RequestContent = SM_TEMPLATE,
-                        Referer = "http://www.itv.com/mercury/Mercury_VideoPlayer.swf?v=1.6.479/[[DYNAMIC]]/2"
-                    };
-                    
-                    request.RequestHeaders.Add("SOAPAction", "http://tempuri.org/PlaylistService/GetPlaylist");
-
-                    using (var player = _httpClient.SendAsync(request, "POST"))
-                    {
-                        using (var reader2 = new StreamReader(site))
-                        {
-                            var html2 = await reader2.ReadToEndAsync().ConfigureAwait(false);
-
-                            _logger.Debug(html2);
-                        }
-                    }*/
-
                 }
 
                 return items.OrderByDescending(i => i.VideoBitrate ?? 0);
