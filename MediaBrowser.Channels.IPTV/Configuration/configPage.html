@@ -11,7 +11,7 @@
                 <form id="IPTVConfigurationForm">
 
                     <p>
-                        Add the URLs of PodCast feeds you would like to track here.
+                        Add steams you would like here.
                     </p>
                     <ul id="ulStreams" data-role="listview" data-inset="true" data-auto-enhanced="false" data-split-icon="minus"></ul>
 
@@ -22,16 +22,25 @@
             </div>
 
             <div data-role="popup" id="streamPopup" class="ui-content" style="max-width:90%; min-width: 400px" data-overlay-theme="a" data-dismissible="false">
-                <h3 style="text-align: center">New PodCast</h3>
+                <h3 style="text-align: center">New Stream</h3>
                 <p style="margin-bottom: 20px">
-                    Type or paste in an URL for a valid xml RSS feed.
+                    Type or paste in an URL.
                 </p>
                 <form id="streamForm">
-                    <label for="name">Name:</label>
-                    <input id="name" type="text" style="min-width: 90%" required />
+                    <label for="Name">Name:</label>
+                    <input id="Name" type="text" style="min-width: 90%" required />
 
-                    <label for="url">Url:</label>
-                    <input id="url" type="url" style="min-width: 90%" required />
+                    <label for="URL">Url:</label>
+                    <input id="URL" type="url" style="min-width: 90%" required />
+                    
+                    <label for="Image">Image URL:</label>
+                    <input id="Image" type="text" style="min-width: 90%" />
+                    
+                    <label for="Type">Image URL:</label>
+                    <select id="Type" style="min-width: 90%">
+                        <option value="HTTP">HTTP</option>
+                        <option value="RTMP">RTMP</option>
+                    </select>
 
                     <button type="submit" data-theme="b">Add</button>
                     <button type="button" data-theme="c" onclick="$('#streamPopup').popup('close')">Cancel</button>
@@ -58,7 +67,7 @@
 
                     var html = "";
 
-                    html += '<li data-role="list-divider" class="mediaLocationsHeader"><h3>Pod Cast Feeds</h3>';
+                    html += '<li data-role="list-divider" class="mediaLocationsHeader"><h3>Streams</h3>';
                     html += '<span data-corners="true" data-shadow="true" data-iconshadow="true" data-wrapperels="span" data-icon="plus" data-iconpos="notext" data-theme="a" data-inline="true" data-mini="true" ';
                     html += 'class="ui-btn ui-btn-up-c ui-shadow ui-btn-corner-all ui-mini ui-btn-inline ui-btn-icon-notext ui-icon-plus" data-icon="plus" onclick="IPTVConfigurationPage.addStreamPopup();">&nbsp;</span>';
 
@@ -94,9 +103,16 @@
 
                             console.log("Deleting stream " + name);
 
-                            IPTVConfigurationPage.config.streams = $.grep(IPTVConfigurationPage.config.streams, function (value) {
-                                return value != name;
-                            });
+                            var index = 0;
+
+                            for (var i = 0, length = IPTVConfigurationPage.config.streams.length; i < length; i++) {
+
+                                if (IPTVConfigurationPage.config.streams[i].Name == name) {
+                                    index = i;
+                                }
+                            }
+
+                            IPTVConfigurationPage.config.streams.splice(index, 1);
 
                             IPTVConfigurationPage.populateStreamList();
                         }
@@ -132,8 +148,38 @@
                 var page = $($.mobile.activePage);
                 $('#streamPopup', page).popup('close');
                 var form = this;
-                IPTVConfigurationPage.config.streams.push($('#stream', form).val());
-                IPTVConfigurationPage.populateStreamList();
+
+
+                var newEntry = true;
+                var name = $('#Name', page).val();
+                var image = $('#Image', page).val();
+                var url = $('#URL', page).val();
+                var type = $('#Type', page).val();
+
+                if (IPTVConfigurationPage.config.streams.length > 0) {
+
+                    for (var i = 0, length = IPTVConfigurationPage.config.streams.length; i < length; i++) {
+                        if (IPTVConfigurationPage.config.streams[i].Name == name) {
+                            newEntry = false;
+                            IPTVConfigurationPage.config.streams[i].Image = image;
+                            IPTVConfigurationPage.config.streams[i].URL = url;
+                            IPTVConfigurationPage.config.streams[i].Type = type;
+                        }
+                    }
+                }
+
+                if (newEntry) {
+
+                    var conf = {};
+
+                    conf.Name = name;
+                    conf.Image = image;
+                    conf.URL = url;
+                    conf.Type = type;
+                    IPTVConfigurationPage.config.streams.push(conf);
+
+                }
+                    IPTVConfigurationPage.populateStreamList();
                 return false;
             });
 

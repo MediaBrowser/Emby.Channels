@@ -332,7 +332,9 @@ namespace MediaBrowser.Channels.Vevo
                     
                     var overview = "";
                     if (artists.Count == 1)
+                    {
                         overview = "Artist: " + artists[0].name;
+                    }
                     else if (artists.Count > 1)
                     {
                         overview = "Artists: ";
@@ -342,7 +344,7 @@ namespace MediaBrowser.Channels.Vevo
                         }
                         // Strip last ,
                     }
-                    
+
                     if (featuredArtists.Count > 0)
                     {
                         overview = "\nFeaturing: ";

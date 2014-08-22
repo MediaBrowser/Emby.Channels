@@ -219,6 +219,7 @@ namespace MediaBrowser.Plugins.ITV
                         items.Add(new ChannelItemInfo
                         {
                             Name = title + " (Season: " + seasonNumber + ", Ep: " + episodeNumber + ")",
+
                             ImageUrl = thumb != "" ? thumb.Replace("player_image_thumb_standard", "posterframe") : "",
                             Id = "http://www.itv.com" + id,
                             Overview = overview,
