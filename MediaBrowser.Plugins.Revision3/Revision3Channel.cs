@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 
 namespace MediaBrowser.Plugins.Revision3
 {
@@ -143,57 +145,51 @@ namespace MediaBrowser.Plugins.Revision3
 
         public async Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo(string id, CancellationToken cancellationToken)
         {
-            using (
-                var stream =
-                    await
-                        _httpClient.Get("http://revision3.com/" + id, cancellationToken)
+            var page = new HtmlDocument();
+            var items = new List<ChannelMediaInfo>();
+
+            using (var stream = await
+                        _httpClient.Get("http://revision3.com/api/oembed/?url=http://revision3.com/" + id + "/&format=json", cancellationToken)
                             .ConfigureAwait(false))
             {
                 using (var reader = new StreamReader(stream))
                 {
                     var html = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                    var HD = Regex.Match(html, "value=\"(?<url>.*)\">MP4: HD", RegexOptions.IgnoreCase);
-                    var Large = Regex.Match(html, "value=\"(?<url>.*)\">MP4: Large", RegexOptions.IgnoreCase);
-                    var Phone = Regex.Match(html, "value=\"(?<url>.*)\">MP4: Phone", RegexOptions.IgnoreCase);
-                    var webHD = Regex.Match(html, "value=\"(?<url>.*)\">WebM: HD", RegexOptions.IgnoreCase);
-                    var webLarge = Regex.Match(html, "value=\"(?<url>.*)\">WebM: Large", RegexOptions.IgnoreCase);
-                    var webPhone = Regex.Match(html, "value=\"(?<url>.*)\">WebM: Phone", RegexOptions.IgnoreCase);
+                    var idNode = Regex.Match(html, "videoId=(?<id>.*)&e", RegexOptions.IgnoreCase);
 
-                    var video = new List<ChannelMediaInfo>();
+                    using (var video = await
+                        _httpClient.Get(
+                            "http://revision3.com/api/flash?video_id=" + idNode.Groups["id"].Value,
+                            cancellationToken)
+                            .ConfigureAwait(false))
+                    {
+                        HtmlNode.ElementsFlags.Remove("link");
+                        page.Load(video);
 
-                    if (HD.Success)
-                    {
-                        var url = HD.Groups["url"].Value;
-                        video.Add(new ChannelMediaInfo { Path = url });
-                    }
-                    if (Large.Success)
-                    {
-                        var url = Large.Groups["url"].Value;
-                        video.Add(new ChannelMediaInfo { Path = url });
-                    }
-                    if (Phone.Success)
-                    {
-                        var url = Phone.Groups["url"].Value;
-                        video.Add(new ChannelMediaInfo { Path = url });
-                    }
-                    if (webHD.Success)
-                    {
-                        var url = webHD.Groups["url"].Value;
-                        video.Add(new ChannelMediaInfo { Path = url });
-                    }
-                    if (webLarge.Success)
-                    {
-                        var url = webLarge.Groups["url"].Value;
-                        video.Add(new ChannelMediaInfo { Path = url });
-                    }
-                    if (webPhone.Success)
-                    {
-                        var url = webPhone.Groups["url"].Value;
-                        video.Add(new ChannelMediaInfo { Path = url });
+                        var options = page.DocumentNode.Descendants("link").Skip(1)
+                        .Select(n => new
+                        {
+                            Text = n.InnerText
+                        }).ToList();
+
+                        foreach (var o in options)
+                        {
+                            var url = o.Text;
+                            _logger.Debug(url);
+                            //if (url.Contains("mp4"))
+                            //{
+                            items.Add(new ChannelMediaInfo
+                            {
+                                Path = url,
+                                Protocol = MediaProtocol.Http
+                            });
+                            //}
+                        }
                     }
 
-                    return video;
+                    
+                    return items;
                 }
             }
         }
