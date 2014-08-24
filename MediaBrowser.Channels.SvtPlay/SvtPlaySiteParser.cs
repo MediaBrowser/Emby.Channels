@@ -7,7 +7,7 @@ namespace MediaBrowser.Channels.SvtPlay
 {
     public class SvtPlaySiteParser
     {
-        internal static List<ChannelItemInfo> ParseNode(HtmlNode node)
+        internal static List<ChannelItemInfo> ParseNode(HtmlNode node, bool abroadOnly)
         {
             var items = new List<ChannelItemInfo>();
 
@@ -19,7 +19,7 @@ namespace MediaBrowser.Channels.SvtPlay
             if (playableArticles != null)
                 foreach (var article in playableArticles)
                 {
-                    var playable = ParsePlayableArticle(article);
+                    var playable = ParsePlayableArticle(article, abroadOnly);
                     if (playable != null)
                         items.Add(playable);
                 }
@@ -52,8 +52,16 @@ namespace MediaBrowser.Channels.SvtPlay
             return folder;
         }
 
-        private static ChannelItemInfo ParsePlayableArticle(HtmlNode node)
+        private static ChannelItemInfo ParsePlayableArticle(HtmlNode node, bool abroadOnly)
         {
+            var mobile = node.Attributes["data-mobile"] != null ? node.Attributes["data-mobile"].Value == "true" : false;
+            if (!mobile)
+                return null;
+
+            var abroad = node.Attributes["data-abroad"] != null ? node.Attributes["data-abroad"].Value == "true" : false;
+            if (abroadOnly && !abroad)
+                return null;
+
             var info = new ChannelItemInfo();
 
             info.Type = ChannelItemType.Media;
@@ -120,7 +128,7 @@ namespace MediaBrowser.Channels.SvtPlay
             info.Type = ChannelItemType.Folder;
             var nameNode = node.SelectSingleNode(".//h2[contains(@class, 'play_h4')]");
             info.Name = nameNode != null ? nameNode.InnerText : "";
-            
+
             var a = node.SelectSingleNode(".//a[contains(@class, 'play_videolist-element__link')]");
             if (a == null || a.Attributes["href"] == null)
                 return null;

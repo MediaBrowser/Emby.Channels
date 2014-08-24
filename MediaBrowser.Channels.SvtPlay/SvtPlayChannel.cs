@@ -175,22 +175,25 @@ namespace MediaBrowser.Channels.SvtPlay
                 doc.Load(stream, Encoding.UTF8);
 
                 _logger.Info("Parsing Query: {0}", query);
+
+                var abroadOnly = SvtPlay.Plugin.Instance.Configuration.AvailableAbroadOnly.GetValueOrDefault();
+
                 switch (query)
                 {
                     case "recommended":
-                        return SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//section[contains(@id, 'recommended-videos')]"));
+                        return SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//section[contains(@id, 'recommended-videos')]"), abroadOnly);
                     case "popular":
-                        return SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'popular-videos')]"));
+                        return SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'popular-videos')]"), abroadOnly);
                     case "latest":
-                        return SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'latest-videos')]"));
+                        return SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'latest-videos')]"), abroadOnly);
                     case "lastChance":
-                        return SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'last-chance-videos')]"));
+                        return SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'last-chance-videos')]"), abroadOnly);
                     case "live":
-                        return SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'live-channels')]"));
+                        return SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'live-channels')]"), abroadOnly);
                     case "categories":
-                        return SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'categories')]"));
+                        return SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'categories')]"), abroadOnly);
                     default:
-                        return SvtPlaySiteParser.ParseNode(null);
+                        return SvtPlaySiteParser.ParseNode(null, abroadOnly);
                 }
             }
         }
@@ -204,12 +207,14 @@ namespace MediaBrowser.Channels.SvtPlay
                 doc.Load(stream, Encoding.UTF8);
             }
 
-            var recommended = SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//section[contains(@id, 'recommended-videos')]"));
-            var popular = SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'popular-videos')]"));
-            var latest = SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'latest-videos')]"));
-            var lastChance = SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'last-chance-videos')]"));
-            var live = SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'live-channels')]"));
-            var catgories = SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'categories')]"));
+            var abroadOnly = SvtPlay.Plugin.Instance.Configuration.AvailableAbroadOnly.GetValueOrDefault();
+
+            var recommended = SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//section[contains(@id, 'recommended-videos')]"), abroadOnly);
+            var popular = SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'popular-videos')]"), abroadOnly);
+            var latest = SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'latest-videos')]"), abroadOnly);
+            var lastChance = SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'last-chance-videos')]"), abroadOnly);
+            var live = SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'live-channels')]"), abroadOnly);
+            var catgories = SvtPlaySiteParser.ParseNode(doc.DocumentNode.SelectSingleNode("//div[contains(@id, 'categories')]"), abroadOnly);
 
             var items = new List<ChannelItemInfo>();
 
