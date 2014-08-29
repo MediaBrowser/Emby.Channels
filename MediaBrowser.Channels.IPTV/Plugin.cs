@@ -1,13 +1,7 @@
-﻿using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Linq;
-using MediaBrowser.Channels.IPTV.Configuration;
+﻿using MediaBrowser.Channels.IPTV.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.IPTV
@@ -31,7 +25,7 @@ namespace MediaBrowser.Channels.IPTV
         /// <value>The name.</value>
         public override string Name
         {
-            get { return "IPTV"; }
+            get { return "Video Bookmarks"; }
         }
 
         /// <summary>
@@ -42,7 +36,7 @@ namespace MediaBrowser.Channels.IPTV
         {
             get
             {
-                return "IPTV in your collection.";
+                return "Bookmark your favorite internet videos";
             }
         }
 
