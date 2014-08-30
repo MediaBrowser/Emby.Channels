@@ -162,7 +162,7 @@ namespace PodCasts
                 {
                     Name = child.Name,
                     Overview = child.Overview,
-                    ImageUrl = podcast.RemoteImagePath,
+                    ImageUrl = podcast.RemoteImagePath ?? "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/Podcasts/Images/thumb.png",
                     Id = child.Id.ToString("N"),
                     Type = ChannelItemType.Media,
                     ContentType = ChannelMediaContentType.Podcast,
