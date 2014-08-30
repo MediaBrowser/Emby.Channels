@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>SvtPlay</title>
+</head>
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage svtPlayConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <form class="svtPlayConfigurationForm">
+
+                    <ul class="ulForm" data-role="listview">
+                        <li>
+                           
+                            <input type="checkbox" id="chkOnlyAllowedAbroad" name="chkOnlyAllowedAbroad" data-mini="true" />
+                            <label for="chkOnlyAllowedAbroad">Dont show items that are only available in Sweden</label>
+                            <div class="fieldDescription">
+                                Enable this if you use this plugin from outside Sweden
+                            </div>
+                        </li>
+
+                        <li>
+                            <button type="submit" data-theme="b">Save</button>
+                            <button type="button" onclick="history.back();">Cancel</button>
+                        </li>
+                    </ul>
+
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            var SvtPlayConfigurationPage = {
+                pluginUniqueId: "f7c8cb08-3723-442b-ae3b-123bffc46969"
+            };
+
+            $('.svtPlayConfigurationPage').on('pageshow', function (event) {
+
+                Dashboard.showLoadingMsg();
+
+                var page = this;
+
+                ApiClient.getPluginConfiguration(SvtPlayConfigurationPage.pluginUniqueId).done(function (config) {
+
+                    $('#chkOnlyAllowedAbroad', page).checked(config.AvailableAbroadOnly || false);
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+
+            $('.svtPlayConfigurationForm').on('submit', function (e) {
+
+                Dashboard.showLoadingMsg();
+
+                var form = this;
+
+                ApiClient.getPluginConfiguration(SvtPlayConfigurationPage.pluginUniqueId).done(function (config) {
+
+                    config.AvailableAbroadOnly = $('#chkOnlyAllowedAbroad', form).checked();
+
+                    ApiClient.updatePluginConfiguration(SvtPlayConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                });
+
+                // Disable default form submission
+                return false;
+            });
+        </script>
+    </div>
+</body>
+</html>
