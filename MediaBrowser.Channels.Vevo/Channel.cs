@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Security.Policy;
 using System.Text.RegularExpressions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
@@ -377,7 +378,12 @@ namespace MediaBrowser.Channels.Vevo
             Info.VideoNode info;
             var page = new HtmlDocument();
 
-            using (var site = await _httpClient.Get("http://videoplayer.vevo.com/VideoService/AuthenticateVideo?isrc=" + id, CancellationToken.None).ConfigureAwait(false))
+            using (var site = await _httpClient.Get(new HttpRequestOptions
+            {
+                Url ="http://videoplayer.vevo.com/VideoService/AuthenticateVideo?isrc=" + id,
+                UserAgent = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36",
+                Host = "videoplayer.vevo.com"
+            }).ConfigureAwait(false))
             {
                 info = _jsonSerializer.DeserializeFromStream<Info.VideoNode>(site);
 
@@ -423,11 +429,11 @@ namespace MediaBrowser.Channels.Vevo
                                         Path = url,
                                         Width = Convert.ToInt16(width),
                                         Height = Convert.ToInt16(height),
-                                        VideoBitrate = Convert.ToInt32(vBit),
-                                        AudioBitrate = Convert.ToInt32(aBit),
+                                        //VideoBitrate = Convert.ToInt32(vBit),
+                                        //AudioBitrate = Convert.ToInt32(aBit),
                                         VideoCodec = vCodec,
                                         AudioCodec = aCodec,
-                                        AudioSampleRate = Convert.ToInt32(aSample)
+                                        //AudioSampleRate = Convert.ToInt32(aSample)
                                     });
                                 }
                             }
@@ -435,7 +441,7 @@ namespace MediaBrowser.Channels.Vevo
                     }
                 }
             }
-            return items.OrderByDescending(i => i.VideoBitrate);
+            return items;
         }
 
         public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)

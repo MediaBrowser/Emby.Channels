@@ -54,6 +54,8 @@ namespace MediaBrowser.Channels.IPTV.Api
             });
 
             Plugin.Instance.Configuration.Bookmarks = list.ToArray();
+
+            Plugin.Instance.SaveConfiguration();
         }
     }
 }
