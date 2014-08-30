@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Channels.IPTV.Configuration;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Channels.IPTV.Configuration;
+using MediaBrowser.Model.MediaInfo;
 using ServiceStack;
+using System;
+using System.Linq;
 
-
-namespace MediaBrowser.Channels.IPTV
+namespace MediaBrowser.Channels.IPTV.Api
 {
-    [Route("/Notification/NotifyMyAndroid/Test/{UserID}", "POST", Summary = "Tests NotifyMyAndroid")]
+    [Route("/Iptv/Bookmarks", "POST", Summary = "Bookmarks a video")]
     public class VideoSend : IReturnVoid
     {
         [ApiMember(Name = "Name", Description = "Name", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "POST")]
@@ -22,34 +16,44 @@ namespace MediaBrowser.Channels.IPTV
         [ApiMember(Name = "Path", Description = "Path", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Path { get; set; }
 
+        [ApiMember(Name = "UserId", Description = "UserId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string UserId { get; set; }
+
+        [ApiMember(Name = "Protocol", Description = "Protocol", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public MediaProtocol Protocol { get; set; }
+
         [ApiMember(Name = "ImagePath", Description = "ImagePath", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string ImagePath { get; set; }
     }
 
     class ServerApiEndpoints : IRestfulService
     {
-        private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
-
-        public ServerApiEndpoints(ILogManager logManager, IHttpClient httpClient)
+        public void Post(VideoSend request)
         {
-            _logger = logManager.GetLogger(GetType().Name);
-            _httpClient = httpClient;
-        }
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                throw new ArgumentException("Name cannot be empty.");
+            }
+            if (string.IsNullOrWhiteSpace(request.Path))
+            {
+                throw new ArgumentException("Path cannot be empty.");
+            }
+            if (string.IsNullOrWhiteSpace(request.UserId))
+            {
+                throw new ArgumentException("UserId cannot be empty.");
+            }
 
-        public object Post(VideoSend request)
-        {
-            Plugin.Instance.Configuration.streams.Add(new Streams
+            var list = Plugin.Instance.Configuration.Bookmarks.ToList();
+
+            list.Add(new Bookmark
             {
                 Name = request.Name,
                 Image = request.ImagePath,
-                URL = request.Path,
-                Type = "HTTP"
+                Path = request.Path,
+                Protocol = request.Protocol
             });
 
-            
-
-            return "added";
+            Plugin.Instance.Configuration.Bookmarks = list.ToArray();
         }
     }
 }
