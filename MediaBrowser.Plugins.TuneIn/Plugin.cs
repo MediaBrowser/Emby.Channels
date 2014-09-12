@@ -19,7 +19,7 @@ namespace MediaBrowser.Plugins.TuneIn
 
             if (Instance.Configuration.GUID == null)
             {
-                Instance.Configuration.GUID = new Guid().ToString();
+                Instance.Configuration.GUID = Guid.NewGuid().ToString();
                 Instance.SaveConfiguration();
             }
         }

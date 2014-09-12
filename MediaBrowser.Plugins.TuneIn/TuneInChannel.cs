@@ -39,7 +39,7 @@ namespace MediaBrowser.Plugins.TuneIn
             get
             {
                 // Increment as needed to invalidate all caches
-                return "1.334e2342";
+                return "12";
             }
         }
 
@@ -70,6 +70,7 @@ namespace MediaBrowser.Plugins.TuneIn
                         Name = "My Favorites",
                         Id = "preset_",
                         Type = ChannelItemType.Folder,
+                        ImageUrl = GetDefaultImages("My Favorites")
                     });
                 }
             }
@@ -188,6 +189,7 @@ namespace MediaBrowser.Plugins.TuneIn
                                 Name = node.Attributes["text"].Value,
                                 Id = "subcat_" + node.Attributes["url"].Value,
                                 Type = ChannelItemType.Folder,
+                                ImageUrl = GetDefaultImages(node.Attributes["text"].Value)
                             });
                         }
                     }
@@ -430,5 +432,28 @@ namespace MediaBrowser.Plugins.TuneIn
         {
             return Plugin.Instance.Configuration.LatLon + "-" + Plugin.Instance.Configuration.Username;
         }
+
+        public String GetDefaultImages(String name)
+        {
+            if (name == "Local Radio")
+                return "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/master/MediaBrowser.Plugins.TuneIn/Images/tunein-localradio.png";
+            if (name == "By Language")
+                return "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/master/MediaBrowser.Plugins.TuneIn/Images/tunein-bylanguage.png";
+            if (name == "By Location")
+                return "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/master/MediaBrowser.Plugins.TuneIn/Images/tunein-bylocation.png";
+            if (name == "Music")
+                return "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/master/MediaBrowser.Plugins.TuneIn/Images/tunein-music.png";
+            if (name == "My Favorites")
+                return "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/master/MediaBrowser.Plugins.TuneIn/Images/tunein-myfavs.png";
+            if (name == "Podcasts")
+                return "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/master/MediaBrowser.Plugins.TuneIn/Images/tunein-podcasts.png";
+            if (name == "Sports")
+                return "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/master/MediaBrowser.Plugins.TuneIn/Images/tunein-sports.png";
+            if (name == "Talk")
+                return "https://raw.githubusercontent.com/snazy2000/MediaBrowser.Channels/master/MediaBrowser.Plugins.TuneIn/Images/tunein-talk.png";
+
+            return "";
+        }
+
     }
 }
