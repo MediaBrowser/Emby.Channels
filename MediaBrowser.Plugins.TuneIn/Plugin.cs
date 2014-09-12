@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Plugins.TuneIn.Configuration;
@@ -15,7 +16,12 @@ namespace MediaBrowser.Plugins.TuneIn
             : base(applicationPaths, xmlSerializer)
         {
             Instance = this;
-            
+
+            if (Instance.Configuration.GUID == null)
+            {
+                Instance.Configuration.GUID = new Guid().ToString();
+                Instance.SaveConfiguration();
+            }
         }
 
         /// <summary>

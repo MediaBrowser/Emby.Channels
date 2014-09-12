@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Xml.Schema;
 using HtmlAgilityPack;
@@ -18,15 +19,19 @@ using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Plugins.TuneIn
 {
-    public class TuneInChannel : IChannel, IRequiresMediaInfoCallback
+    public class TuneInChannel : IChannel, IRequiresMediaInfoCallback, IHasCacheKey
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
+
+        private String partnerid { get; set; }
 
         public TuneInChannel(IHttpClient httpClient, ILogManager logManager)
         {
             _httpClient = httpClient;
             _logger = logManager.GetLogger(GetType().Name);
+
+            partnerid = "uD1X52pA";
         }
 
         public string DataVersion
@@ -34,7 +39,7 @@ namespace MediaBrowser.Plugins.TuneIn
             get
             {
                 // Increment as needed to invalidate all caches
-                return "8";
+                return "1.334e2342";
             }
         }
 
@@ -50,32 +55,106 @@ namespace MediaBrowser.Plugins.TuneIn
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
+            var items = new List<ChannelItemInfo>();
+
             _logger.Debug("Category ID " + query.FolderId);
 
             if (query.FolderId == null)
             {
-                return await GetMenu("", query, cancellationToken).ConfigureAwait(false);
+                items = await GetMenu("", query, cancellationToken).ConfigureAwait(false);
+                
+                if (Plugin.Instance.Configuration.Username != null)
+                {
+                    items.Add(new ChannelItemInfo
+                    {
+                        Name = "My Favorites",
+                        Id = "preset_",
+                        Type = ChannelItemType.Folder,
+                    });
+                }
+            }
+            else
+            {
+                var channelID = query.FolderId.Split('_');
+
+                
+                if (channelID[0] == "preset")
+                {
+                    items = await GetPresets(query, cancellationToken);
+                }
+
+                query.FolderId = channelID[1].Replace("&amp;", "&");
+
+                
+                if (channelID.Count() > 2)
+                {
+                    items = await GetMenu(channelID[2], query, cancellationToken).ConfigureAwait(false);
+                }
             }
 
-            var channelID = query.FolderId.Split('_');
-            
-            query.FolderId = channelID[1].Replace("&amp;", "&");
-            
-            if (channelID.Count() > 2)
+            return new ChannelItemResult()
             {
-                return await GetMenu(channelID[2], query, cancellationToken).ConfigureAwait(false);
-            }
-                    
-            return await GetMenu("", query, cancellationToken).ConfigureAwait(false); 
+                Items = items
+            };
         }
 
-        private async Task<ChannelItemResult> GetMenu(String title, InternalChannelItemQuery query, CancellationToken cancellationToken)
+        private async Task<List<ChannelItemInfo>> GetPresets(InternalChannelItemQuery query,
+            CancellationToken cancellationToken)
         {
             var page = new HtmlDocument();
             var items = new List<ChannelItemInfo>();
-            var url = "http://opml.radiotime.com/Browse.ashx?formats=mp3,aac";
+            var url = "http://opml.radiotime.com/Browse.ashx?c=presets&formats=mp3,aac&partnerid=" + partnerid + "&serial=" +
+                      Plugin.Instance.Configuration.GUID;
 
-            if (query.FolderId != null) url = query.FolderId;
+            if (Plugin.Instance.Configuration.Username != null)
+            {
+                url = url + "&username=" + Plugin.Instance.Configuration.Username;
+            }
+
+            using (var site = await _httpClient.Get(url, CancellationToken.None).ConfigureAwait(false))
+            {
+                page.Load(site, Encoding.UTF8);
+                if (page.DocumentNode != null)
+                {
+                    var body = page.DocumentNode.SelectSingleNode("//body");
+
+                    if (body.SelectNodes("./outline[@url and @type=\"audio\"]") != null)
+                    {
+                       foreach (var node in body.SelectNodes("./outline[@url]"))
+                        {
+                            items.Add(new ChannelItemInfo
+                            {
+                                Name = node.Attributes["text"].Value,
+                                Id = "stream_" + node.Attributes["url"].Value,
+                                Type = ChannelItemType.Media,
+                                ContentType = ChannelMediaContentType.Podcast,
+                                ImageUrl = node.Attributes["image"].Value,
+                                MediaType = ChannelMediaType.Audio
+                            });
+                        }
+                    }
+                }
+            }
+
+            return items.ToList();
+        }
+
+
+
+        private
+            async Task<List<ChannelItemInfo>> GetMenu(String title, InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            var page = new HtmlDocument();
+            var items = new List<ChannelItemInfo>();
+            var url = "http://opml.radiotime.com/Browse.ashx?formats=mp3,aac&partnerid=" + partnerid + "&serial=" +
+                      Plugin.Instance.Configuration.GUID;
+
+            if (Plugin.Instance.Configuration.LatLon != null)
+            {
+                url = url + "&latlon=" + Plugin.Instance.Configuration.LatLon;
+            }
+
+            if (query.FolderId != null) url = query.FolderId.Replace("&amp;", "&");
 
             using (var site = await _httpClient.Get(url, CancellationToken.None).ConfigureAwait(false))
             {
@@ -87,6 +166,21 @@ namespace MediaBrowser.Plugins.TuneIn
                     if (body.SelectNodes("./outline[@url and not(@type=\"audio\")]") != null)
                     {
                         _logger.Debug("Num 1");
+
+                        if (body.SelectNodes("./outline[@text=\"Stations\"]/outline") != null)
+                        {
+                            foreach (var node in body.SelectNodes("./outline[@text=\"Stations\"]/outline"))
+                            {
+                                items.Add(new ChannelItemInfo
+                                {
+                                    Name = node.Attributes["text"].Value,
+                                    Id = "subcat_" + node.Attributes["url"].Value,
+                                    ImageUrl = node.Attributes["image"] != null ? node.Attributes["image"].Value : "",
+                                    Type = ChannelItemType.Folder,
+                                });
+                            }
+                        }
+
                         foreach (var node in body.SelectNodes("./outline[@url]"))
                         {
                             items.Add(new ChannelItemInfo
@@ -170,10 +264,7 @@ namespace MediaBrowser.Plugins.TuneIn
                 }
             }
 
-            return new ChannelItemResult
-            {
-                Items = items
-            };
+            return items.ToList();
         }
         
 
@@ -216,6 +307,30 @@ namespace MediaBrowser.Plugins.TuneIn
                                             {
                                                 Path = file.ToLower()
                                             });
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.Error(ex.ToString());
+                                }
+                            }
+                            else if (ext == ".m3u")
+                            {
+                                try
+                                {
+                                    using (var value = await _httpClient.Get(url, CancellationToken.None).ConfigureAwait(false))
+                                    {
+                                        using (var reader2 = new StreamReader(value))
+                                        {
+                                            while (!reader2.EndOfStream)
+                                            {
+                                                var url2 = reader2.ReadLine();
+                                                items.Add(new ChannelMediaInfo
+                                                {
+                                                    Path = url2
+                                                });
+                                            }
                                         }
                                     }
                                 }
@@ -309,6 +424,11 @@ namespace MediaBrowser.Plugins.TuneIn
         public ChannelParentalRating ParentalRating
         {
             get { return ChannelParentalRating.GeneralAudience; }
+        }
+
+        public string GetCacheKey(string userId)
+        {
+            return Plugin.Instance.Configuration.LatLon + "-" + Plugin.Instance.Configuration.Username;
         }
     }
 }
