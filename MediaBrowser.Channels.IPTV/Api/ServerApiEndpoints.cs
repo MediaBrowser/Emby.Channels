@@ -47,6 +47,7 @@ namespace MediaBrowser.Channels.IPTV.Api
 
             list.Add(new Bookmark
             {
+                UserId = request.UserId,
                 Name = request.Name,
                 Image = request.ImagePath,
                 Path = request.Path,
