@@ -59,15 +59,11 @@
     </Compile>
     <Compile Include="AppleTrailerListingDownloader.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
-    <Compile Include="Configuration\TrailerConfigurationPage.cs" />
     <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TrailerChannel.cs" />
     <Compile Include="TrailerInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Configuration\configPage.html" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Images\primary.jpg" />

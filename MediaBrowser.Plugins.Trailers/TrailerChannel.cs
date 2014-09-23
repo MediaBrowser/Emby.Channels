@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Plugins.Trailers
 {
-    public class TrailerChannel : IChannel, IIndexableChannel, IHasCacheKey, ISupportsLatestMedia
+    public class TrailerChannel : IChannel, IIndexableChannel, ISupportsLatestMedia
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
@@ -41,6 +41,20 @@ namespace MediaBrowser.Plugins.Trailers
             get { return string.Empty; }
         }
 
+        private DateTime GetDateCreatedForSorting(ChannelItemInfo item)
+        {
+            var date = item.DateCreated;
+
+            if (date.HasValue)
+            {
+                // Strip out the time portion in case they were all added at the same time
+                // This will allow premiere date to take over
+                return date.Value.Date;
+            }
+
+            return DateTime.MinValue;
+        }
+
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
             var items = await GetChannelItems(cancellationToken).ConfigureAwait(false);
@@ -58,7 +72,8 @@ namespace MediaBrowser.Plugins.Trailers
                             items = items.OrderByDescending(i => i.PremiereDate ?? DateTime.MinValue);
                             break;
                         case ChannelItemSortField.DateCreated:
-                            items = items.OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
+                            items = items.OrderByDescending(GetDateCreatedForSorting)
+                                .ThenByDescending(i => i.PremiereDate ?? DateTime.MinValue);
                             break;
                         case ChannelItemSortField.CommunityRating:
                             items = items.OrderByDescending(i => i.CommunityRating ?? 0);
@@ -79,7 +94,8 @@ namespace MediaBrowser.Plugins.Trailers
                             items = items.OrderBy(i => i.PremiereDate ?? DateTime.MinValue);
                             break;
                         case ChannelItemSortField.DateCreated:
-                            items = items.OrderBy(i => i.DateCreated ?? DateTime.MinValue);
+                            items = items.OrderBy(GetDateCreatedForSorting)
+                                .ThenByDescending(i => i.PremiereDate ?? DateTime.MinValue);
                             break;
                         case ChannelItemSortField.CommunityRating:
                             items = items.OrderBy(i => i.CommunityRating ?? 0);
@@ -111,13 +127,9 @@ namespace MediaBrowser.Plugins.Trailers
                 cancellationToken)
                 .ConfigureAwait(false);
 
-            var now = DateTime.UtcNow;
-            var maxDays = Plugin.Instance.Configuration.MaxTrailerAge;
-
             var list = new List<ChannelItemInfo>();
 
-            foreach (var i in hdTrailers
-                .Where(i => !maxDays.HasValue || (now - i.PostDate).TotalDays <= maxDays.Value))
+            foreach (var i in hdTrailers)
             {
                 // Avoid duplicates
                 if (list.Any(l => string.Equals(i.Name, l.Name, StringComparison.OrdinalIgnoreCase)))
@@ -272,11 +284,6 @@ namespace MediaBrowser.Plugins.Trailers
         public ChannelParentalRating ParentalRating
         {
             get { return ChannelParentalRating.GeneralAudience; }
-        }
-
-        public string GetCacheKey(string userId)
-        {
-            return (Plugin.Instance.Configuration.MaxTrailerAge ?? -1).ToString(CultureInfo.InvariantCulture);
         }
 
         public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
