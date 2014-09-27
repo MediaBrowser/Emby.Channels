@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,7 +38,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.Movielist
 
             for (var i = 0; i < matches.Count; i++)
             {
-                var trailerUrl = WebUtility.HtmlDecode(matches[i].Groups["url"].Value);
+                var trailerUrl = matches[i].Groups["url"].Value;
 
                 if (!string.IsNullOrEmpty(trailerUrl) && trailerUrl.TrimStart('/').StartsWith("trailers/", StringComparison.OrdinalIgnoreCase))
                 {

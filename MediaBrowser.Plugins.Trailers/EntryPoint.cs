@@ -63,6 +63,8 @@ namespace MediaBrowser.Plugins.Trailers
 
             }
 
+            Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+
             using (var stream = await _httpClient.Get(new HttpRequestOptions
             {
                 Url = url,

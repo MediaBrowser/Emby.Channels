@@ -17,7 +17,7 @@ namespace MediaBrowser.Plugins.Trailers
         {
             get
             {
-                return "14";
+                return "16";
             }
         }
 
