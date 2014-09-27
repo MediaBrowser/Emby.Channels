@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Plugins.Trailers.Extensions;
@@ -10,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace MediaBrowser.Plugins.Trailers
+namespace MediaBrowser.Plugins.Trailers.Providers.Apple
 {
     /// <summary>
     /// Fetches Apple's list of current movie trailers
@@ -28,8 +27,7 @@ namespace MediaBrowser.Plugins.Trailers
         /// Downloads a list of trailer info's from the apple url
         /// </summary>
         /// <returns>Task{List{TrailerInfo}}.</returns>
-        public static async Task<List<TrailerInfo>> GetTrailerList(IHttpClient httpClient, 
-            ILogger logger, 
+        public static async Task<List<TrailerInfo>> GetTrailerList(ILogger logger, 
             bool hdTrailerList,
             CancellationToken cancellationToken)
         {
@@ -37,14 +35,8 @@ namespace MediaBrowser.Plugins.Trailers
                 HDTrailerFeedUrl :
                 TrailerFeedUrl;
 
-            var stream = await httpClient.Get(new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = cancellationToken,
-                ResourcePool = Plugin.Instance.AppleTrailers,
-                UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.28 Safari/537.36"
-
-            }).ConfigureAwait(false);
+            var stream = await EntryPoint.Instance.GetAndCacheResponse(url, TimeSpan.FromDays(1), cancellationToken)
+                        .ConfigureAwait(false);
 
             var list = new List<TrailerInfo>();
 

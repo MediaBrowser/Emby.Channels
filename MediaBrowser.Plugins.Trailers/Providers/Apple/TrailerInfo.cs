@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Plugins.Trailers
+namespace MediaBrowser.Plugins.Trailers.Providers.Apple
 {
     /// <summary>
     /// This is a stub class used to hold information about a trailer
