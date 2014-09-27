@@ -17,7 +17,7 @@ namespace MediaBrowser.Plugins.Trailers
         {
             get
             {
-                return "30";
+                return "33";
             }
         }
 
@@ -163,16 +163,49 @@ namespace MediaBrowser.Plugins.Trailers
         {
             var list = new List<ChannelItemInfo>();
 
+            //list.Add(new ChannelItemInfo
+            //{
+            //    FolderType = ChannelFolderType.Container,
+            //    Name = "Movies",
+            //    Type = ChannelItemType.Folder,
+            //    MediaType = ChannelMediaType.Video,
+            //    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower(),
+            //    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/thumb.jpg"
+            //});
+
             list.Add(new ChannelItemInfo
             {
                 FolderType = ChannelFolderType.Container,
-                Name = "Movies",
+                Name = "New and Coming Soon to Theaters",
                 Type = ChannelItemType.Folder,
                 MediaType = ChannelMediaType.Video,
-                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower(),
+                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerComingSoonToTheaters",
+
                 ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/thumb.jpg"
             });
 
+            list.Add(new ChannelItemInfo
+            {
+                FolderType = ChannelFolderType.Container,
+                Name = "New and Upcoming Movies on Dvd",
+                Type = ChannelItemType.Folder,
+                MediaType = ChannelMediaType.Video,
+                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerComingSoonToDvd",
+
+                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/thumb.jpg"
+            });
+
+            list.Add(new ChannelItemInfo
+            {
+                FolderType = ChannelFolderType.Container,
+                Name = "Movie Trailer Archive",
+                Type = ChannelItemType.Folder,
+                MediaType = ChannelMediaType.Video,
+                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerArchive",
+
+                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/thumb.jpg"
+            });
+            
             return new ChannelItemResult
             {
                 Items = list,

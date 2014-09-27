@@ -85,6 +85,10 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
             var titleElement = document.DocumentNode.SelectSingleNode("//h2");
 
             var posterElement = document.DocumentNode.SelectSingleNode("//a[@rel='prettyPhoto[posters]']//img");
+            if (posterElement == null)
+            {
+                posterElement = document.DocumentNode.SelectSingleNode("//section[@class='content-box']//img");
+            }
             var imageSrc = posterElement == null ? null : posterElement.GetAttributeValue("src", null);
 
             var links = document.DocumentNode.SelectNodes("//a");
@@ -128,50 +132,52 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
 
             if (text.StartsWith("(", StringComparison.OrdinalIgnoreCase) && text.EndsWith(")", StringComparison.OrdinalIgnoreCase))
             {
-                info.Studios.Add(text.Trim('(').Trim(')'));
+                //var studio = text.Trim('(').Trim(')');
+
+                //if (!string.IsNullOrWhiteSpace(studio))
+                //{
+                //    info.Studios.Add(studio);
+                //}
             }
             else if (text.StartsWith("Director:", StringComparison.OrdinalIgnoreCase))
             {
-                info.People.Add(new PersonInfo
-                {
-                    Name = text.Replace("Director:", string.Empty, StringComparison.OrdinalIgnoreCase).Trim(),
-                    Type = PersonType.Director
-                });
+                //info.People.AddRange(GetTextFromSubNodes(node, "span").Select(i => new PersonInfo
+                //{
+                //    Name = i,
+                //    Type = PersonType.Director
+                //}));
             }
             else if (text.StartsWith("Writer:", StringComparison.OrdinalIgnoreCase))
             {
-                info.People.Add(new PersonInfo
-                {
-                    Name = text.Replace("Writer:", string.Empty, StringComparison.OrdinalIgnoreCase).Trim(),
-                    Type = PersonType.Writer
-                });
+                //info.People.AddRange(GetTextFromSubNodes(node, "span").Select(i => new PersonInfo
+                //{
+                //    Name = i,
+                //    Type = PersonType.Writer
+
+                //}));
             }
             else if (text.StartsWith("Genre:", StringComparison.OrdinalIgnoreCase))
             {
-                info.Genres.Add(text.Replace("Genre:", string.Empty, StringComparison.OrdinalIgnoreCase).Trim());
+                //info.Genres.AddRange(GetTextFromSubNodes(node, "span"));
             }
             else if (text.StartsWith("Plot:", StringComparison.OrdinalIgnoreCase))
             {
-                info.Overview = text.Replace("Plot:", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
+                //info.Overview = GetTextFromSubNodes(node, "span").FirstOrDefault();
             }
             else if (text.StartsWith("Cast:", StringComparison.OrdinalIgnoreCase))
             {
-                var links = node.SelectNodes("//a");
+                //info.People.AddRange(GetTextFromSubNodes(node, "a").Select(i => new PersonInfo
+                //{
+                //    Name = i,
+                //    Type = PersonType.Actor
 
-                if (links != null)
-                {
-                    foreach (var link in links)
-                    {
-                        info.People.Add(new PersonInfo
-                        {
-                            Name = link.InnerText,
-                            Type = PersonType.Actor
-                        });
-                    }
-                }
+                //}));
             }
             else
             {
+                text = GetTextFromSubNodes(node, "span")
+                    .FirstOrDefault() ?? string.Empty;
+
                 DateTime dateAdded;
 
                 if (DateTime.TryParse(text, out dateAdded))
@@ -179,6 +185,18 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
                     info.DateCreated = DateTime.SpecifyKind(dateAdded, DateTimeKind.Utc);
                 }
             }
+        }
+
+        private IEnumerable<string> GetTextFromSubNodes(HtmlNode node, string tagName)
+        {
+            var links = node.SelectNodes("//" + tagName);
+
+            if (links != null)
+            {
+                return links.Select(i => i.InnerText).Where(i => !string.IsNullOrWhiteSpace(i));
+            }
+
+            return new List<string>();
         }
 
         private string GetImdbId(IEnumerable<HtmlNode> nodes)
