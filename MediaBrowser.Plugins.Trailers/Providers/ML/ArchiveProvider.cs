@@ -1,16 +1,17 @@
 ﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Plugins.Trailers.Providers.Movielist
+namespace MediaBrowser.Plugins.Trailers.Providers.ML
 {
     public class ArchiveProvider : BaseProvider, IExtraProvider
     {
-        public ArchiveProvider(ILogger logger) : base(logger)
+        public ArchiveProvider(ILogger logger)
+            : base(logger)
         {
         }
 
@@ -24,14 +25,14 @@ namespace MediaBrowser.Plugins.Trailers.Providers.Movielist
             get { return ExtraType.Trailer; }
         }
 
-        public TrailerType TrailerType
+        public override TrailerType TrailerType
         {
             get { return TrailerType.Archive; }
         }
 
         public Task<IEnumerable<ChannelItemInfo>> GetChannelItems(CancellationToken cancellationToken)
         {
-            return GetChannelItems("http://www.movie-list.com/archive.php", cancellationToken);
+            return GetChannelItems(BaseUrl + "archive.php", cancellationToken);
         }
     }
 }

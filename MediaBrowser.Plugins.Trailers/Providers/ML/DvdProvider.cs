@@ -1,12 +1,12 @@
 ﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Plugins.Trailers.Providers.Movielist
+namespace MediaBrowser.Plugins.Trailers.Providers.ML
 {
     class DvdProvider : BaseProvider, IExtraProvider
     {
@@ -24,14 +24,14 @@ namespace MediaBrowser.Plugins.Trailers.Providers.Movielist
             get { return ExtraType.Trailer; }
         }
 
-        public TrailerType TrailerType
+        public override TrailerType TrailerType
         {
             get { return TrailerType.ComingSoonToDvd; }
         }
 
         public Task<IEnumerable<ChannelItemInfo>> GetChannelItems(CancellationToken cancellationToken)
         {
-            return GetChannelItems("http://www.movie-list.com/ondvd.php", cancellationToken);
+            return GetChannelItems(BaseUrl + "ondvd.php", cancellationToken);
         }
     }
 }

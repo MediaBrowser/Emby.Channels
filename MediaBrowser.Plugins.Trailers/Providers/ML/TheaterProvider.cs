@@ -1,13 +1,12 @@
 ﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Plugins.Trailers.Providers.Movielist
+namespace MediaBrowser.Plugins.Trailers.Providers.ML
 {
     class TheaterProvider : BaseProvider, IExtraProvider
     {
@@ -25,17 +24,22 @@ namespace MediaBrowser.Plugins.Trailers.Providers.Movielist
             get { return ExtraType.Trailer; }
         }
 
-        public TrailerType TrailerType
+        public override TrailerType TrailerType
         {
-            get { return TrailerType.ComingSoonToDvd; }
+            get { return TrailerType.ComingSoonToTheaters; }
         }
 
         public async Task<IEnumerable<ChannelItemInfo>> GetChannelItems(CancellationToken cancellationToken)
         {
-            var nowplaying = await GetChannelItems("http://www.movie-list.com/nowplaying.php", cancellationToken).ConfigureAwait(false);
-            var comingsoon = await GetChannelItems("ww.movie-list.com/comingsoon.php", cancellationToken).ConfigureAwait(false);
+            var nowplaying = await GetChannelItems(BaseUrl + "nowplaying.php", cancellationToken).ConfigureAwait(false);
+            var comingsoon = await GetChannelItems(BaseUrl + "comingsoon.php", cancellationToken).ConfigureAwait(false);
 
-            return nowplaying.Concat(comingsoon);
+            var list = new List<ChannelItemInfo>();
+
+            list.AddRange(nowplaying);
+            list.AddRange(comingsoon);
+
+            return list;
         }
     }
 }

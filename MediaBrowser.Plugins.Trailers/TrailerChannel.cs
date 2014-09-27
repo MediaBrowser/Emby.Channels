@@ -17,7 +17,7 @@ namespace MediaBrowser.Plugins.Trailers
         {
             get
             {
-                return "16";
+                return "30";
             }
         }
 
@@ -144,7 +144,9 @@ namespace MediaBrowser.Plugins.Trailers
             {
                 try
                 {
-                    return await i.GetChannelItems(cancellationToken).ConfigureAwait(false);
+                    var items = await i.GetChannelItems(cancellationToken).ConfigureAwait(false);
+
+                    return items.Where(t => !string.IsNullOrWhiteSpace(t.Name) && t.MediaSources.Count > 0);
                 }
                 catch (Exception ex)
                 {
@@ -185,7 +187,7 @@ namespace MediaBrowser.Plugins.Trailers
             list.Add(new ChannelItemInfo
             {
                 FolderType = ChannelFolderType.Container,
-                Name = "Coming Soon to Theaters",
+                Name = "New and coming soon to theaters",
                 Type = ChannelItemType.Folder,
                 MediaType = ChannelMediaType.Video,
                 Id = contentType.ToString().ToLower() + "|" + "TrailerComingSoonToTheaters",
@@ -196,7 +198,7 @@ namespace MediaBrowser.Plugins.Trailers
             list.Add(new ChannelItemInfo
             {
                 FolderType = ChannelFolderType.Container,
-                Name = "Coming Soon to Dvd",
+                Name = "New and coming soon to Dvd",
                 Type = ChannelItemType.Folder,
                 MediaType = ChannelMediaType.Video,
                 Id = contentType.ToString().ToLower() + "|" + "TrailerComingSoonToDvd",
@@ -290,7 +292,9 @@ namespace MediaBrowser.Plugins.Trailers
                         ChannelItemSortField.DateCreated,
                         ChannelItemSortField.PremiereDate,
                         ChannelItemSortField.Runtime
-                   }
+                   },
+
+                   AutoRefreshLevels = 3
             };
         }
 

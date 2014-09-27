@@ -231,7 +231,9 @@ namespace PodCasts
                         ChannelItemSortField.DateCreated,
                         ChannelItemSortField.PremiereDate,
                         ChannelItemSortField.Runtime
-                   }
+                   },
+
+                   AutoRefreshLevels = 2
             };
         }
 

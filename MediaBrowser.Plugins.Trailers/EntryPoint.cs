@@ -23,6 +23,10 @@ namespace MediaBrowser.Plugins.Trailers
 
         public static EntryPoint Instance;
 
+        private readonly SemaphoreSlim _requestThrottle = new SemaphoreSlim(1, 1);
+
+        public static string UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.28 Safari/537.36";
+
         public EntryPoint(IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _appHost = appHost;
@@ -63,29 +67,60 @@ namespace MediaBrowser.Plugins.Trailers
 
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+            await _requestThrottle.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            using (var stream = await _httpClient.Get(new HttpRequestOptions
+            try
             {
-                Url = url,
-                CancellationToken = cancellationToken,
-
-                // For apple
-                UserAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.28 Safari/537.36"
-            }))
-            {
-                using (var fileStream = _fileSystem.GetFileStream(cachePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                try
                 {
-                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                    if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
+                    {
+                        using (var stream = _fileSystem.GetFileStream(cachePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                        {
+                            using (var reader = new StreamReader(stream))
+                            {
+                                return await reader.ReadToEndAsync().ConfigureAwait(false);
+                            }
+                        }
+                    }
+                }
+                catch (FileNotFoundException)
+                {
+
+                }
+                catch (DirectoryNotFoundException)
+                {
+
+                }
+
+                Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+
+                using (var stream = await _httpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+
+                    // For apple
+                    UserAgent = UserAgent
+                }))
+                {
+                    using (var fileStream = _fileSystem.GetFileStream(cachePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                    {
+                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                    }
+                }
+
+                using (var stream = _fileSystem.GetFileStream(cachePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                {
+                    using (var reader = new StreamReader(stream))
+                    {
+                        return await reader.ReadToEndAsync().ConfigureAwait(false);
+                    }
                 }
             }
-
-            using (var stream = _fileSystem.GetFileStream(cachePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+            finally
             {
-                using (var reader = new StreamReader(stream))
-                {
-                    return await reader.ReadToEndAsync().ConfigureAwait(false);
-                }
+                _requestThrottle.Release();
             }
         }
 

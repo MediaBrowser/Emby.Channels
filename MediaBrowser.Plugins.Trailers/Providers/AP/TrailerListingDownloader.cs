@@ -9,12 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace MediaBrowser.Plugins.Trailers.Providers.Apple
+namespace MediaBrowser.Plugins.Trailers.Providers.AP
 {
     /// <summary>
     /// Fetches Apple's list of current movie trailers
     /// </summary>
-    public static class AppleTrailerListingDownloader
+    public static class TrailerListingDownloader
     {
         /// <summary>
         /// The trailer feed URL

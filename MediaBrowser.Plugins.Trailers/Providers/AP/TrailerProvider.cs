@@ -11,13 +11,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Plugins.Trailers.Providers.Apple
+namespace MediaBrowser.Plugins.Trailers.Providers.AP
 {
-    public class AppleTrailerProvider : IExtraProvider
+    public class TrailerProvider : IExtraProvider
     {
         private readonly ILogger _logger;
 
-        public AppleTrailerProvider(ILogger logger)
+        public TrailerProvider(ILogger logger)
         {
             _logger = logger;
         }
@@ -32,19 +32,19 @@ namespace MediaBrowser.Plugins.Trailers.Providers.Apple
             get { return ExtraType.Trailer; }
         }
 
-        public TrailerType TrailerType
+        public virtual TrailerType TrailerType
         {
             get { return TrailerType.ComingSoonToTheaters; }
         }
 
         public async Task<IEnumerable<ChannelItemInfo>> GetChannelItems(CancellationToken cancellationToken)
         {
-            var hdTrailers = await AppleTrailerListingDownloader.GetTrailerList(_logger,
+            var hdTrailers = await TrailerListingDownloader.GetTrailerList(_logger,
                 true,
                 cancellationToken)
                 .ConfigureAwait(false);
 
-            var sdTrailers = await AppleTrailerListingDownloader.GetTrailerList(_logger,
+            var sdTrailers = await TrailerListingDownloader.GetTrailerList(_logger,
                 false,
                 cancellationToken)
                 .ConfigureAwait(false);
