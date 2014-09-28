@@ -1,38 +1,30 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Channels;
+﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Plugins.Trailers
 {
-    public class TrailerChannel : IChannel, IIndexableChannel, IHasCacheKey, ISupportsLatestMedia
+    public class TrailerChannel : IChannel, IIndexableChannel, ISupportsLatestMedia
     {
-        private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        public static TrailerChannel Instance;
 
-        public TrailerChannel(IHttpClient httpClient, ILogger logger)
+        public TrailerChannel()
         {
-            _httpClient = httpClient;
-            _logger = logger;
+            Instance = this;
         }
 
         public string DataVersion
         {
             get
             {
-                return "8";
+                return "39";
             }
         }
 
@@ -41,9 +33,64 @@ namespace MediaBrowser.Plugins.Trailers
             get { return string.Empty; }
         }
 
+        private DateTime GetDateCreatedForSorting(ChannelItemInfo item)
+        {
+            var date = item.DateCreated;
+
+            if (date.HasValue)
+            {
+                // Strip out the time portion in case they were all added at the same time
+                // This will allow premiere date to take over
+                return date.Value.Date;
+            }
+
+            return DateTime.MinValue;
+        }
+
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
-            var items = await GetChannelItems(cancellationToken).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(query.FolderId))
+            {
+                return GetTopCategories();
+            }
+
+            var idParts = query.FolderId.Split('|');
+            var contentType = (ChannelMediaContentType)Enum.Parse(typeof(ChannelMediaContentType), idParts[0], true);
+
+            if (idParts.Length == 1)
+            {
+                return GetCategories(contentType);
+            }
+
+            var trailerType = TrailerType.ComingSoonToTheaters;
+            ExtraType extraType;
+
+            if (string.Equals(idParts[1], "TrailerComingSoonToTheaters", StringComparison.OrdinalIgnoreCase))
+            {
+                extraType = ExtraType.Trailer;
+                trailerType = TrailerType.ComingSoonToTheaters;
+            }
+            else if (string.Equals(idParts[1], "TrailerComingSoonToDvd", StringComparison.OrdinalIgnoreCase))
+            {
+                extraType = ExtraType.Trailer;
+                trailerType = TrailerType.ComingSoonToDvd;
+            }
+            else if (string.Equals(idParts[1], "TrailerComingSoonToStreaming", StringComparison.OrdinalIgnoreCase))
+            {
+                extraType = ExtraType.Trailer;
+                trailerType = TrailerType.ComingSoonToStreaming;
+            }
+            else if (string.Equals(idParts[1], "TrailerArchive", StringComparison.OrdinalIgnoreCase))
+            {
+                extraType = ExtraType.Trailer;
+                trailerType = TrailerType.Archive;
+            }
+            else
+            {
+                extraType = (ExtraType)Enum.Parse(typeof(ExtraType), idParts[1], true);
+            }
+
+            var items = await GetChannelItems(contentType, extraType, trailerType, cancellationToken).ConfigureAwait(false);
 
             if (query.SortBy.HasValue)
             {
@@ -58,7 +105,8 @@ namespace MediaBrowser.Plugins.Trailers
                             items = items.OrderByDescending(i => i.PremiereDate ?? DateTime.MinValue);
                             break;
                         case ChannelItemSortField.DateCreated:
-                            items = items.OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
+                            items = items.OrderByDescending(GetDateCreatedForSorting)
+                                .ThenByDescending(i => i.PremiereDate ?? DateTime.MinValue);
                             break;
                         case ChannelItemSortField.CommunityRating:
                             items = items.OrderByDescending(i => i.CommunityRating ?? 0);
@@ -79,7 +127,8 @@ namespace MediaBrowser.Plugins.Trailers
                             items = items.OrderBy(i => i.PremiereDate ?? DateTime.MinValue);
                             break;
                         case ChannelItemSortField.DateCreated:
-                            items = items.OrderBy(i => i.DateCreated ?? DateTime.MinValue);
+                            items = items.OrderBy(GetDateCreatedForSorting)
+                                .ThenByDescending(i => i.PremiereDate ?? DateTime.MinValue);
                             break;
                         case ChannelItemSortField.CommunityRating:
                             items = items.OrderBy(i => i.CommunityRating ?? 0);
@@ -97,95 +146,147 @@ namespace MediaBrowser.Plugins.Trailers
             };
         }
 
-        private async Task<IEnumerable<ChannelItemInfo>> GetChannelItems(CancellationToken cancellationToken)
+        public async Task<IEnumerable<ChannelItemInfo>> GetChannelItems(ChannelMediaContentType contentType, ExtraType extraType, TrailerType trailerType, CancellationToken cancellationToken)
         {
-            var hdTrailers = await AppleTrailerListingDownloader.GetTrailerList(_httpClient,
-                _logger,
-                true,
-                cancellationToken)
-                .ConfigureAwait(false);
+            var items = await GetAllItems(false, cancellationToken).ConfigureAwait(false);
 
-            var sdTrailers = await AppleTrailerListingDownloader.GetTrailerList(_httpClient,
-                _logger,
-                false,
-                cancellationToken)
-                .ConfigureAwait(false);
-
-            var now = DateTime.UtcNow;
-            var maxDays = Plugin.Instance.Configuration.MaxTrailerAge;
-
-            var list = new List<ChannelItemInfo>();
-
-            foreach (var i in hdTrailers
-                .Where(i => !maxDays.HasValue || (now - i.PostDate).TotalDays <= maxDays.Value))
-            {
-                // Avoid duplicates
-                if (list.Any(l => string.Equals(i.Name, l.Name, StringComparison.OrdinalIgnoreCase)))
-                {
-                    continue;
-                }
-
-                var channelItem = new ChannelItemInfo
-                {
-                    CommunityRating = i.CommunityRating,
-                    ContentType = ChannelMediaContentType.Trailer,
-                    Genres = i.Genres,
-                    ImageUrl = i.HdImageUrl ?? i.ImageUrl,
-                    IsInfiniteStream = false,
-                    MediaType = ChannelMediaType.Video,
-                    Name = i.Name,
-                    OfficialRating = i.OfficialRating,
-                    Overview = i.Overview,
-                    People = i.People,
-                    Type = ChannelItemType.Media,
-                    Id = i.TrailerUrl.GetMD5().ToString("N"),
-                    PremiereDate = i.PremiereDate,
-                    ProductionYear = i.ProductionYear,
-                    Studios = i.Studios,
-                    RunTimeTicks = i.RunTimeTicks,
-
-                    MediaSources = new List<ChannelMediaInfo>
-                    {
-                        GetMediaInfo(i, true)
-                    }
-                };
-
-                var sdVersion = sdTrailers
-                    .FirstOrDefault(l => string.Equals(i.Name, l.Name, StringComparison.OrdinalIgnoreCase));
-
-                if (sdVersion != null)
-                {
-                    channelItem.MediaSources.Add(GetMediaInfo(sdVersion, false));
-                }
-
-                list.Add(channelItem);
-            }
-
-            return list;
+            return items
+                .Where(i => i.ContentType == contentType && i.ExtraType == extraType && i.TrailerType == trailerType);
         }
 
-        private ChannelMediaInfo GetMediaInfo(TrailerInfo info, bool isHd)
+        private async Task<IEnumerable<ChannelItemInfo>> GetChannelItems(IEnumerable<IExtraProvider> providers, CancellationToken cancellationToken)
         {
-            var mediaInfo = new ChannelMediaInfo
+            var tasks = providers.Select(async i =>
             {
-                Path = info.TrailerUrl,
-                Width = isHd ? 1280 : 720,
-                Height = isHd ? 720 : 480,
-                Container = Path.GetExtension(info.TrailerUrl),
-                AudioCodec = AudioCodec.AAC,
-                VideoCodec = VideoCodec.H264,
-                AudioChannels = 2,
-                VideoBitrate = isHd ? 11000000 : 1000000,
-                AudioBitrate = isHd ? 128000 : 80000,
-                AudioSampleRate = 44100,
-                Framerate = (float)23.976,
-                VideoProfile = isHd ? "high" : "main",
-                VideoLevel = isHd ? (float)3.1 : 3
+                try
+                {
+                    var items = await i.GetChannelItems(cancellationToken).ConfigureAwait(false);
+
+                    return items.Where(t => !string.IsNullOrWhiteSpace(t.Name) && t.MediaSources.Count > 0);
+                }
+                catch (Exception ex)
+                {
+                    return new List<ChannelItemInfo>();
+                }
+            });
+
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            return results.SelectMany(i => i);
+        }
+
+        public Task<IEnumerable<ChannelItemInfo>> GetAllItems(bool direct, CancellationToken cancellationToken)
+        {
+            return GetChannelItems(EntryPoint.Instance.Providers, cancellationToken);
+        }
+
+        public ChannelItemResult GetTopCategories()
+        {
+            var list = new List<ChannelItemInfo>();
+
+            //list.Add(new ChannelItemInfo
+            //{
+            //    FolderType = ChannelFolderType.Container,
+            //    Name = "Movies",
+            //    Type = ChannelItemType.Folder,
+            //    MediaType = ChannelMediaType.Video,
+            //    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower(),
+            //    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/thumb.jpg"
+            //});
+
+            list.Add(new ChannelItemInfo
+            {
+                FolderType = ChannelFolderType.Container,
+                Name = "New and Upcoming in Theaters",
+                Type = ChannelItemType.Folder,
+                MediaType = ChannelMediaType.Video,
+                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerComingSoonToTheaters",
+
+                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/thumb.jpg"
+            });
+
+            list.Add(new ChannelItemInfo
+            {
+                FolderType = ChannelFolderType.Container,
+                Name = "New and Upcoming Movies on Dvd & Blu-ray",
+                Type = ChannelItemType.Folder,
+                MediaType = ChannelMediaType.Video,
+                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerComingSoonToDvd",
+
+                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/bluray.jpg"
+            });
+
+            list.Add(new ChannelItemInfo
+            {
+                FolderType = ChannelFolderType.Container,
+                Name = "New and Upcoming Movies on Netflix",
+                Type = ChannelItemType.Folder,
+                MediaType = ChannelMediaType.Video,
+                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerComingSoonToStreaming",
+
+                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/netflix.jpg"
+            });
+
+            list.Add(new ChannelItemInfo
+            {
+                FolderType = ChannelFolderType.Container,
+                Name = "Movie Trailer Archive",
+                Type = ChannelItemType.Folder,
+                MediaType = ChannelMediaType.Video,
+                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerArchive",
+
+                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/reel.jpg"
+            });
+
+            return new ChannelItemResult
+            {
+                Items = list,
+                TotalRecordCount = list.Count
             };
+        }
 
-            mediaInfo.RequiredHttpHeaders.Add("User-Agent", "QuickTime/7.7.4");
+        public ChannelItemResult GetCategories(ChannelMediaContentType contentType)
+        {
+            var list = new List<ChannelItemInfo>();
 
-            return mediaInfo;
+            //list.Add(new ChannelItemInfo
+            //{
+            //    FolderType = ChannelFolderType.Container,
+            //    Name = "New and coming soon to theaters",
+            //    Type = ChannelItemType.Folder,
+            //    MediaType = ChannelMediaType.Video,
+            //    Id = contentType.ToString().ToLower() + "|" + "TrailerComingSoonToTheaters",
+
+            //    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/thumb.jpg"
+            //});
+
+            //list.Add(new ChannelItemInfo
+            //{
+            //    FolderType = ChannelFolderType.Container,
+            //    Name = "New and coming soon to Dvd",
+            //    Type = ChannelItemType.Folder,
+            //    MediaType = ChannelMediaType.Video,
+            //    Id = contentType.ToString().ToLower() + "|" + "TrailerComingSoonToDvd",
+
+            //    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/bluray.jpg"
+            //});
+
+            //list.Add(new ChannelItemInfo
+            //{
+            //    FolderType = ChannelFolderType.Container,
+            //    Name = "Archive",
+            //    Type = ChannelItemType.Folder,
+            //    MediaType = ChannelMediaType.Video,
+            //    Id = contentType.ToString().ToLower() + "|" + "TrailerArchive",
+
+            //    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/reel.jpg"
+            //});
+
+            return new ChannelItemResult
+            {
+                Items = list,
+                TotalRecordCount = list.Count
+            };
         }
 
         public Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken)
@@ -239,7 +340,7 @@ namespace MediaBrowser.Plugins.Trailers
             {
                 ContentTypes = new List<ChannelMediaContentType>
                  {
-                     ChannelMediaContentType.Trailer
+                     ChannelMediaContentType.MovieExtra
                  },
 
                 MediaTypes = new List<ChannelMediaType>
@@ -256,27 +357,28 @@ namespace MediaBrowser.Plugins.Trailers
                         ChannelItemSortField.DateCreated,
                         ChannelItemSortField.PremiereDate,
                         ChannelItemSortField.Runtime
-                   }
+                   },
+
+                AutoRefreshLevels = 3
             };
         }
 
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        public async Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
         {
-            return GetChannelItems(new InternalChannelItemQuery
-            {
-                UserId = query.UserId
+            var items = await GetAllItems(false, cancellationToken).ConfigureAwait(false);
 
-            }, cancellationToken);
+            var list = items.ToList();
+
+            return new ChannelItemResult
+            {
+                Items = list,
+                TotalRecordCount = list.Count
+            };
         }
 
         public ChannelParentalRating ParentalRating
         {
             get { return ChannelParentalRating.GeneralAudience; }
-        }
-
-        public string GetCacheKey(string userId)
-        {
-            return (Plugin.Instance.Configuration.MaxTrailerAge ?? -1).ToString(CultureInfo.InvariantCulture);
         }
 
         public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
@@ -285,7 +387,8 @@ namespace MediaBrowser.Plugins.Trailers
             {
                 SortBy = ChannelItemSortField.DateCreated,
                 SortDescending = true,
-                UserId = request.UserId
+                UserId = request.UserId,
+                FolderId = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerComingSoonToTheaters"
 
             }, cancellationToken).ConfigureAwait(false);
 
