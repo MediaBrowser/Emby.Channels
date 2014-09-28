@@ -13,11 +13,18 @@ namespace MediaBrowser.Plugins.Trailers
 {
     public class TrailerChannel : IChannel, IIndexableChannel, ISupportsLatestMedia
     {
+        public static TrailerChannel Instance;
+
+        public TrailerChannel()
+        {
+            Instance = this;
+        }
+
         public string DataVersion
         {
             get
             {
-                return "38";
+                return "39";
             }
         }
 
@@ -67,6 +74,11 @@ namespace MediaBrowser.Plugins.Trailers
             {
                 extraType = ExtraType.Trailer;
                 trailerType = TrailerType.ComingSoonToDvd;
+            }
+            else if (string.Equals(idParts[1], "TrailerComingSoonToStreaming", StringComparison.OrdinalIgnoreCase))
+            {
+                extraType = ExtraType.Trailer;
+                trailerType = TrailerType.ComingSoonToStreaming;
             }
             else if (string.Equals(idParts[1], "TrailerArchive", StringComparison.OrdinalIgnoreCase))
             {
@@ -136,10 +148,14 @@ namespace MediaBrowser.Plugins.Trailers
 
         public async Task<IEnumerable<ChannelItemInfo>> GetChannelItems(ChannelMediaContentType contentType, ExtraType extraType, TrailerType trailerType, CancellationToken cancellationToken)
         {
-            var providers = EntryPoint.Instance.Providers
-                .Where(i => i.ContentType == contentType && i.ExtraType == extraType && i.TrailerType == trailerType)
-                .ToList();
+            var items = await GetAllItems(false, cancellationToken).ConfigureAwait(false);
 
+            return items
+                .Where(i => i.ContentType == contentType && i.ExtraType == extraType && i.TrailerType == trailerType);
+        }
+
+        private async Task<IEnumerable<ChannelItemInfo>> GetChannelItems(IEnumerable<IExtraProvider> providers, CancellationToken cancellationToken)
+        {
             var tasks = providers.Select(async i =>
             {
                 try
@@ -157,6 +173,11 @@ namespace MediaBrowser.Plugins.Trailers
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
             return results.SelectMany(i => i);
+        }
+
+        public Task<IEnumerable<ChannelItemInfo>> GetAllItems(bool direct, CancellationToken cancellationToken)
+        {
+            return GetChannelItems(EntryPoint.Instance.Providers, cancellationToken);
         }
 
         public ChannelItemResult GetTopCategories()
@@ -198,6 +219,17 @@ namespace MediaBrowser.Plugins.Trailers
             list.Add(new ChannelItemInfo
             {
                 FolderType = ChannelFolderType.Container,
+                Name = "New and Upcoming Movies on Netflix",
+                Type = ChannelItemType.Folder,
+                MediaType = ChannelMediaType.Video,
+                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerComingSoonToStreaming",
+
+                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/netflix.jpg"
+            });
+
+            list.Add(new ChannelItemInfo
+            {
+                FolderType = ChannelFolderType.Container,
                 Name = "Movie Trailer Archive",
                 Type = ChannelItemType.Folder,
                 MediaType = ChannelMediaType.Video,
@@ -205,7 +237,7 @@ namespace MediaBrowser.Plugins.Trailers
 
                 ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/reel.jpg"
             });
-            
+
             return new ChannelItemResult
             {
                 Items = list,
@@ -327,17 +359,21 @@ namespace MediaBrowser.Plugins.Trailers
                         ChannelItemSortField.Runtime
                    },
 
-                   AutoRefreshLevels = 3
+                AutoRefreshLevels = 3
             };
         }
 
-        public Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
+        public async Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
         {
-            return GetChannelItems(new InternalChannelItemQuery
-            {
-                UserId = query.UserId
+            var items = await GetAllItems(false, cancellationToken).ConfigureAwait(false);
 
-            }, cancellationToken);
+            var list = items.ToList();
+
+            return new ChannelItemResult
+            {
+                Items = list,
+                TotalRecordCount = list.Count
+            };
         }
 
         public ChannelParentalRating ParentalRating

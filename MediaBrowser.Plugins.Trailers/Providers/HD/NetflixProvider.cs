@@ -27,7 +27,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.HD
 
         public override TrailerType TrailerType
         {
-            get { return TrailerType.ComingSoonToDvd; }
+            get { return TrailerType.ComingSoonToStreaming; }
         }
 
         public Task<IEnumerable<ChannelItemInfo>> GetChannelItems(CancellationToken cancellationToken)
