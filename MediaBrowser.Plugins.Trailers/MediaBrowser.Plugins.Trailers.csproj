@@ -102,6 +102,9 @@
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\AP\TrailerProvider.cs" />
+    <Compile Include="Providers\GlobalBaseProvider.cs" />
+    <Compile Include="Providers\HD\BaseProvider.cs" />
+    <Compile Include="Providers\HD\NetflixProvider.cs" />
     <Compile Include="Providers\ML\ArchiveProvider.cs" />
     <Compile Include="Providers\ML\BaseProvider.cs" />
     <Compile Include="Providers\ML\DvdProvider.cs" />

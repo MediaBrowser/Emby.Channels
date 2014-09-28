@@ -1,6 +1,6 @@
-﻿using HtmlAgilityPack;
+﻿using System.Globalization;
+using HtmlAgilityPack;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -12,11 +12,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Plugins.Trailers.Providers.ML
 {
-    public abstract class BaseProvider
+    public abstract class BaseProvider : GlobalBaseProvider
     {
         private readonly ILogger _logger;
 
@@ -54,7 +53,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
 
                 if (!string.IsNullOrEmpty(trailerUrl) && trailerUrl.TrimStart('/').StartsWith("trailers/", StringComparison.OrdinalIgnoreCase))
                 {
-                    trailerUrl = "http://www.movie-list.com/" + trailerUrl.TrimStart('/');
+                    trailerUrl = BaseUrl + trailerUrl.TrimStart('/');
 
                     try
                     {
@@ -106,6 +105,12 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
                 ImageUrl = string.IsNullOrWhiteSpace(imageSrc) ? null : (BaseUrl + imageSrc.TrimStart('/')),
                 MediaSources = GetMediaInfo(linksList, html)
             };
+
+            // For older trailers just rely on core image providers
+            if (TrailerType != TrailerType.ComingSoonToTheaters)
+            {
+                info.ImageUrl = null;
+            }
 
             var metadataElements = document.DocumentNode.SelectNodes("//*[contains(@class,'cast-meta')]");
             if (metadataElements != null)
@@ -204,19 +209,21 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
             var link = nodes.FirstOrDefault(i => i.GetAttributeValue("href", "")
                 .IndexOf("imdb.com/title/", StringComparison.OrdinalIgnoreCase) != -1);
 
-            return link == null ? null : link.InnerText;
+            var text = link == null ? null : link.InnerText;
+
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                var suffix = text.TrimStart('t');
+                int num;
+
+                if (int.TryParse(suffix, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
+                {
+                    return text;
+                }
+            }
+
+            return null;
         }
-
-        private readonly string[] _validContainers = { ".mov", ".mp4", ".m4v" };
-
-        private readonly string[] _validDomains =
-        {
-            "regentreleasing",
-            "movie-list",
-            "warnerbros.com",
-            "apple.com",
-            "variancefilms.com"
-        };
 
         private List<ChannelMediaInfo> GetMediaInfo(IEnumerable<HtmlNode> nodes, string html)
         {
@@ -227,7 +234,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
 
             foreach (var link in links)
             {
-                if (_validContainers.Any(i => link.EndsWith(i, StringComparison.OrdinalIgnoreCase)))
+                if (ValidContainers.Any(i => link.EndsWith(i, StringComparison.OrdinalIgnoreCase)))
                 {
                     //_logger.Debug("Found url: " + link);
 
@@ -243,8 +250,6 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
                         Container = Path.GetExtension(link).TrimStart('.'),
                         Path = url,
                         Protocol = MediaProtocol.Http,
-                        VideoCodec = "h264",
-                        AudioCodec = "aac",
                         RequiredHttpHeaders = GetRequiredHttpHeaders(url)
                     });
                 }
@@ -268,39 +273,11 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
 
                 //_logger.Debug("Found url: " + url);
 
-                int? width = null;
-                int? height = null;
-
-                if (url.IndexOf("1080", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    width = 1920;
-                    height = 1080;
-                }
-                else if (url.IndexOf("720", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    width = 1280;
-                    height = 720;
-                }
-                else if (url.IndexOf("480", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    width = 720;
-                    height = 480;
-                }
-                else if (url.IndexOf("360", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    width = 640;
-                    height = 360;
-                }
-
                 list.Add(new ChannelMediaInfo
                 {
                     Container = Path.GetExtension(url).TrimStart('.'),
                     Path = url,
                     Protocol = MediaProtocol.Http,
-                    VideoCodec = "h264",
-                    AudioCodec = "aac",
-                    Width = width,
-                    Height = height,
                     RequiredHttpHeaders = GetRequiredHttpHeaders(url)
                 });
 
@@ -309,20 +286,9 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
             }
 
             return list
-                .Where(i => _validDomains.Any(d => i.Path.IndexOf(d, StringComparison.OrdinalIgnoreCase) != -1))
+                .Where(i => ValidDomains.Any(d => i.Path.IndexOf(d, StringComparison.OrdinalIgnoreCase) != -1))
+                .Select(SetValues)
                 .ToList();
-        }
-
-        private Dictionary<string, string> GetRequiredHttpHeaders(string url)
-        {
-            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            if (url.IndexOf("apple.com", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                dict["User-Agent"] = EntryPoint.UserAgent;
-            }
-
-            return dict;
         }
     }
 }
