@@ -24,7 +24,7 @@ namespace MediaBrowser.Plugins.Trailers
         {
             get
             {
-                return "39";
+                return "45";
             }
         }
 
@@ -224,19 +224,22 @@ namespace MediaBrowser.Plugins.Trailers
                 MediaType = ChannelMediaType.Video,
                 Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerComingSoonToStreaming",
 
-                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/netflix.jpg"
+                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/netflix.png"
             });
 
-            list.Add(new ChannelItemInfo
+            if (Plugin.Instance.Configuration.EnableMovieArchive)
             {
-                FolderType = ChannelFolderType.Container,
-                Name = "Movie Trailer Archive",
-                Type = ChannelItemType.Folder,
-                MediaType = ChannelMediaType.Video,
-                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerArchive",
+                list.Add(new ChannelItemInfo
+                {
+                    FolderType = ChannelFolderType.Container,
+                    Name = "Movie Trailer Archive",
+                    Type = ChannelItemType.Folder,
+                    MediaType = ChannelMediaType.Video,
+                    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerArchive",
 
-                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/reel.jpg"
-            });
+                    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/reel.jpg"
+                });
+            }
 
             return new ChannelItemResult
             {
