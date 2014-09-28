@@ -3,6 +3,8 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Plugins.Trailers.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +16,11 @@ namespace MediaBrowser.Plugins.Trailers
     public class TrailerChannel : IChannel, IIndexableChannel, ISupportsLatestMedia
     {
         public static TrailerChannel Instance;
+        private readonly IJsonSerializer _json;
 
-        public TrailerChannel()
+        public TrailerChannel(IJsonSerializer json)
         {
+            _json = json;
             Instance = this;
         }
 
@@ -175,9 +179,25 @@ namespace MediaBrowser.Plugins.Trailers
             return results.SelectMany(i => i);
         }
 
-        public Task<IEnumerable<ChannelItemInfo>> GetAllItems(bool direct, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ChannelItemInfo>> GetAllItems(bool direct, CancellationToken cancellationToken)
         {
-            return GetChannelItems(EntryPoint.Instance.Providers, cancellationToken);
+            if (direct)
+            {
+                var items = await GetChannelItems(EntryPoint.Instance.Providers, cancellationToken).ConfigureAwait(false);
+
+                if (!Plugin.Instance.Configuration.EnableMovieArchive)
+                {
+                    items = items.Where(i => i.TrailerType != TrailerType.Archive);
+                }
+
+                return items;
+            }
+
+            var listingsPath = typeof (GlobalBaseProvider).Namespace + ".listings.txt";
+            using (var stream = GetType().Assembly.GetManifestResourceStream(listingsPath))
+            {
+                return _json.DeserializeFromStream<List<ChannelItemInfo>>(stream);
+            }
         }
 
         public ChannelItemResult GetTopCategories()
