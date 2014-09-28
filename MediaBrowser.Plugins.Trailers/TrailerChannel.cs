@@ -17,7 +17,7 @@ namespace MediaBrowser.Plugins.Trailers
         {
             get
             {
-                return "33";
+                return "34";
             }
         }
 
@@ -176,7 +176,7 @@ namespace MediaBrowser.Plugins.Trailers
             list.Add(new ChannelItemInfo
             {
                 FolderType = ChannelFolderType.Container,
-                Name = "New and Coming Soon to Theaters",
+                Name = "New and Upcoming in Theaters",
                 Type = ChannelItemType.Folder,
                 MediaType = ChannelMediaType.Video,
                 Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + "TrailerComingSoonToTheaters",
