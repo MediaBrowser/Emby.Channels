@@ -295,9 +295,15 @@ namespace PodCasts
                 }
             });
 
-            var items = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var items = (await Task.WhenAll(tasks).ConfigureAwait(false))
+                .SelectMany(i => i); 
+            
+            if (query.ContentTypes.Length > 0)
+            {
+                items = items.Where(i => query.ContentTypes.Contains(i.ContentType));
+            }
 
-            var all = items.SelectMany(i => i).ToList();
+            var all = items.ToList();
 
             return new ChannelItemResult
             {

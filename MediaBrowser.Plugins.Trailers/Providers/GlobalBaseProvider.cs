@@ -31,7 +31,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers
             {
                 width = 1920;
                 height = 1080;
-                info.VideoBitrate = 3000000;
+                info.VideoBitrate = url.IndexOf("apple", StringComparison.OrdinalIgnoreCase) == -1 ? 3000000 : 11000000;
             }
             else if (url.IndexOf("720", StringComparison.OrdinalIgnoreCase) != -1)
             {

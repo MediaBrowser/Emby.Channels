@@ -77,6 +77,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.AP
                     ProductionYear = i.ProductionYear,
                     Studios = i.Studios,
                     RunTimeTicks = i.RunTimeTicks,
+                    DateCreated = i.PostDate,
 
                     MediaSources = new List<ChannelMediaInfo>
                     {

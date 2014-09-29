@@ -31,7 +31,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.HD
         {
             var list = new List<ChannelItemInfo>();
 
-            var html = await EntryPoint.Instance.GetAndCacheResponse(url, TimeSpan.FromDays(7), cancellationToken)
+            var html = await EntryPoint.Instance.GetAndCacheResponse(url, TimeSpan.FromDays(1), cancellationToken)
                         .ConfigureAwait(false);
 
 
@@ -86,12 +86,13 @@ namespace MediaBrowser.Plugins.Trailers.Providers.HD
             {
                 ContentType = ChannelMediaContentType.MovieExtra,
                 ExtraType = ExtraType.Trailer,
-                TrailerType = type,
+                TrailerTypes = new List<TrailerType> { type },
                 Id = url,
                 MediaType = ChannelMediaType.Video,
                 Type = ChannelItemType.Media,
                 Name = titleElement == null ? null : titleElement.InnerText,
-                MediaSources = GetMediaInfo(linksList, html)
+                MediaSources = GetMediaInfo(linksList, html),
+                DateCreated = DateTime.UtcNow
             };
 
             // For older trailers just rely on core image providers

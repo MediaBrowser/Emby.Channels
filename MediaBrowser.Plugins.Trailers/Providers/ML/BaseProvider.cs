@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -7,6 +6,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -32,7 +32,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
         {
             var list = new List<ChannelItemInfo>();
 
-            var html = await EntryPoint.Instance.GetAndCacheResponse(url, TimeSpan.FromDays(7), cancellationToken)
+            var html = await EntryPoint.Instance.GetAndCacheResponse(url, TimeSpan.FromDays(1), cancellationToken)
                         .ConfigureAwait(false);
 
 
@@ -97,13 +97,14 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
             {
                 ContentType = ChannelMediaContentType.MovieExtra,
                 ExtraType = ExtraType.Trailer,
-                TrailerType = type,
+                TrailerTypes = new List<TrailerType> { type },
                 Id = url,
                 MediaType = ChannelMediaType.Video,
                 Type = ChannelItemType.Media,
                 Name = titleElement == null ? null : titleElement.InnerText,
                 ImageUrl = string.IsNullOrWhiteSpace(imageSrc) ? null : (BaseUrl + imageSrc.TrimStart('/')),
-                MediaSources = GetMediaInfo(linksList, html)
+                MediaSources = GetMediaInfo(linksList, html),
+                DateCreated = DateTime.UtcNow
             };
 
             // For older trailers just rely on core image providers

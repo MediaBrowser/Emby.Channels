@@ -8,10 +8,10 @@ namespace MediaBrowser.Plugins.Trailers.Configuration
     public class PluginConfiguration : BasePluginConfiguration
     {
         public bool EnableMovieArchive { get; set; }
+        public bool ForceDownloadListings { get; set; }
 
         public PluginConfiguration()
         {
-            EnableMovieArchive = true;
         }
     }
 }
