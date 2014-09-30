@@ -61,8 +61,6 @@ namespace PodCasts.Entities
 
             if (feed == null) return podcasts;
 
-            Plugin.Logger.Debug("Processing Feed: {0}", feed.Title);
-
             foreach (var item in feed.Items)
             {
                 try
@@ -84,8 +82,6 @@ namespace PodCasts.Entities
 
                     var podcast = IsAudioFile(path) ? (BaseItem)new PodCastAudio { DateCreated = item.PublishDate.UtcDateTime, DateModified = item.PublishDate.UtcDateTime, Name = item.Title.Text, DisplayMediaType = "Audio" } :
                                                         new VodCastVideo { DateCreated = item.PublishDate.UtcDateTime, DateModified = item.PublishDate.UtcDateTime, Name = item.Title.Text, DisplayMediaType = "Movie" };
-
-                    Plugin.Logger.Debug("Found podcast: {0}", podcast.Name);
 
                     podcast.Path = path;
                     podcast.Id = podcast.Path.GetMBId(podcast.GetType());

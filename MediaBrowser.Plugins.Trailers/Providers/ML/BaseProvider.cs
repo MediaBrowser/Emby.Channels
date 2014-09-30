@@ -32,7 +32,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
         {
             var list = new List<ChannelItemInfo>();
 
-            var html = await EntryPoint.Instance.GetAndCacheResponse(url, TimeSpan.FromDays(1), cancellationToken)
+            var html = await EntryPoint.Instance.GetAndCacheResponse(url, TimeSpan.FromDays(3), cancellationToken)
                         .ConfigureAwait(false);
 
 

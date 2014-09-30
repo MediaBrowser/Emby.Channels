@@ -27,7 +27,7 @@ namespace MediaBrowser.Plugins.Trailers
         {
             get
             {
-                return "59";
+                return "61";
             }
         }
 
@@ -140,6 +140,14 @@ namespace MediaBrowser.Plugins.Trailers
 
         private IEnumerable<ChannelItemInfo> RemoveDuplicates(IEnumerable<ChannelItemInfo> items)
         {
+            items = RemoveDuplicatesById(items);
+            items = RemoveDuplicatesByName(items);
+
+            return items;
+        }
+
+        private IEnumerable<ChannelItemInfo> RemoveDuplicatesById(IEnumerable<ChannelItemInfo> items)
+        {
             var dictionary = new Dictionary<string, ChannelItemInfo>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var item in items)
@@ -153,6 +161,33 @@ namespace MediaBrowser.Plugins.Trailers
                     var types = current.TrailerTypes.ToList();
                     types.AddRange(item.TrailerTypes);
                     item.TrailerTypes = types.Distinct().ToList();
+                }
+
+                dictionary[key] = item;
+            }
+
+            return dictionary.Values;
+        }
+
+        private IEnumerable<ChannelItemInfo> RemoveDuplicatesByName(IEnumerable<ChannelItemInfo> items)
+        {
+            var dictionary = new Dictionary<string, ChannelItemInfo>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var item in items)
+            {
+                var key = item.Name;
+
+                if (dictionary.ContainsKey(key))
+                {
+                    var current = dictionary[key];
+
+                    var types = current.TrailerTypes.ToList();
+                    types.AddRange(item.TrailerTypes);
+                    item.TrailerTypes = types.Distinct().ToList();
+
+                    var sources = current.MediaSources.ToList();
+                    sources.AddRange(item.MediaSources.Where(i => !sources.Any(s => string.Equals(s.Path, i.Path, StringComparison.OrdinalIgnoreCase))));
+                    item.MediaSources = sources;
                 }
 
                 dictionary[key] = item;
@@ -200,7 +235,7 @@ namespace MediaBrowser.Plugins.Trailers
                 return items;
             }
 
-            var json = await EntryPoint.Instance.GetAndCacheResponse("https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Providers/listings.txt",
+            var json = await EntryPoint.Instance.GetAndCacheResponse("https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Providers/listings.txt?v=" + DataVersion,
                         TimeSpan.FromDays(3), cancellationToken);
 
             return _json.DeserializeFromString<List<ChannelItemInfo>>(json);
@@ -388,7 +423,8 @@ namespace MediaBrowser.Plugins.Trailers
                         ChannelItemSortField.Runtime
                    },
 
-                AutoRefreshLevels = 3
+                AutoRefreshLevels = 3,
+                DailyDownloadLimit = 10
             };
         }
 

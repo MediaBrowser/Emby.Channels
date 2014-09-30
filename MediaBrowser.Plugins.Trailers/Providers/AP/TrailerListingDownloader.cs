@@ -35,7 +35,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.AP
                 HDTrailerFeedUrl :
                 TrailerFeedUrl;
 
-            var stream = await EntryPoint.Instance.GetAndCacheResponse(url, TimeSpan.FromDays(1), cancellationToken)
+            var stream = await EntryPoint.Instance.GetAndCacheResponse(url, TimeSpan.FromDays(7), cancellationToken)
                         .ConfigureAwait(false);
 
             var list = new List<TrailerInfo>();
