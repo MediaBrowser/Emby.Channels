@@ -41,7 +41,7 @@ namespace MediaBrowser.Plugins.Trailers
 
                 // For apple
                 UserAgent = UserAgent,
-                EnableUnconditionalCache = true,
+                CacheMode = CacheMode.Unconditional,
                 CacheLength = cacheLength
             }))
             {

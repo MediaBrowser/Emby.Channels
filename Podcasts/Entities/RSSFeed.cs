@@ -42,7 +42,7 @@ namespace PodCasts.Entities
         {
             var response = await httpClient.Get(new HttpRequestOptions
             {
-                EnableUnconditionalCache = true,
+                CacheMode = CacheMode.Unconditional,
                 CacheLength = TimeSpan.FromHours(3),
                 Url = url,
                 CancellationToken = cancellationToken
