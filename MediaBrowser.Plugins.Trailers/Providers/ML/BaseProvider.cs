@@ -17,13 +17,10 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
 {
     public abstract class BaseProvider : GlobalBaseProvider
     {
-        private readonly ILogger _logger;
-
         protected string BaseUrl = "http://www.movie-list.com/";
 
-        protected BaseProvider(ILogger logger)
+        protected BaseProvider(ILogger logger) : base(logger)
         {
-            _logger = logger;
         }
 
         public abstract TrailerType TrailerType { get; }
@@ -66,7 +63,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error getting trailer info", ex);
+                        Logger.ErrorException("Error getting trailer info", ex);
                     }
                 }
             }
@@ -229,6 +226,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
         private List<ChannelMediaInfo> GetMediaInfo(IEnumerable<HtmlNode> nodes, string html)
         {
             var links = nodes.Select(i => i.GetAttributeValue("href", ""))
+                .Where(i => !string.IsNullOrWhiteSpace(i))
                 .ToList();
 
             var list = new List<ChannelMediaInfo>();
@@ -287,17 +285,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
             }
 
             return list
-                .Where(i =>
-                {
-                    var ok = ValidDomains.Any(d => i.Path.IndexOf(d, StringComparison.OrdinalIgnoreCase) != -1);
-
-                    if (!ok)
-                    {
-                        _logger.Debug("Ignoring {0}", i.Path);
-                    }
-
-                    return ok;
-                })
+                .Where(i => IsValidDomain(i.Path))
                 .Select(SetValues)
                 .ToList();
         }

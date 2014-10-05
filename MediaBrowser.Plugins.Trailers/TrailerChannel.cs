@@ -1,11 +1,18 @@
-﻿using MediaBrowser.Controller.Channels;
+﻿using System.Net;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Plugins.Trailers.Listings;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,10 +23,16 @@ namespace MediaBrowser.Plugins.Trailers
     {
         public static TrailerChannel Instance;
         private readonly IJsonSerializer _json;
+        private readonly IApplicationPaths _appPaths;
+        private readonly IHttpClient _httpClient;
+        private readonly ILogger _logger;
 
-        public TrailerChannel(IJsonSerializer json)
+        public TrailerChannel(IJsonSerializer json, IApplicationPaths appPaths, IHttpClient httpClient, ILogger logger)
         {
             _json = json;
+            _appPaths = appPaths;
+            _httpClient = httpClient;
+            _logger = logger;
             Instance = this;
         }
 
@@ -223,22 +236,230 @@ namespace MediaBrowser.Plugins.Trailers
         {
             if (direct || Plugin.Instance.Configuration.ForceDownloadListings)
             {
-                var items = await GetChannelItems(EntryPoint.Instance.Providers, cancellationToken).ConfigureAwait(false);
-
-                items = RemoveDuplicates(items);
-
-                if (!Plugin.Instance.Configuration.EnableMovieArchive)
-                {
-                    items = items.Where(i => i.TrailerTypes.Count > 1 || !i.TrailerTypes.Contains(TrailerType.Archive));
-                }
-
-                return items;
+                return await GetDirectListings(cancellationToken).ConfigureAwait(false);
             }
 
-            var json = await EntryPoint.Instance.GetAndCacheResponse("https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/listings.txt?v=" + DataVersion,
+            var json = await EntryPoint.Instance.GetAndCacheResponse("https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Listings/filteredlistings.txt?v=" + DataVersion,
                         TimeSpan.FromDays(3), cancellationToken);
 
             return _json.DeserializeFromString<List<ChannelItemInfo>>(json);
+        }
+
+        private readonly SemaphoreSlim _fileLock = new SemaphoreSlim(1, 1);
+
+        private async Task<IEnumerable<ChannelItemInfo>> GetDirectListings(CancellationToken cancellationToken)
+        {
+            var items = await GetChannelItems(EntryPoint.Instance.Providers, cancellationToken).ConfigureAwait(false);
+
+            items = RemoveDuplicates(items);
+
+            if (!Plugin.Instance.Configuration.EnableMovieArchive)
+            {
+                items = items.Where(i => i.TrailerTypes.Count > 1 || !i.TrailerTypes.Contains(TrailerType.Archive));
+            }
+
+            var list = items.ToList();
+
+            var savePath = _appPaths.ProgramDataPath;
+
+            await _fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                _json.SerializeToFile(list, Path.Combine(savePath, "alllistings.txt"));
+            }
+            finally
+            {
+                _fileLock.Release();
+            }
+
+            var results = await TestResults(list, savePath, cancellationToken).ConfigureAwait(false);
+
+            var filteredItems = CreateFilteredListings(list, results);
+
+            await _fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                _json.SerializeToFile(filteredItems, Path.Combine(savePath, "filteredlistings.txt"));
+            }
+            finally
+            {
+                _fileLock.Release();
+            }
+            
+            return items;
+        }
+
+        private List<ChannelItemInfo> CreateFilteredListings(IEnumerable<ChannelItemInfo> items, ListingResults results)
+        {
+            return items.Where(i => Filter(i, results)).ToList();
+        }
+
+        private bool Filter(ChannelItemInfo item, ListingResults results)
+        {
+            item.MediaSources = item.MediaSources
+                .Where(i => Filter(i, results))
+                .ToList();
+
+            return item.MediaSources.Count > 0;
+        }
+
+        private bool Filter(ChannelMediaInfo item, ListingResults results)
+        {
+            var key = item.Path;
+
+            if (string.IsNullOrEmpty(key))
+            {
+                return false;
+            }
+
+            ListingResult result;
+            if (results.TestResults.TryGetValue(key, out result))
+            {
+                return result.IsValid;
+            }
+
+            // Should never get here. return false
+            return false;
+        }
+
+        private async Task<ListingResults> TestResults(IEnumerable<ChannelItemInfo> items, string savePath, CancellationToken cancellationToken)
+        {
+            ListingResults results = null;
+
+            try
+            {
+                using (var stream = GetType().Assembly.GetManifestResourceStream(GetType().Namespace + ".Listings.testresults.txt"))
+                {
+                    if (stream != null)
+                    {
+                        results = _json.DeserializeFromStream<ListingResults>(stream);
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            if (results == null)
+            {
+                results = new ListingResults();
+            }
+
+            await TestItems(items, results, cancellationToken).ConfigureAwait(false);
+
+            await _fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                _json.SerializeToFile(results, Path.Combine(savePath, "testresults.txt"));
+            }
+            finally
+            {
+                _fileLock.Release();
+            }
+
+            return results;
+        }
+
+        private async Task TestItems(IEnumerable<ChannelItemInfo> items, ListingResults results, CancellationToken cancellationToken)
+        {
+            foreach (var item in items)
+            {
+                await TestItem(item, results, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task TestItem(ChannelItemInfo item, ListingResults results, CancellationToken cancellationToken)
+        {
+            foreach (var media in (item.MediaSources ?? new List<ChannelMediaInfo>()))
+            {
+                try
+                {
+                    await TestMediaInfo(media, results, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error testing media info", ex);
+                }
+            }
+        }
+
+        private async Task TestMediaInfo(ChannelMediaInfo item, ListingResults results, CancellationToken cancellationToken)
+        {
+            var key = item.Path;
+
+            if (string.IsNullOrEmpty(key))
+            {
+                return;
+            }
+
+            ListingResult result;
+            if (results.TestResults.TryGetValue(key, out result))
+            {
+                // Was validated recently
+                if (result.IsValid && (DateTime.UtcNow - result.DateTested).TotalDays <= 30)
+                {
+                    return;
+                }
+
+                // Already known to be bad
+                if (!result.IsValid)
+                {
+                    return;
+                }
+            }
+
+            var options = new HttpRequestOptions
+            {
+                Url = item.Path,
+                CancellationToken = cancellationToken,
+                BufferContent = false
+            };
+
+            foreach (var header in item.RequiredHttpHeaders)
+            {
+                options.RequestHeaders[header.Key] = header.Value;
+            }
+
+            var isOk = false;
+
+            try
+            {
+                var response = await _httpClient.SendAsync(options, "HEAD").ConfigureAwait(false);
+
+                try
+                {
+                    if (response.ContentType.StartsWith("video", StringComparison.OrdinalIgnoreCase))
+                    {
+                        isOk = true;
+                    }
+                }
+                finally
+                {
+                    response.Content.Dispose();
+                }
+            }
+            catch (HttpException ex)
+            {
+                if (!ex.StatusCode.HasValue)
+                {
+                    throw;
+                }
+
+                if (ex.StatusCode.Value != HttpStatusCode.NotFound &&
+                    ex.StatusCode.Value != HttpStatusCode.Forbidden)
+                {
+                    throw;
+                }
+            }
+
+            results.TestResults[key] = new ListingResult
+            {
+                IsValid = isOk,
+                DateTested = DateTime.UtcNow
+            };
         }
 
         public ChannelItemResult GetTopCategories()

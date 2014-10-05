@@ -1,22 +1,32 @@
 ﻿using MediaBrowser.Controller.Channels;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Plugins.Trailers.Providers
 {
     public abstract class GlobalBaseProvider
     {
+        protected ILogger Logger;
+
         protected readonly string[] ValidContainers = { ".mov", ".mp4", ".m4v" };
 
         protected readonly string[] ValidDomains =
         {
             "regentreleasing",
+            "regententertainment.com",
             "movie-list",
             "warnerbros.com",
             "apple.com",
             "variancefilms.com",
             "avideos."
         };
+
+        protected GlobalBaseProvider(ILogger logger)
+        {
+            Logger = logger;
+        }
 
         protected ChannelMediaInfo SetValues(ChannelMediaInfo info)
         {
@@ -66,6 +76,18 @@ namespace MediaBrowser.Plugins.Trailers.Providers
             info.AudioChannels = 2;
 
             return info;
+        }
+
+        protected bool IsValidDomain(string url)
+        {
+            var ok = ValidDomains.Any(d => url.IndexOf(d, StringComparison.OrdinalIgnoreCase) != -1);
+
+            if (!ok)
+            {
+                Logger.Debug("Ignoring {0}", url);
+            }
+
+            return ok;
         }
 
         protected Dictionary<string, string> GetRequiredHttpHeaders(string url)

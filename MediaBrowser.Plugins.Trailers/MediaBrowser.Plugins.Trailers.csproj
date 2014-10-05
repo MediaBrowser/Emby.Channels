@@ -99,6 +99,7 @@
     <Compile Include="HtmlAgilityPack\Trace.cs" />
     <Compile Include="HtmlAgilityPack\Trace.FullFramework.cs" />
     <Compile Include="HtmlAgilityPack\Utilities.cs" />
+    <Compile Include="Listings\ListingResults.cs" />
     <Compile Include="Providers\AP\ArchiveProvider.cs" />
     <Compile Include="Providers\AP\TrailerListingDownloader.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
@@ -125,13 +126,19 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="listings.txt" />
+    <EmbeddedResource Include="Listings\filteredlistings.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Providers\MW\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Providers\listings.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Listings\testresults.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Listings\alllistings.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
