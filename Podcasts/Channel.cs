@@ -233,7 +233,7 @@ namespace PodCasts
                         ChannelItemSortField.Runtime
                    },
 
-                   AutoRefreshLevels = 2
+                AutoRefreshLevels = 2
             };
         }
 
@@ -280,6 +280,11 @@ namespace PodCasts
 
         public async Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
         {
+            if (query.ContentTypes.Length > 0 && !query.ContentTypes.Contains(ChannelMediaContentType.Podcast))
+            {
+                return new ChannelItemResult();
+            }
+
             var tasks = Plugin.Instance.Configuration.Feeds.Select(async i =>
             {
 
@@ -295,9 +300,15 @@ namespace PodCasts
                 }
             });
 
-            var items = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var items = (await Task.WhenAll(tasks).ConfigureAwait(false))
+                .SelectMany(i => i);
 
-            var all = items.SelectMany(i => i).ToList();
+            if (query.ContentTypes.Length > 0)
+            {
+                items = items.Where(i => query.ContentTypes.Contains(i.ContentType));
+            }
+
+            var all = items.ToList();
 
             return new ChannelItemResult
             {
