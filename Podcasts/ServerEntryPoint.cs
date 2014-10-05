@@ -39,7 +39,6 @@ namespace PodCasts
         public IApplicationPaths ApplicationPaths { get; set; }
         public ISecurityManager PluginSecurityManager { get; set; }
         public IItemRepository ItemRepository { get; set; }
-        public INotificationManager NotificationManager { get; set; }
         public IUserManager UserManager { get; set; }
 
         /// <summary>
@@ -52,7 +51,7 @@ namespace PodCasts
         /// <param name="applicationPaths"></param>
         /// <param name="configurationManager"></param>
         /// <param name="repo"></param>
-        public ServerEntryPoint(ITaskManager taskManager, ILibraryManager libraryManager, INotificationManager notificationManager, ILogManager logManager, ISecurityManager securityManager,
+        public ServerEntryPoint(ITaskManager taskManager, ILibraryManager libraryManager, ILogManager logManager, ISecurityManager securityManager,
             IApplicationPaths applicationPaths, IServerConfigurationManager configurationManager, IItemRepository repo, IUserManager userManager)
         {
             _taskManager = taskManager;
@@ -60,7 +59,7 @@ namespace PodCasts
             ConfigurationManager = configurationManager;
             ApplicationPaths = applicationPaths;
             ItemRepository = repo;
-            NotificationManager = notificationManager;
+            
             UserManager = userManager;
             PluginSecurityManager = securityManager;
             Plugin.Logger = logManager.GetLogger(Plugin.Instance.Name);

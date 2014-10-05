@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
+using MediaBrowser.Model.Notifications;
 
 namespace PodCasts.Entities
 {
@@ -25,13 +27,14 @@ namespace PodCasts.Entities
         public async Task<IEnumerable<BaseItem>> Refresh(IProviderManager providerManager,
             IHttpClient httpClient,
             string url,
+            INotificationManager notificationManager,
             CancellationToken cancellationToken)
         {
             using (XmlReader reader = new SyndicationFeedXmlReader(await httpClient.Get(url, cancellationToken).ConfigureAwait(false)))
             {
                 var feed = SyndicationFeed.Load(reader);
 
-                return await GetChildren(feed, providerManager, cancellationToken);
+                return await GetChildren(feed, providerManager, notificationManager, cancellationToken);
             }
         }
 
@@ -55,7 +58,7 @@ namespace PodCasts.Entities
             }
         }
 
-        private static async Task<IEnumerable<BaseItem>> GetChildren(SyndicationFeed feed, IProviderManager providerManager, CancellationToken cancellationToken)
+        private static async Task<IEnumerable<BaseItem>> GetChildren(SyndicationFeed feed, IProviderManager providerManager, INotificationManager notificationManager, CancellationToken cancellationToken)
         {
             var podcasts = new List<BaseItem>();
 
@@ -156,6 +159,13 @@ namespace PodCasts.Entities
                 }
                 catch (Exception e)
                 {
+                    notificationManager.SendNotification(new NotificationRequest
+                    {
+                        Description = "Error refreshing podcast item " + e,
+                        Date = DateTime.Now,
+                        Level = NotificationLevel.Error,
+                        SendToUserMode = SendToUserType.Admins
+                    }, cancellationToken);
                     Plugin.Logger.ErrorException("Error refreshing podcast item ", e);
                 }
             }
