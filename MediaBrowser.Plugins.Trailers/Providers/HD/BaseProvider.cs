@@ -135,7 +135,17 @@ namespace MediaBrowser.Plugins.Trailers.Providers.HD
             }
 
             return list
-                .Where(i => ValidDomains.Any(d => i.Path.IndexOf(d, StringComparison.OrdinalIgnoreCase) != -1))
+                .Where(i =>
+                {
+                    var ok = ValidDomains.Any(d => i.Path.IndexOf(d, StringComparison.OrdinalIgnoreCase) != -1);
+
+                    if (!ok)
+                    {
+                        _logger.Debug("Ignoring {0}", i.Path);
+                    }
+
+                    return ok;
+                })
                 .Select(SetValues)
                 .ToList();
         }

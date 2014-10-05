@@ -235,7 +235,7 @@ namespace MediaBrowser.Plugins.Trailers
                 return items;
             }
 
-            var json = await EntryPoint.Instance.GetAndCacheResponse("https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Providers/listings.txt?v=" + DataVersion,
+            var json = await EntryPoint.Instance.GetAndCacheResponse("https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/listings.txt?v=" + DataVersion,
                         TimeSpan.FromDays(3), cancellationToken);
 
             return _json.DeserializeFromString<List<ChannelItemInfo>>(json);

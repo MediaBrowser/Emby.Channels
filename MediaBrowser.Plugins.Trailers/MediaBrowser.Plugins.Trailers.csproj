@@ -125,10 +125,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Providers\listings.txt" />
+    <EmbeddedResource Include="listings.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Providers\MW\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Providers\listings.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
