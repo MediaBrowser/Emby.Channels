@@ -39,7 +39,7 @@ namespace MediaBrowser.Plugins.TuneIn
             get
             {
                 // Increment as needed to invalidate all caches
-                return "12";
+                return "46";
             }
         }
 
@@ -78,18 +78,21 @@ namespace MediaBrowser.Plugins.TuneIn
             {
                 var channelID = query.FolderId.Split('_');
 
-                
+
                 if (channelID[0] == "preset")
                 {
                     items = await GetPresets(query, cancellationToken);
                 }
-
-                query.FolderId = channelID[1].Replace("&amp;", "&");
-
-                
-                if (channelID.Count() > 2)
+                else
                 {
-                    items = await GetMenu(channelID[2], query, cancellationToken).ConfigureAwait(false);
+                    query.FolderId = channelID[1].Replace("&amp;", "&");
+
+                    if (channelID.Count() > 2)
+                    {
+                        items = await GetMenu(channelID[2], query, cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                        items = await GetMenu("", query, cancellationToken).ConfigureAwait(false);
                 }
             }
 
@@ -119,9 +122,9 @@ namespace MediaBrowser.Plugins.TuneIn
                 {
                     var body = page.DocumentNode.SelectSingleNode("//body");
 
-                    if (body.SelectNodes("./outline[@url and @type=\"audio\"]") != null)
+                    if (body.SelectNodes("//outline[@url and @type=\"audio\"]") != null)
                     {
-                       foreach (var node in body.SelectNodes("./outline[@url]"))
+                        foreach (var node in body.SelectNodes("//outline[@url and @type=\"audio\"]"))
                         {
                             items.Add(new ChannelItemInfo
                             {
@@ -129,8 +132,21 @@ namespace MediaBrowser.Plugins.TuneIn
                                 Id = "stream_" + node.Attributes["url"].Value,
                                 Type = ChannelItemType.Media,
                                 ContentType = ChannelMediaContentType.Podcast,
-                                ImageUrl = node.Attributes["image"].Value,
+                                ImageUrl = node.Attributes["image"] != null ? node.Attributes["image"].Value : null,
                                 MediaType = ChannelMediaType.Audio
+                            });
+                        }
+                    }
+                    if (body.SelectNodes("//outline[@key=\"shows\"]") != null)
+                    {
+                        foreach (var node in body.SelectNodes("//outline[@key=\"shows\"]/outline[@url]"))
+                        {
+                            items.Add(new ChannelItemInfo
+                            {
+                                Name = node.Attributes["text"].Value,
+                                Id = "subcat_" + node.Attributes["url"].Value,
+                                Type = ChannelItemType.Folder,
+                                ImageUrl = node.Attributes["image"] != null ? node.Attributes["image"].Value : null
                             });
                         }
                     }
@@ -175,9 +191,12 @@ namespace MediaBrowser.Plugins.TuneIn
                                 items.Add(new ChannelItemInfo
                                 {
                                     Name = node.Attributes["text"].Value,
-                                    Id = "subcat_" + node.Attributes["url"].Value,
+                                    Id = "stream_" + node.Attributes["url"].Value,
                                     ImageUrl = node.Attributes["image"] != null ? node.Attributes["image"].Value : "",
-                                    Type = ChannelItemType.Folder,
+                                    Type = ChannelItemType.Media,
+                                    ContentType = ChannelMediaContentType.Podcast,
+                                    MediaType = ChannelMediaType.Audio
+
                                 });
                             }
                         }
