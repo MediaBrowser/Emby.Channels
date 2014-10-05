@@ -127,6 +127,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Providers\listings.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Providers\MW\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\..\MediaBrowser\ProgramData-Server\Plugins\" /y</PostBuildEvent>
