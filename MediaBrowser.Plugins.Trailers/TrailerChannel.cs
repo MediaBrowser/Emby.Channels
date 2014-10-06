@@ -71,6 +71,25 @@ namespace MediaBrowser.Plugins.Trailers
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
+            if (!RegistrationInfo.Instance.IsRegistered)
+            {
+                var list = new List<ChannelItemInfo>
+                {
+                    new ChannelItemInfo
+                    {
+                         Id = "notregistered",
+                         Name = "Supporter membership required",
+                         Type = ChannelItemType.Folder
+                    }
+                };
+
+                return new ChannelItemResult
+                {
+                    Items = list,
+                    TotalRecordCount = list.Count
+                };
+            }
+            
             if (string.IsNullOrEmpty(query.FolderId))
             {
                 return GetTopCategories();
