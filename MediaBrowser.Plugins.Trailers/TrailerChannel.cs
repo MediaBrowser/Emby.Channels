@@ -40,7 +40,7 @@ namespace MediaBrowser.Plugins.Trailers
         {
             get
             {
-                return "61";
+                return "64";
             }
         }
 

@@ -106,7 +106,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.AP
                 Path = info.TrailerUrl,
                 Width = isHd ? 1280 : 720,
                 Height = isHd ? 720 : 480,
-                Container = Path.GetExtension(info.TrailerUrl),
+                Container = (Path.GetExtension(info.TrailerUrl) ?? string.Empty).TrimStart('.'),
                 AudioCodec = AudioCodec.AAC,
                 VideoCodec = VideoCodec.H264,
                 AudioChannels = 2,

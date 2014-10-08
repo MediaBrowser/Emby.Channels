@@ -1,8 +1,10 @@
-﻿using MediaBrowser.Controller.Channels;
+﻿using System.IO;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Plugins.Trailers.Providers
 {
@@ -35,13 +37,24 @@ namespace MediaBrowser.Plugins.Trailers.Providers
             int? width = null;
             int? height = null;
 
+            var profile = "main";
+            var level = (float)3.0;
+
             // These bitrate numbers are just a guess to try and facilitate direct streaming
 
             if (url.IndexOf("1080", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 width = 1920;
                 height = 1080;
+
                 info.VideoBitrate = url.IndexOf("apple", StringComparison.OrdinalIgnoreCase) == -1 ? 3000000 : 11000000;
+
+                level = (float)3.1;
+                
+                if (url.IndexOf("apple", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    profile = "high";
+                }
             }
             else if (url.IndexOf("720", StringComparison.OrdinalIgnoreCase) != -1)
             {
@@ -69,11 +82,17 @@ namespace MediaBrowser.Plugins.Trailers.Providers
             info.Height = height;
             info.Width = width;
 
-            info.VideoCodec = "h264";
-            info.AudioCodec = "aac";
+            info.VideoCodec = VideoCodec.H264;
+            info.AudioCodec = AudioCodec.AAC;
 
             info.AudioBitrate = 128000;
             info.AudioChannels = 2;
+            info.AudioSampleRate = 44100;
+
+            info.VideoProfile = profile;
+            info.VideoLevel = level;
+
+            info.Container = (Path.GetExtension(url) ?? string.Empty).TrimStart('.');
 
             return info;
         }
