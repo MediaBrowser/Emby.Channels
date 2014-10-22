@@ -45,12 +45,13 @@ namespace PodCasts
         /// Initializes a new instance of the <see cref="ServerEntryPoint" /> class.
         /// </summary>
         /// <param name="taskManager">The task manager.</param>
-        /// <param name="libraryManager"></param>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="logManager"></param>
-        /// <param name="applicationPaths"></param>
-        /// <param name="configurationManager"></param>
-        /// <param name="repo"></param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="logManager">The log manager.</param>
+        /// <param name="securityManager">The security manager.</param>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="repo">The repo.</param>
+        /// <param name="userManager">The user manager.</param>
         public ServerEntryPoint(ITaskManager taskManager, ILibraryManager libraryManager, ILogManager logManager, ISecurityManager securityManager,
             IApplicationPaths applicationPaths, IServerConfigurationManager configurationManager, IItemRepository repo, IUserManager userManager)
         {
@@ -62,7 +63,7 @@ namespace PodCasts
             
             UserManager = userManager;
             PluginSecurityManager = securityManager;
-            Plugin.Logger = logManager.GetLogger(Plugin.Instance.Name);
+            Plugin.Logger = logManager.GetLogger("Podcasts");
 
             Instance = this;
         }
