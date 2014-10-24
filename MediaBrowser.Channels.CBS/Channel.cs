@@ -307,7 +307,8 @@ namespace MediaBrowser.Channels.CBS
                                 VideoBitrate = Convert.ToInt32(bitrate),
                                 Width = Convert.ToInt16(width),
                                 Height = Convert.ToInt16(height),
-                                Protocol = MediaProtocol.Rtmp
+                                Protocol = MediaProtocol.Rtmp,
+                                ReadAtNativeFramerate = true
                             });
                         }
 

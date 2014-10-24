@@ -439,7 +439,8 @@ namespace MediaBrowser.Plugins.ITV
                             {
                                 Path = playURL,
                                 VideoBitrate = Convert.ToInt32(bitrate),
-                                Protocol = MediaProtocol.Rtmp
+                                Protocol = MediaProtocol.Rtmp,
+                                ReadAtNativeFramerate = true
                             });
                             _logger.Debug(strippedURL);
                         }
