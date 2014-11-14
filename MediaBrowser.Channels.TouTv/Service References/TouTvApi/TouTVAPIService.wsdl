@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:tns="http://tempuri.org/" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="TouTVAPIService" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://tempuri.org/Imports">
+      <xsd:import schemaLocation="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd0" namespace="http://tempuri.org/" />
+      <xsd:import schemaLocation="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import schemaLocation="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd2" namespace="RC.Svc.Web.TouTV" />
+      <xsd:import schemaLocation="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/RC.TouTV.Contracts.DTOs" />
+      <xsd:import schemaLocation="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd4" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+      <xsd:import schemaLocation="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd5" namespace="http://schemas.datacontract.org/2004/07/RC.Svc.Web.TPF" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="ITouTVAPIService_GetArborescence_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetArborescence" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetArborescence_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetArborescenceResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetBlocPromo_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetBlocPromo" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetBlocPromo_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetBlocPromoResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetBlocPromoItems_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetBlocPromoItems" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetBlocPromoItems_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetBlocPromoItemsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetCollections_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetCollections" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetCollections_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetCollectionsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPageRepertoire_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetPageRepertoire" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPageRepertoire_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetPageRepertoireResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPageAccueil_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetPageAccueil" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPageAccueil_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetPageAccueilResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPageGenre_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetPageGenre" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPageGenre_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetPageGenreResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPageEmission_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetPageEmission" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPageEmission_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetPageEmissionResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPageEpisode_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetPageEpisode" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPageEpisode_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetPageEpisodeResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetGenres_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetGenres" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetGenres_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetGenresResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetEmissions_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetEmissions" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetEmissions_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetEmissionsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetEpisodesForEmission_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetEpisodesForEmission" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetEpisodesForEmission_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetEpisodesForEmissionResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_SearchTerms_InputMessage">
+    <wsdl:part name="parameters" element="tns:SearchTerms" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_SearchTerms_OutputMessage">
+    <wsdl:part name="parameters" element="tns:SearchTermsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_SearchTermsMax_InputMessage">
+    <wsdl:part name="parameters" element="tns:SearchTermsMax" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_SearchTermsMax_OutputMessage">
+    <wsdl:part name="parameters" element="tns:SearchTermsMaxResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetOldestEpisode_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetOldestEpisode" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetOldestEpisode_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetOldestEpisodeResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetCarrousel_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetCarrousel" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetCarrousel_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetCarrouselResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetCarrouselWithCollections_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetCarrouselWithCollections" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetCarrouselWithCollections_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetCarrouselWithCollectionsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetTeaser_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetTeaser" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetTeaser_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetTeaserResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPays_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetPays" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPays_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetPaysResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPartenaires_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetPartenaires" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetPartenaires_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetPartenairesResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetEmissionsContenusCourts_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetEmissionsContenusCourts" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetEmissionsContenusCourts_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetEmissionsContenusCourtsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetEpisodesExclusiviteRogers_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetEpisodesExclusiviteRogers" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetEpisodesExclusiviteRogers_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetEpisodesExclusiviteRogersResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetEmissionsExclusiviteRogers_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetEmissionsExclusiviteRogers" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetEmissionsExclusiviteRogers_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetEmissionsExclusiviteRogersResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetConfiguration_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetConfiguration" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetConfiguration_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetConfigurationResponse" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetSeasoniTunesLinksForEmission_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetSeasoniTunesLinksForEmission" />
+  </wsdl:message>
+  <wsdl:message name="ITouTVAPIService_GetSeasoniTunesLinksForEmission_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetSeasoniTunesLinksForEmissionResponse" />
+  </wsdl:message>
+  <wsdl:portType name="ITouTVAPIService">
+    <wsdl:operation name="GetArborescence">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetArborescence" message="tns:ITouTVAPIService_GetArborescence_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetArborescenceResponse" message="tns:ITouTVAPIService_GetArborescence_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBlocPromo">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetBlocPromo" message="tns:ITouTVAPIService_GetBlocPromo_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetBlocPromoResponse" message="tns:ITouTVAPIService_GetBlocPromo_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBlocPromoItems">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetBlocPromoItems" message="tns:ITouTVAPIService_GetBlocPromoItems_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetBlocPromoItemsResponse" message="tns:ITouTVAPIService_GetBlocPromoItems_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCollections">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetCollections" message="tns:ITouTVAPIService_GetCollections_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetCollectionsResponse" message="tns:ITouTVAPIService_GetCollections_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPageRepertoire">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPageRepertoire" message="tns:ITouTVAPIService_GetPageRepertoire_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPageRepertoireResponse" message="tns:ITouTVAPIService_GetPageRepertoire_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPageAccueil">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPageAccueil" message="tns:ITouTVAPIService_GetPageAccueil_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPageAccueilResponse" message="tns:ITouTVAPIService_GetPageAccueil_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPageGenre">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPageGenre" message="tns:ITouTVAPIService_GetPageGenre_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPageGenreResponse" message="tns:ITouTVAPIService_GetPageGenre_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPageEmission">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPageEmission" message="tns:ITouTVAPIService_GetPageEmission_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPageEmissionResponse" message="tns:ITouTVAPIService_GetPageEmission_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPageEpisode">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPageEpisode" message="tns:ITouTVAPIService_GetPageEpisode_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPageEpisodeResponse" message="tns:ITouTVAPIService_GetPageEpisode_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetGenres">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetGenres" message="tns:ITouTVAPIService_GetGenres_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetGenresResponse" message="tns:ITouTVAPIService_GetGenres_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEmissions">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetEmissions" message="tns:ITouTVAPIService_GetEmissions_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetEmissionsResponse" message="tns:ITouTVAPIService_GetEmissions_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEpisodesForEmission">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetEpisodesForEmission" message="tns:ITouTVAPIService_GetEpisodesForEmission_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetEpisodesForEmissionResponse" message="tns:ITouTVAPIService_GetEpisodesForEmission_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="SearchTerms">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/SearchTerms" message="tns:ITouTVAPIService_SearchTerms_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/SearchTermsResponse" message="tns:ITouTVAPIService_SearchTerms_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="SearchTermsMax">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/SearchTermsMax" message="tns:ITouTVAPIService_SearchTermsMax_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/SearchTermsMaxResponse" message="tns:ITouTVAPIService_SearchTermsMax_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOldestEpisode">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetOldestEpisode" message="tns:ITouTVAPIService_GetOldestEpisode_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetOldestEpisodeResponse" message="tns:ITouTVAPIService_GetOldestEpisode_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCarrousel">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetCarrousel" message="tns:ITouTVAPIService_GetCarrousel_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetCarrouselResponse" message="tns:ITouTVAPIService_GetCarrousel_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCarrouselWithCollections">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetCarrouselWithCollections" message="tns:ITouTVAPIService_GetCarrouselWithCollections_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetCarrouselWithCollectionsResponse" message="tns:ITouTVAPIService_GetCarrouselWithCollections_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTeaser">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetTeaser" message="tns:ITouTVAPIService_GetTeaser_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetTeaserResponse" message="tns:ITouTVAPIService_GetTeaser_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPays">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPays" message="tns:ITouTVAPIService_GetPays_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPaysResponse" message="tns:ITouTVAPIService_GetPays_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPartenaires">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPartenaires" message="tns:ITouTVAPIService_GetPartenaires_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetPartenairesResponse" message="tns:ITouTVAPIService_GetPartenaires_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEmissionsContenusCourts">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetEmissionsContenusCourts" message="tns:ITouTVAPIService_GetEmissionsContenusCourts_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetEmissionsContenusCourtsResponse" message="tns:ITouTVAPIService_GetEmissionsContenusCourts_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEpisodesExclusiviteRogers">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetEpisodesExclusiviteRogers" message="tns:ITouTVAPIService_GetEpisodesExclusiviteRogers_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetEpisodesExclusiviteRogersResponse" message="tns:ITouTVAPIService_GetEpisodesExclusiviteRogers_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEmissionsExclusiviteRogers">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetEmissionsExclusiviteRogers" message="tns:ITouTVAPIService_GetEmissionsExclusiviteRogers_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetEmissionsExclusiviteRogersResponse" message="tns:ITouTVAPIService_GetEmissionsExclusiviteRogers_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetConfiguration">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetConfiguration" message="tns:ITouTVAPIService_GetConfiguration_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetConfigurationResponse" message="tns:ITouTVAPIService_GetConfiguration_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetSeasoniTunesLinksForEmission">
+      <wsdl:input wsaw:Action="http://tempuri.org/ITouTVAPIService/GetSeasoniTunesLinksForEmission" message="tns:ITouTVAPIService_GetSeasoniTunesLinksForEmission_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/ITouTVAPIService/GetSeasoniTunesLinksForEmissionResponse" message="tns:ITouTVAPIService_GetSeasoniTunesLinksForEmission_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_ITouTVAPIService" type="tns:ITouTVAPIService">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetArborescence">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetArborescence" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBlocPromo">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetBlocPromo" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBlocPromoItems">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetBlocPromoItems" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCollections">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetCollections" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPageRepertoire">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetPageRepertoire" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPageAccueil">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetPageAccueil" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPageGenre">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetPageGenre" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPageEmission">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetPageEmission" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPageEpisode">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetPageEpisode" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetGenres">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetGenres" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEmissions">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetEmissions" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEpisodesForEmission">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetEpisodesForEmission" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SearchTerms">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/SearchTerms" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SearchTermsMax">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/SearchTermsMax" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOldestEpisode">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetOldestEpisode" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCarrousel">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetCarrousel" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCarrouselWithCollections">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetCarrouselWithCollections" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTeaser">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetTeaser" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPays">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetPays" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPartenaires">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetPartenaires" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEmissionsContenusCourts">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetEmissionsContenusCourts" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEpisodesExclusiviteRogers">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetEpisodesExclusiviteRogers" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEmissionsExclusiviteRogers">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetEmissionsExclusiviteRogers" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetConfiguration">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetConfiguration" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetSeasoniTunesLinksForEmission">
+      <soap:operation soapAction="http://tempuri.org/ITouTVAPIService/GetSeasoniTunesLinksForEmission" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="TouTVAPIService">
+    <wsdl:port name="BasicHttpBinding_ITouTVAPIService" binding="tns:BasicHttpBinding_ITouTVAPIService">
+      <soap:address location="http://api.tou.tv/v1/TouTVAPIService.svc" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:tns="http://schemas.datacontract.org/2004/07/RC.Svc.Web.TPF" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/RC.Svc.Web.TPF" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:complexType name="ArrayOfPartenaireDTO">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="PartenaireDTO" nillable="true" type="tns:PartenaireDTO" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfPartenaireDTO" nillable="true" type="tns:ArrayOfPartenaireDTO" />
+  <xs:complexType name="PartenaireDTO">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="HighResImageUrl" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ImageUrl" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="PartenaireId" type="xs:int" />
+      <xs:element minOccurs="0" name="ShortTitle" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="SiteUrl" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Title" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="PartenaireDTO" nillable="true" type="tns:PartenaireDTO" />
+  <xs:complexType name="ArrayOfConfigurationDTO">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ConfigurationDTO" nillable="true" type="tns:ConfigurationDTO" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfConfigurationDTO" nillable="true" type="tns:ArrayOfConfigurationDTO" />
+  <xs:complexType name="ConfigurationDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ConfigurationId" type="xs:int" />
+          <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Value" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ConfigurationDTO" nillable="true" type="tns:ConfigurationDTO" />
+  <xs:complexType name="DTO">
+    <xs:sequence />
+  </xs:complexType>
+  <xs:element name="DTO" nillable="true" type="tns:DTO" />
+  <xs:complexType name="iTunesLinkDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="EmissionId" nillable="true" type="xs:long" />
+          <xs:element minOccurs="0" name="EpisodeId" nillable="true" type="xs:long" />
+          <xs:element minOccurs="0" name="EpisodeNumber" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="SeasonNumber" nillable="true" type="xs:int" />
+          <xs:element minOccurs="0" name="Url" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="iTunesLinkId" type="xs:int" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="iTunesLinkDTO" nillable="true" type="tns:iTunesLinkDTO" />
+  <xs:complexType name="FavoriDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="CodeFavori" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="EpisodeId" type="xs:long" />
+          <xs:element minOccurs="0" name="FavoriId" type="xs:int" />
+          <xs:element minOccurs="0" name="Ordre" type="xs:int" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="FavoriDTO" nillable="true" type="tns:FavoriDTO" />
+  <xs:complexType name="MediaDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="CategoryId" type="xs:long" />
+          <xs:element minOccurs="0" name="Copyright" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="CustomFields" nillable="true" type="tns:ArrayOfCustomFieldDTO" />
+          <xs:element minOccurs="0" name="Description" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="EstContenuJeunesse" type="xs:boolean" />
+          <xs:element minOccurs="0" name="ExcludeTargetLocation" type="xs:boolean" />
+          <xs:element minOccurs="0" name="GenreTitle" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Id" type="xs:long" />
+          <xs:element minOccurs="0" name="IsReleased" type="xs:boolean" />
+          <xs:element minOccurs="0" name="IsUniqueEpisode" type="xs:boolean" />
+          <xs:element minOccurs="0" name="Keywords" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Length" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="LengthSpan" type="ser:duration" />
+          <xs:element minOccurs="0" name="PID" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="RTMPLocation" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Rating" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="TargetCountries" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Title" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Url" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="iTunesLinkUrl" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="MediaDTO" nillable="true" type="tns:MediaDTO" />
+  <xs:complexType name="ArrayOfCustomFieldDTO">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="CustomFieldDTO" nillable="true" type="tns:CustomFieldDTO" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfCustomFieldDTO" nillable="true" type="tns:ArrayOfCustomFieldDTO" />
+  <xs:complexType name="CustomFieldDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="CustomFieldId" type="xs:long" />
+          <xs:element minOccurs="0" name="IncludeInEmissions" type="xs:boolean" />
+          <xs:element minOccurs="0" name="IncludeInEpisodes" type="xs:boolean" />
+          <xs:element minOccurs="0" name="IncludeInGenres" type="xs:boolean" />
+          <xs:element minOccurs="0" name="IncludeInPlaylists" type="xs:boolean" />
+          <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="ParentId" type="xs:long" />
+          <xs:element minOccurs="0" name="Type" type="tns:CustomFieldTypeEnum" />
+          <xs:element minOccurs="0" name="Value" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="CustomFieldDTO" nillable="true" type="tns:CustomFieldDTO" />
+  <xs:simpleType name="CustomFieldTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Unknown" />
+      <xs:enumeration value="String" />
+      <xs:enumeration value="Url" />
+      <xs:enumeration value="Boolean" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="CustomFieldTypeEnum" nillable="true" type="tns:CustomFieldTypeEnum" />
+  <xs:complexType name="MediaCategoryDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="CategoryId" type="xs:long" />
+          <xs:element minOccurs="0" name="MediaId" type="xs:long" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="MediaCategoryDTO" nillable="true" type="tns:MediaCategoryDTO" />
+  <xs:complexType name="SearchCustomFieldDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="CustomFieldId" type="xs:long" />
+          <xs:element minOccurs="0" name="SearchCustomFieldId" type="ser:guid" />
+          <xs:element minOccurs="0" name="SearchEmission" type="xs:boolean" />
+          <xs:element minOccurs="0" name="SearchEpisode" type="xs:boolean" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="SearchCustomFieldDTO" nillable="true" type="tns:SearchCustomFieldDTO" />
+  <xs:complexType name="CategoryDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="CategoryType" type="tns:CategoryTypeEnum" />
+          <xs:element minOccurs="0" name="CustomFields" nillable="true" type="tns:ArrayOfCustomFieldDTO" />
+          <xs:element minOccurs="0" name="Description" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Id" type="xs:long" />
+          <xs:element minOccurs="0" name="ParentId" type="xs:long" />
+          <xs:element minOccurs="0" name="Title" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Url" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="CategoryDTO" nillable="true" type="tns:CategoryDTO" />
+  <xs:simpleType name="CategoryTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Root" />
+      <xs:enumeration value="Genre" />
+      <xs:enumeration value="Emission" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="CategoryTypeEnum" nillable="true" type="tns:CategoryTypeEnum" />
+  <xs:complexType name="SearchResultDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="EmissionId" nillable="true" type="xs:long" />
+          <xs:element minOccurs="0" name="EpisodeId" nillable="true" type="xs:long" />
+          <xs:element minOccurs="0" name="SearchResultId" type="ser:guid" />
+          <xs:element minOccurs="0" name="SearchTermId" type="ser:guid" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="SearchResultDTO" nillable="true" type="tns:SearchResultDTO" />
+  <xs:complexType name="SearchTermDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="SearchTermId" type="ser:guid" />
+          <xs:element minOccurs="0" name="Term" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="SearchTermDTO" nillable="true" type="tns:SearchTermDTO" />
+  <xs:complexType name="PlaylistChoiceDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Media" nillable="true" type="tns:MediaDTO" />
+          <xs:element minOccurs="0" name="MediaId" type="xs:long" />
+          <xs:element minOccurs="0" name="PlaylistChoiceId" type="xs:long" />
+          <xs:element minOccurs="0" name="PlaylistId" type="xs:long" />
+          <xs:element minOccurs="0" name="PlaylistIndex" type="xs:int" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="PlaylistChoiceDTO" nillable="true" type="tns:PlaylistChoiceDTO" />
+  <xs:complexType name="PlaylistDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Choices" nillable="true" type="tns:ArrayOfPlaylistChoiceDTO" />
+          <xs:element minOccurs="0" name="CustomFields" nillable="true" type="tns:ArrayOfCustomFieldDTO" />
+          <xs:element minOccurs="0" name="Description" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="EndDate" nillable="true" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="PlaylistId" type="xs:long" />
+          <xs:element minOccurs="0" name="StartDate" nillable="true" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="Title" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="PlaylistDTO" nillable="true" type="tns:PlaylistDTO" />
+  <xs:complexType name="ArrayOfPlaylistChoiceDTO">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="PlaylistChoiceDTO" nillable="true" type="tns:PlaylistChoiceDTO" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfPlaylistChoiceDTO" nillable="true" type="tns:ArrayOfPlaylistChoiceDTO" />
+  <xs:complexType name="QueueNotificationDTO">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:DTO">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="DateStamp" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="EntityId" type="xs:long" />
+          <xs:element minOccurs="0" name="ProcessedDateStamp" nillable="true" type="xs:dateTime" />
+          <xs:element minOccurs="0" name="QueueActionType" type="tns:QueueActionType" />
+          <xs:element minOccurs="0" name="QueueEntityType" type="tns:QueueEntityType" />
+          <xs:element minOccurs="0" name="QueueNotificationId" type="ser:guid" />
+          <xs:element minOccurs="0" name="Status" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="QueueNotificationDTO" nillable="true" type="tns:QueueNotificationDTO" />
+  <xs:simpleType name="QueueActionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Add">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">1</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Modify">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">2</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Delete">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">3</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="QueueActionType" nillable="true" type="tns:QueueActionType" />
+  <xs:simpleType name="QueueEntityType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Accounts">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">1</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Categories">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">2</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Choices">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">3</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="CustomFields">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">4</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Media">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">5</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Playlists">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">6</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="Releases">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">7</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="MediaFile">
+        <xs:annotation>
+          <xs:appinfo>
+            <EnumerationValue xmlns="http://schemas.microsoft.com/2003/10/Serialization/">8</EnumerationValue>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="QueueEntityType" nillable="true" type="tns:QueueEntityType" />
+  <xs:complexType name="ArrayOfiTunesLinkDTO">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="iTunesLinkDTO" nillable="true" type="tns:iTunesLinkDTO" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfiTunesLinkDTO" nillable="true" type="tns:ArrayOfiTunesLinkDTO" />
+</xs:schema>
