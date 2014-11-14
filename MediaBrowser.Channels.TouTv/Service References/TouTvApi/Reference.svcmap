@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="3451cf13-09ff-4a94-8896-bcd19df0af83" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>false</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://api.tou.tv/v1/toutvapiservice.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="TouTVAPIService.disco" MetadataType="Disco" ID="a1445ac3-5c03-419a-a968-59fc94e19720" SourceId="1" SourceUrl="http://api.tou.tv/v1/TouTVAPIService.svc?disco" />
+    <MetadataFile FileName="TouTVAPIService.xsd" MetadataType="Schema" ID="75194c33-046d-43eb-b80e-ab2125f88f9b" SourceId="1" SourceUrl="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd4" />
+    <MetadataFile FileName="TouTVAPIService1.xsd" MetadataType="Schema" ID="a2458f28-107e-4a8f-b6ff-55561645c45f" SourceId="1" SourceUrl="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd5" />
+    <MetadataFile FileName="TouTVAPIService2.xsd" MetadataType="Schema" ID="de7ad8ab-86da-40d3-a8cf-7387516d4ac6" SourceId="1" SourceUrl="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd0" />
+    <MetadataFile FileName="TouTVAPIService3.xsd" MetadataType="Schema" ID="3bc2a232-e369-408f-b4fe-b9bc92415b19" SourceId="1" SourceUrl="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd1" />
+    <MetadataFile FileName="TouTVAPIService4.xsd" MetadataType="Schema" ID="ee9645e7-b97b-4bac-a057-b5bff0a46a30" SourceId="1" SourceUrl="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd2" />
+    <MetadataFile FileName="TouTVAPIService5.xsd" MetadataType="Schema" ID="9912ae5d-7251-43ca-8677-0b53ee6be213" SourceId="1" SourceUrl="http://api.tou.tv/v1/TouTVAPIService.svc?xsd=xsd3" />
+    <MetadataFile FileName="TouTVAPIService.wsdl" MetadataType="Wsdl" ID="7b5d0ae0-4686-4306-9bce-9c00a9ffe072" SourceId="1" SourceUrl="http://api.tou.tv/v1/TouTVAPIService.svc?wsdl" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>
