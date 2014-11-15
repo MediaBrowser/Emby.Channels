@@ -18,6 +18,10 @@
                             <div class="fieldDescription">This adds a catalog of over 1500 trailers to your library, allowing them to be utilized within Cinema Mode, recommendations, and channel browsing. After enabling this your next library scan will take longer than usual. Please be patient.</div>
                         </li>
                         <li>
+                            <label for="chkEnableLocalTrailers">Download missing trailers for my movies</label>
+                            <input type="checkbox" id="chkEnableLocalTrailers" />
+                        </li>
+                        <li>
                             <button type="submit" data-theme="b">Save</button>
                             <button type="button" onclick="history.back();">Cancel</button>
                         </li>
@@ -42,6 +46,7 @@
                     ApiClient.getPluginConfiguration(pluginId).done(function (config) {
 
                         $('#chkEnableMovieArchive', page).checked(config.EnableMovieArchive).checkboxradio('refresh');
+                        $('#chkEnableLocalTrailers', page).checked(config.EnableLocalTrailerDownloads).checkboxradio('refresh');
 
                         Dashboard.hideLoadingMsg();
                     });
@@ -56,6 +61,7 @@
                     ApiClient.getPluginConfiguration(pluginId).done(function (config) {
 
                         config.EnableMovieArchive = $('#chkEnableMovieArchive', form).checked();
+                        config.EnableLocalTrailerDownloads = $('#chkEnableLocalTrailers', form).checked();
 
                         ApiClient.updatePluginConfiguration(pluginId, config).done(Dashboard.processPluginConfigurationUpdateResult);
                     });
