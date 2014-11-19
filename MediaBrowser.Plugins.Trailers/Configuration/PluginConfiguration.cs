@@ -9,6 +9,7 @@ namespace MediaBrowser.Plugins.Trailers.Configuration
     {
         public bool EnableMovieArchive { get; set; }
         public bool ForceDownloadListings { get; set; }
+        public bool EnableLocalTrailerDownloads { get; set; }
 
         public PluginConfiguration()
         {
