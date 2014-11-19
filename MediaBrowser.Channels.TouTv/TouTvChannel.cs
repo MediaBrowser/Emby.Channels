@@ -14,7 +14,7 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.TouTv
 {
-    public class TouTvChannel : IChannel, IRequiresMediaInfoCallback
+    public class TouTvChannel : IChannel, ISearchableChannel, IRequiresMediaInfoCallback
     {
         private readonly ILogger _logger;
         private readonly TouTvVideoService _touTvVideoService;
@@ -94,7 +94,7 @@ namespace MediaBrowser.Channels.TouTv
         // Increment as needed to invalidate all caches
         public string DataVersion
         {
-            get { return "1"; }
+            get { return "2"; }
         }
 
         public string HomePageUrl
@@ -105,6 +105,11 @@ namespace MediaBrowser.Channels.TouTv
         public ChannelParentalRating ParentalRating
         {
             get { return ChannelParentalRating.GeneralAudience; }
+        }
+
+        public async Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, CancellationToken cancellationToken)
+        {
+            return await _touTvProvider.SearchShow(searchInfo.SearchTerm, cancellationToken);
         }
 
         public async Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo(string id, CancellationToken cancellationToken)
