@@ -665,7 +665,7 @@ namespace MediaBrowser.Plugins.Trailers
                    },
 
                 AutoRefreshLevels = 3,
-                DailyDownloadLimit = 5
+                DailyDownloadLimit = 10
             };
         }
 
