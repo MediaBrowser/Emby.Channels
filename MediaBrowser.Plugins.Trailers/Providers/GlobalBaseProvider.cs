@@ -99,6 +99,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers
 
         protected bool IsValidDomain(string url)
         {
+            return true;
             var ok = ValidDomains.Any(d => url.IndexOf(d, StringComparison.OrdinalIgnoreCase) != -1);
 
             if (!ok)
