@@ -1,8 +1,6 @@
-﻿using System.Net;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Drawing;
@@ -15,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -70,11 +69,9 @@ namespace MediaBrowser.Plugins.Trailers
             return DateTime.MinValue;
         }
 
-        public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
+        private ChannelItemResult GetNonSupporterItems()
         {
-            if (!RegistrationInfo.Instance.IsRegistered)
-            {
-                var list = new List<ChannelItemInfo>
+            var list = new List<ChannelItemInfo>
                 {
                     new ChannelItemInfo
                     {
@@ -84,11 +81,18 @@ namespace MediaBrowser.Plugins.Trailers
                     }
                 };
 
-                return new ChannelItemResult
-                {
-                    Items = list,
-                    TotalRecordCount = list.Count
-                };
+            return new ChannelItemResult
+            {
+                Items = list,
+                TotalRecordCount = list.Count
+            };
+        }
+
+        public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            if (!RegistrationInfo.Instance.IsRegistered)
+            {
+                return GetNonSupporterItems();
             }
             
             if (string.IsNullOrEmpty(query.FolderId))
@@ -249,11 +253,16 @@ namespace MediaBrowser.Plugins.Trailers
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            return results.SelectMany(i => i);
+            return results.SelectMany(i => i.ToList());
         }
 
         public async Task<IEnumerable<ChannelItemInfo>> GetAllItems(bool direct, CancellationToken cancellationToken)
         {
+            if (!RegistrationInfo.Instance.IsRegistered)
+            {
+                return GetNonSupporterItems().Items;
+            }
+            
             if (direct || Plugin.Instance.Configuration.ForceDownloadListings)
             {
                 return await GetDirectListings(cancellationToken).ConfigureAwait(false);
@@ -262,7 +271,15 @@ namespace MediaBrowser.Plugins.Trailers
             var json = await EntryPoint.Instance.GetAndCacheResponse("https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Listings/filteredlistings.txt?v=" + DataVersion,
                         TimeSpan.FromDays(3), cancellationToken);
 
-            return _json.DeserializeFromString<List<ChannelItemInfo>>(json);
+            var items = _json.DeserializeFromString<List<ChannelItemInfo>>(json);
+
+            if (!Plugin.Instance.Configuration.EnableMovieArchive)
+            {
+                items = items.Where(i => i.TrailerTypes.Count != 1 || i.TrailerTypes[0] != TrailerType.Archive)
+                    .ToList();
+            }
+
+            return items;
         }
 
         private readonly SemaphoreSlim _fileLock = new SemaphoreSlim(1, 1);
