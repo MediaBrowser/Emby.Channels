@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
@@ -16,20 +17,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
+using MediaBrowser.Model.Notifications;
 
-namespace PodCasts.Entities {
-    public class RssFeed {
+namespace PodCasts.Entities
+{
+    public class RssFeed
+    {
 
-        public async Task<IEnumerable<BaseItem>> Refresh(IProviderManager providerManager, 
-            IHttpClient httpClient, 
+        public async Task<IEnumerable<BaseItem>> Refresh(IProviderManager providerManager,
+            IHttpClient httpClient,
             string url,
+            INotificationManager notificationManager,
             CancellationToken cancellationToken)
         {
             using (XmlReader reader = new SyndicationFeedXmlReader(await httpClient.Get(url, cancellationToken).ConfigureAwait(false)))
             {
                 var feed = SyndicationFeed.Load(reader);
 
-                return await GetChildren(feed, providerManager, cancellationToken);
+                return await GetChildren(feed, providerManager, notificationManager, cancellationToken);
             }
         }
 
@@ -38,20 +43,29 @@ namespace PodCasts.Entities {
             string url,
             CancellationToken cancellationToken)
         {
-            using (XmlReader reader = new SyndicationFeedXmlReader(await httpClient.Get(url, cancellationToken).ConfigureAwait(false)))
+            var response = await httpClient.Get(new HttpRequestOptions
+            {
+                CacheMode = CacheMode.Unconditional,
+                CacheLength = TimeSpan.FromHours(3),
+                Url = url,
+                CancellationToken = cancellationToken
+
+            }).ConfigureAwait(false);
+
+            using (XmlReader reader = new SyndicationFeedXmlReader(response))
             {
                 return SyndicationFeed.Load(reader);
             }
         }
 
-        private static async Task<IEnumerable<BaseItem>> GetChildren(SyndicationFeed feed, IProviderManager providerManager, CancellationToken cancellationToken) {
+        private static async Task<IEnumerable<BaseItem>> GetChildren(SyndicationFeed feed, IProviderManager providerManager, INotificationManager notificationManager, CancellationToken cancellationToken)
+        {
             var podcasts = new List<BaseItem>();
-            
+
             if (feed == null) return podcasts;
 
-            Plugin.Logger.Debug("Processing Feed: {0}", feed.Title);
-
-            foreach (var item in feed.Items) {
+            foreach (var item in feed.Items)
+            {
                 try
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -69,10 +83,8 @@ namespace PodCasts.Entities {
                         continue;
                     }
 
-                    var podcast = IsAudioFile(path) ? (BaseItem) new PodCastAudio {DateCreated = item.PublishDate.UtcDateTime, DateModified = item.PublishDate.UtcDateTime, Name = item.Title.Text, DisplayMediaType = "Audio"} :
-                                                        new VodCastVideo {DateCreated = item.PublishDate.UtcDateTime, DateModified = item.PublishDate.UtcDateTime, Name = item.Title.Text, DisplayMediaType = "Movie"};
-
-                    Plugin.Logger.Debug("Found podcast: {0}", podcast.Name);
+                    var podcast = IsAudioFile(path) ? (BaseItem)new PodCastAudio { DateCreated = item.PublishDate.UtcDateTime, DateModified = item.PublishDate.UtcDateTime, Name = item.Title.Text, DisplayMediaType = "Audio" } :
+                                                        new VodCastVideo { DateCreated = item.PublishDate.UtcDateTime, DateModified = item.PublishDate.UtcDateTime, Name = item.Title.Text, DisplayMediaType = "Movie" };
 
                     podcast.Path = path;
                     podcast.Id = podcast.Path.GetMBId(podcast.GetType());
@@ -103,7 +115,7 @@ namespace PodCasts.Entities {
 
                     var iTunesResolver = iTunesNavigator != null ? new XmlNamespaceManager(iTunesNavigator.NameTable) : null;
                     var yahooResolver = yahooNavigator != null ? new XmlNamespaceManager(yahooNavigator.NameTable) : null;
-                    if (iTunesResolver != null ) iTunesResolver.AddNamespace("itunes", iTunesNamespaceUri);
+                    if (iTunesResolver != null) iTunesResolver.AddNamespace("itunes", iTunesNamespaceUri);
                     if (yahooResolver != null) yahooResolver.AddNamespace("media", yahooNamespaceUri);
 
                     // Prefer this image
@@ -117,7 +129,7 @@ namespace PodCasts.Entities {
                             thumbNavigator = contentNavigator.SelectSingleNode("media:thumbnail", yahooResolver);
                         }
 
-                        var imageUrl = thumbNavigator != null ? thumbNavigator.GetAttribute("url","") : "";
+                        var imageUrl = thumbNavigator != null ? thumbNavigator.GetAttribute("url", "") : "";
                         if (!string.IsNullOrEmpty(imageUrl))
                         {
                             // This will get downloaded later if we need it...
@@ -137,7 +149,7 @@ namespace PodCasts.Entities {
                     {
                         try
                         {
-                            podcast.RunTimeTicks = Convert.ToInt32(duration)*TimeSpan.TicksPerSecond;
+                            podcast.RunTimeTicks = Convert.ToInt32(duration) * TimeSpan.TicksPerSecond;
                         }
                         catch (Exception)
                         {
@@ -147,6 +159,13 @@ namespace PodCasts.Entities {
                 }
                 catch (Exception e)
                 {
+                    notificationManager.SendNotification(new NotificationRequest
+                    {
+                        Description = "Error refreshing podcast item " + e,
+                        Date = DateTime.Now,
+                        Level = NotificationLevel.Error,
+                        SendToUserMode = SendToUserType.Admins
+                    }, cancellationToken);
                     Plugin.Logger.ErrorException("Error refreshing podcast item ", e);
                 }
             }
@@ -172,7 +191,7 @@ namespace PodCasts.Entities {
                         break;
                     }
                 }
-                
+
                 if (common.Length > 2)
                 {
                     foreach (var video in podcasts.Where(video => video.Name.Length > common.Length))

@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -219,6 +220,7 @@ namespace MediaBrowser.Plugins.ITV
                         items.Add(new ChannelItemInfo
                         {
                             Name = title + " (Season: " + seasonNumber + ", Ep: " + episodeNumber + ")",
+
                             ImageUrl = thumb != "" ? thumb.Replace("player_image_thumb_standard", "posterframe") : "",
                             Id = "http://www.itv.com" + id,
                             Overview = overview,
@@ -438,7 +440,8 @@ namespace MediaBrowser.Plugins.ITV
                             {
                                 Path = playURL,
                                 VideoBitrate = Convert.ToInt32(bitrate),
-                                Protocol = MediaProtocol.Rtmp
+                                Protocol = MediaProtocol.Rtmp,
+                                ReadAtNativeFramerate = true
                             });
                             _logger.Debug(strippedURL);
                         }

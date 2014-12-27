@@ -1,19 +1,21 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>IPTV Configuration</title>
+    <title>Video Bookmarks</title>
 </head>
 <body>
     <div id="IPTVConfigurationPage" data-role="page" class="page type-interior pluginConfigurationPage">
 
         <div data-role="content">
             <div class="content-primary">
+                
+                <br />
                 <form id="IPTVConfigurationForm">
 
-                    <p>
-                        Add the URLs of PodCast feeds you would like to track here.
-                    </p>
                     <ul id="ulStreams" data-role="listview" data-inset="true" data-auto-enhanced="false" data-split-icon="minus"></ul>
+
+                    <br />
+                    <br />
 
                     <button type="submit" data-theme="b">Save</button>
                     <button type="button" onclick="history.back();">Cancel</button>
@@ -21,22 +23,45 @@
                 </form>
             </div>
 
-            <div data-role="popup" id="streamPopup" class="ui-content" style="max-width:90%; min-width: 400px" data-overlay-theme="a" data-dismissible="false">
-                <h3 style="text-align: center">New PodCast</h3>
-                <p style="margin-bottom: 20px">
-                    Type or paste in an URL for a valid xml RSS feed.
-                </p>
-                <form id="streamForm">
-                    <label for="name">Name:</label>
-                    <input id="name" type="text" style="min-width: 90%" required />
+            <div data-role="popup" id="streamPopup" data-overlay-theme="a" data-dismissible="false">
 
-                    <label for="url">Url:</label>
-                    <input id="url" type="url" style="min-width: 90%" required />
+                <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                    <h3>New Bookmark</h3>
+                </div>
+                <div data-role="content">
+                    <form id="streamForm" style="min-width: 220px;">
 
-                    <button type="submit" data-theme="b">Add</button>
-                    <button type="button" data-theme="c" onclick="$('#streamPopup').popup('close')">Cancel</button>
+                        <div>
+                            <label for="Name">Name:</label>
+                            <input id="Name" type="text" data-mini="true" required />
+                        </div>
 
-                </form>
+                        <div>
+                            <label for="URL">Url:</label>
+                            <input id="URL" type="url" data-mini="true" required />
+                        </div>
+
+                        <div>
+                            <label for="Image">Image url:</label>
+                            <input id="Image" type="text" data-mini="true" />
+                        </div>
+
+                        <br />
+                        <div>
+                            <label for="Type">Protocol:</label>
+                            <select id="Type" data-mini="true">
+                                <option value="Http">Http</option>
+                                <option value="File">File</option>
+                                <option value="Rtmp">Rtmp</option>
+                            </select>
+                        </div>
+
+                        <br />
+                        <button type="submit" data-theme="b" data-mini="true">Add</button>
+                        <button type="button" data-theme="c" onclick="$('#streamPopup').popup('close')" data-mini="true">Cancel</button>
+
+                    </form>
+                </div>
 
             </div>
 
@@ -54,11 +79,11 @@
                 populateStreamList: function () {
 
                     var page = $($.mobile.activePage);
-                    var streams = IPTVConfigurationPage.config.streams;
+                    var streams = IPTVConfigurationPage.config.Bookmarks;
 
                     var html = "";
 
-                    html += '<li data-role="list-divider" class="mediaLocationsHeader"><h3>Pod Cast Feeds</h3>';
+                    html += '<li data-role="list-divider" class="mediaLocationsHeader"><h3>Bookmarks</h3>';
                     html += '<span data-corners="true" data-shadow="true" data-iconshadow="true" data-wrapperels="span" data-icon="plus" data-iconpos="notext" data-theme="a" data-inline="true" data-mini="true" ';
                     html += 'class="ui-btn ui-btn-up-c ui-shadow ui-btn-corner-all ui-mini ui-btn-inline ui-btn-icon-notext ui-icon-plus" data-icon="plus" onclick="IPTVConfigurationPage.addStreamPopup();">&nbsp;</span>';
 
@@ -86,17 +111,22 @@
 
                     var name = link.getAttribute('data-streamname');
 
-                    var msg = "Are you sure you wish to delete the " + name + " IPTV stream?";
+                    var msg = "Are you sure you wish to delete this bookmark?";
 
-                    Dashboard.confirm(msg, "Delete Stream", function (result) {
+                    Dashboard.confirm(msg, "Delete Bookmark", function (result) {
 
                         if (result) {
 
-                            console.log("Deleting stream " + name);
+                            var index = 0;
 
-                            IPTVConfigurationPage.config.streams = $.grep(IPTVConfigurationPage.config.streams, function (value) {
-                                return value != name;
-                            });
+                            for (var i = 0, length = IPTVConfigurationPage.config.Bookmarks.length; i < length; i++) {
+
+                                if (IPTVConfigurationPage.config.Bookmarks[i].Name == name) {
+                                    index = i;
+                                }
+                            }
+
+                            IPTVConfigurationPage.config.Bookmarks.splice(index, 1);
 
                             IPTVConfigurationPage.populateStreamList();
                         }
@@ -132,7 +162,40 @@
                 var page = $($.mobile.activePage);
                 $('#streamPopup', page).popup('close');
                 var form = this;
-                IPTVConfigurationPage.config.streams.push($('#stream', form).val());
+
+
+                var newEntry = true;
+                var name = $('#Name', page).val();
+                var image = $('#Image', page).val();
+                var url = $('#URL', page).val();
+                var type = $('#Type', page).val();
+                var userId = Dashboard.getCurrentUserId();
+
+                if (IPTVConfigurationPage.config.Bookmarks.length > 0) {
+
+                    for (var i = 0, length = IPTVConfigurationPage.config.Bookmarks.length; i < length; i++) {
+                        if (IPTVConfigurationPage.config.Bookmarks[i].Name == name) {
+                            newEntry = false;
+                            IPTVConfigurationPage.config.Bookmarks[i].Image = image;
+                            IPTVConfigurationPage.config.Bookmarks[i].Path = url;
+                            IPTVConfigurationPage.config.Bookmarks[i].Protocol = type;
+                            IPTVConfigurationPage.config.Bookmarks[i].UserId = userId;
+                        }
+                    }
+                }
+
+                if (newEntry) {
+
+                    var conf = {};
+
+                    conf.Name = name;
+                    conf.Image = image;
+                    conf.Path = url;
+                    conf.Protocol = type;
+                    conf.UserId = userId;
+                    IPTVConfigurationPage.config.Bookmarks.push(conf);
+
+                }
                 IPTVConfigurationPage.populateStreamList();
                 return false;
             });
@@ -145,7 +208,7 @@
                 ApiClient.getPluginConfiguration(IPTVConfigurationPage.pluginUniqueId).done(function (config) {
                     var page = $($.mobile.activePage);
 
-                    config.Streams = IPTVConfigurationPage.config.streams;
+                    config.Bookmarks = IPTVConfigurationPage.config.Bookmarks;
 
                     ApiClient.updatePluginConfiguration(IPTVConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
                 });

@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Security;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -23,14 +23,11 @@ namespace MediaBrowser.Plugins.Vimeo
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
 
-        private readonly ISecurityManager _securityManager;
-
-        public VimeoChannel(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager, ISecurityManager securityManager)
+        public VimeoChannel(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager)
         {
             _httpClient = httpClient;
             _logger = logManager.GetLogger(GetType().Name);
             _jsonSerializer = jsonSerializer;
-            _securityManager = securityManager;
         }
 
         public string DataVersion
@@ -38,8 +35,18 @@ namespace MediaBrowser.Plugins.Vimeo
             get
             {
                 // Increment as needed to invalidate all caches
-                return "7";
+                return "11";
             }
+        }
+
+        public string GetCacheKey(string userId)
+        {
+            var vals = new List<string>();
+
+            vals.Add(RegistrationInfo.Instance.IsRegistered.ToString());
+            vals.Add(Plugin.Instance.Configuration.Username ?? string.Empty);
+
+            return string.Join("-", vals.ToArray());
         }
 
         public async Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, Controller.Entities.User user, CancellationToken cancellationToken)
@@ -72,14 +79,38 @@ namespace MediaBrowser.Plugins.Vimeo
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
+            if (!RegistrationInfo.Instance.IsRegistered)
+            {
+                var list = new List<ChannelItemInfo>
+                {
+                    new ChannelItemInfo
+                    {
+                         Id = "notregistered",
+                         Name = "Supporter membership required",
+                         Type = ChannelItemType.Folder
+                    }
+                };
+
+                return new ChannelItemResult
+                {
+                    Items = list,
+                    TotalRecordCount = list.Count
+                };
+            }
+
+            if (string.Equals(query.FolderId, "notregistered", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ChannelItemResult();
+            }
+
             if (string.IsNullOrEmpty(query.FolderId))
             {
                 return await GetCategories(query, cancellationToken).ConfigureAwait(false);
             }
 
             var catSplit = query.FolderId.Split('_');
-            
-            
+
+
             if (catSplit[0] == "cat")
             {
                 query.FolderId = catSplit[1];
@@ -88,8 +119,8 @@ namespace MediaBrowser.Plugins.Vimeo
                     return await GetPersonalChannels(query, cancellationToken).ConfigureAwait(false);
                 }
                 return await GetSubCategories(query, cancellationToken).ConfigureAwait(false);
-            } 
-            
+            }
+
             if (catSplit[0] == "subcat")
             {
                 if (catSplit[1] == "allVideos")
@@ -99,9 +130,9 @@ namespace MediaBrowser.Plugins.Vimeo
                 }
 
                 query.FolderId = catSplit[1];
-                
+
                 if (catSplit[1] == "allChannels") query.FolderId = catSplit[2];
-                
+
                 return await GetChannels(query, cancellationToken).ConfigureAwait(false);
             }
 
@@ -190,7 +221,7 @@ namespace MediaBrowser.Plugins.Vimeo
             else
             {
                 var downloader2 = new VimeoListingDownloader(_logger, _jsonSerializer, _httpClient);
-                 videos = await downloader2.GetCategoryVideoList(query.FolderId, query.StartIndex, query.Limit, cancellationToken);
+                videos = await downloader2.GetCategoryVideoList(query.FolderId, query.StartIndex, query.Limit, cancellationToken);
 
                 items = videos.Select(i => new ChannelItemInfo
                 {
@@ -232,21 +263,21 @@ namespace MediaBrowser.Plugins.Vimeo
             else
                 videos = await downloader.GetVimeoList(catSplit[1], query.StartIndex, query.Limit, cancellationToken).ConfigureAwait(false);
 
-        var items = videos.Select(i => new ChannelItemInfo
-            {
-                ContentType = ChannelMediaContentType.Clip,
-                ImageUrl = i.thumbnails[2].Url,
-                IsInfiniteStream = false,
-                MediaType = ChannelMediaType.Video,
-                Name = i.title,
-                Overview = i.description,
-                Type = ChannelItemType.Media,
-                Id = i.id,
-                RunTimeTicks = TimeSpan.FromSeconds(i.duration).Ticks,
-                Tags = i.tags == null ? new List<string>() : i.tags.Select(t => t.title).ToList(),
-                DateCreated = DateTime.Parse(i.upload_date)
+            var items = videos.Select(i => new ChannelItemInfo
+                {
+                    ContentType = ChannelMediaContentType.Clip,
+                    ImageUrl = i.thumbnails[2].Url,
+                    IsInfiniteStream = false,
+                    MediaType = ChannelMediaType.Video,
+                    Name = i.title,
+                    Overview = i.description,
+                    Type = ChannelItemType.Media,
+                    Id = i.id,
+                    RunTimeTicks = TimeSpan.FromSeconds(i.duration).Ticks,
+                    Tags = i.tags == null ? new List<string>() : i.tags.Select(t => t.title).ToList(),
+                    DateCreated = DateTime.Parse(i.upload_date)
 
-            });
+                });
 
             return new ChannelItemResult
             {
@@ -369,8 +400,9 @@ namespace MediaBrowser.Plugins.Vimeo
         public async Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo(string id, CancellationToken cancellationToken)
         {
             using (var json = await _httpClient.Get(
-                "http://player.vimeo.com/v2/video/" + id +
-                "/config?autoplay=0&byline=0&bypass_privacy=1&context=clip.main&default_to_hd=1&portrait=0&title=0",
+                "http://player.vimeo.com/video/" + id +
+                // "/config?autoplay=0&byline=0&bypass_privacy=1&context=clip.main&default_to_hd=1&portrait=0&title=0",
+               "/config?type=moogaloop&referrer=&player_url=player.vimeo.com&v=1.0.0&cdn_url=http://a.vimeocdn.com",
                 CancellationToken.None).ConfigureAwait(false))
             {
                 var r = _jsonSerializer.DeserializeFromStream<RootObject>(json);
@@ -438,19 +470,6 @@ namespace MediaBrowser.Plugins.Vimeo
                     }
                 }
 
-                try
-                {
-                    if (!_securityManager.IsMBSupporter)
-                    {
-                        // If not a supporter, only return the lowest quality version.
-                        return mediaInfo.OrderBy(i => i.Width ?? 0).Take(1);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    
-                }
-
                 return mediaInfo;
             }
         }
@@ -491,11 +510,6 @@ namespace MediaBrowser.Plugins.Vimeo
         public ChannelParentalRating ParentalRating
         {
             get { return ChannelParentalRating.GeneralAudience; }
-        }
-
-        public string GetCacheKey(string userId)
-        {
-            return Plugin.Instance.Configuration.Username ?? string.Empty;
         }
 
         public string Description

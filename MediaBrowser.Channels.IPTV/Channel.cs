@@ -1,12 +1,10 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Channels;
+﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,12 +15,10 @@ namespace MediaBrowser.Channels.IPTV
 {
     class Channel : IChannel, IHasCacheKey
     {
-        private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
 
-        public Channel(IHttpClient httpClient, ILogManager logManager)
+        public Channel(ILogManager logManager)
         {
-            _httpClient = httpClient;
             _logger = logManager.GetLogger(GetType().Name);
         }
 
@@ -39,15 +35,16 @@ namespace MediaBrowser.Channels.IPTV
         {
             _logger.Debug("cat ID : " + query.FolderId);
 
-            return await GetChannelItemsInternal(cancellationToken).ConfigureAwait(false);
+            return await GetChannelItemsInternal(query.UserId, cancellationToken).ConfigureAwait(false);
         }
 
 
-        private async Task<ChannelItemResult> GetChannelItemsInternal(CancellationToken cancellationToken)
+        private async Task<ChannelItemResult> GetChannelItemsInternal(string userId, CancellationToken cancellationToken)
         {
             var items = new List<ChannelItemInfo>();
 
-            foreach (var s in Plugin.Instance.Configuration.streams)
+            foreach (var s in Plugin.Instance.Configuration.Bookmarks
+                .Where(i => string.Equals(i.UserId, userId, StringComparison.OrdinalIgnoreCase)))
             {
                 var item = new ChannelItemInfo
                 {
@@ -62,8 +59,8 @@ namespace MediaBrowser.Channels.IPTV
                     {
                         new ChannelMediaInfo
                         {
-                            Path = s.URL,
-                            Protocol = (s.Type == "RTMP" ? MediaProtocol.Rtmp : MediaProtocol.Http) 
+                            Path = s.Path,
+                            Protocol = s.Protocol
                         }  
                     }
                 };
@@ -92,7 +89,7 @@ namespace MediaBrowser.Channels.IPTV
 
         public string Name
         {
-            get { return "IPTV"; }
+            get { return "Video Bookmarks"; }
         }
 
         public InternalChannelFeatures GetChannelFeatures()
@@ -144,7 +141,7 @@ namespace MediaBrowser.Channels.IPTV
 
         public string GetCacheKey(string userId)
         {
-            return string.Join(",", Plugin.Instance.Configuration.streams.ToList());
+            return Guid.NewGuid().ToString("N");
         }
 
         public string Description

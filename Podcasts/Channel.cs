@@ -2,10 +2,13 @@
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Notifications;
 using PodCasts.Entities;
 using System;
 using System.Collections.Generic;
@@ -20,12 +23,14 @@ namespace PodCasts
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly IProviderManager _providerManager;
-
-        public Channel(IHttpClient httpClient, ILogManager logManager, IProviderManager providerManager)
+        public INotificationManager _notificationManager { get; set; }
+        
+        public Channel(IHttpClient httpClient, ILogManager logManager, IProviderManager providerManager, INotificationManager notificationManager)
         {
             _httpClient = httpClient;
             _logger = logManager.GetLogger(GetType().Name);
             _providerManager = providerManager;
+            _notificationManager = notificationManager;
         }
 
         public string DataVersion
@@ -55,7 +60,16 @@ namespace PodCasts
 
             if (!Plugin.Instance.Registration.IsValid)
             {
+                
                 Plugin.Logger.Warn("PodCasts trial has expired.");
+                await _notificationManager.SendNotification(new NotificationRequest
+                {
+                    Description = "PodCasts trial has expired.",
+                    Date = DateTime.Now,
+                    Level = NotificationLevel.Warning,
+                    SendToUserMode = SendToUserType.Admins
+                }, cancellationToken);
+
                 return new ChannelItemResult
                 {
                     Items = items.ToList()
@@ -152,7 +166,7 @@ namespace PodCasts
         {
             var items = new List<ChannelItemInfo>();
 
-            var rssItems = await new RssFeed().Refresh(_providerManager, _httpClient, feedUrl, cancellationToken).ConfigureAwait(false);
+            var rssItems = await new RssFeed().Refresh(_providerManager, _httpClient, feedUrl, _notificationManager, cancellationToken).ConfigureAwait(false);
 
             foreach (var child in rssItems)
             {
@@ -162,7 +176,7 @@ namespace PodCasts
                 {
                     Name = child.Name,
                     Overview = child.Overview,
-                    ImageUrl = podcast.RemoteImagePath,
+                    ImageUrl = podcast.RemoteImagePath ?? "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/Podcasts/Images/thumb.png",
                     Id = child.Id.ToString("N"),
                     Type = ChannelItemType.Media,
                     ContentType = ChannelMediaContentType.Podcast,
@@ -231,7 +245,9 @@ namespace PodCasts
                         ChannelItemSortField.DateCreated,
                         ChannelItemSortField.PremiereDate,
                         ChannelItemSortField.Runtime
-                   }
+                   },
+
+                AutoRefreshLevels = 2
             };
         }
 
@@ -278,24 +294,42 @@ namespace PodCasts
 
         public async Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
         {
+            if (query.ContentTypes.Length > 0 && !query.ContentTypes.Contains(ChannelMediaContentType.Podcast))
+            {
+                return new ChannelItemResult();
+            }
+
             var tasks = Plugin.Instance.Configuration.Feeds.Select(async i =>
             {
-
                 try
                 {
                     return await GetChannelItemsInternal(i, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
+                    _notificationManager.SendNotification(new NotificationRequest
+                    {
+                        Description = "Error getting channel items" + ex,
+                        Date = DateTime.Now,
+                        Level = NotificationLevel.Error,
+                        SendToUserMode = SendToUserType.Admins
+                    }, cancellationToken);
+
                     Plugin.Logger.ErrorException("Error getting channel items", ex);
 
                     return new List<ChannelItemInfo>();
                 }
             });
 
-            var items = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var items = (await Task.WhenAll(tasks).ConfigureAwait(false))
+                .SelectMany(i => i);
 
-            var all = items.SelectMany(i => i).ToList();
+            if (query.ContentTypes.Length > 0)
+            {
+                items = items.Where(i => query.ContentTypes.Contains(i.ContentType));
+            }
+
+            var all = items.ToList();
 
             return new ChannelItemResult
             {

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<discovery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/disco/">
+  <contractRef ref="http://api.tou.tv/v1/TouTVAPIService.svc?wsdl" docRef="http://api.tou.tv/v1/TouTVAPIService.svc" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
+</discovery>

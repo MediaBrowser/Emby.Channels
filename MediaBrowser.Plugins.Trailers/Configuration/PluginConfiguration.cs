@@ -7,10 +7,12 @@ namespace MediaBrowser.Plugins.Trailers.Configuration
     /// </summary>
     public class PluginConfiguration : BasePluginConfiguration
     {
-        /// <summary>
-        /// Trailers older than this will not be downloaded and deleted if already downloaded.
-        /// </summary>
-        /// <value>The max trailer age.</value>
-        public int? MaxTrailerAge { get; set; }
+        public bool EnableMovieArchive { get; set; }
+        public bool ForceDownloadListings { get; set; }
+        public bool EnableLocalTrailerDownloads { get; set; }
+
+        public PluginConfiguration()
+        {
+        }
     }
 }

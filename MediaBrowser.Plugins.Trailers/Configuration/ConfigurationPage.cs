@@ -7,7 +7,7 @@ namespace MediaBrowser.Plugins.Trailers.Configuration
     /// <summary>
     /// Class TrailerConfigurationPage
     /// </summary>
-    class TrailerConfigurationPage : IPluginConfigurationPage
+    class VimeoConfigurationPage : IPluginConfigurationPage
     {
         /// <summary>
         /// Gets the name.
@@ -24,7 +24,7 @@ namespace MediaBrowser.Plugins.Trailers.Configuration
         /// <returns>Stream.</returns>
         public Stream GetHtmlStream()
         {
-            return GetType().Assembly.GetManifestResourceStream("MediaBrowser.Plugins.Trailers.Configuration.configPage.html");
+            return GetType().Assembly.GetManifestResourceStream(GetType().Namespace + ".configPage.html");
         }
 
         /// <summary>

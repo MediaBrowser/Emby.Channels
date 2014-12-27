@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>TuneIn</title>
+</head>
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage TuneInConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <form class="TuneInConfigurationForm">
+
+                    <ul class="ulForm" data-role="listview">
+                        <li>
+                            <label for="txtUsername">
+                                Username : 
+                            </label>
+                            <input type="text" id="txtUsername" name="txtUsername" />
+                            <div class="fieldDescription">
+                                Enter your TuneIn Username.
+                            </div>
+                        </li>
+                        <li>
+                            <label for="txtLatLon">
+                                LatLon :
+                            </label>
+                            <input type="text" id="txtLatLon" name="txtLatLon" />
+                            <div class="fieldDescription">
+                                Enter your LatLon this can be found from online for example (<a href="http://dbsgeo.com/latlon/">http://dbsgeo.com/latlon/</a>).
+                            </div>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b">Save</button>
+                            <button type="button" onclick="history.back();">Cancel</button>
+                        </li>
+                    </ul>
+
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            var TuneInConfigurationPage = {
+                pluginUniqueId: "10b82431-f939-4507-a8e2-9509dd3fd6ae"
+            };
+
+            $('.TuneInConfigurationPage').on('pageshow', function (event) {
+
+                Dashboard.showLoadingMsg();
+
+                var page = this;
+
+                ApiClient.getPluginConfiguration(TuneInConfigurationPage.pluginUniqueId).done(function (config) {
+
+                    $('#txtUsername', page).val(config.Username || "");
+                    $('#txtLatLon', page).val(config.LatLon || "");
+
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+
+            $('.TuneInConfigurationForm').on('submit', function (e) {
+
+                Dashboard.showLoadingMsg();
+
+                var form = this;
+
+                ApiClient.getPluginConfiguration(TuneInConfigurationPage.pluginUniqueId).done(function (config) {
+
+                    var Username = $('#txtUsername', form).val();
+                    var LatLon = $('#txtLatLon', form).val();
+
+                    config.Username = Username ? Username : null;
+                    config.LatLon = LatLon ? LatLon : null;
+
+                    ApiClient.updatePluginConfiguration(TuneInConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                });
+
+                // Disable default form submission
+                return false;
+            });
+        </script>
+    </div>
+</body>
+</html>

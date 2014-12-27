@@ -8,19 +8,19 @@
 
         <div data-role="content">
             <div class="content-primary">
+
                 <form class="trailersConfigurationForm">
 
                     <ul class="ulForm" data-role="listview">
                         <li>
-                            <label for="txtMaxTrailerAge">
-                                Max trailer age (days):
-                            </label>
-                            <input type="number" id="txtMaxTrailerAge" name="txtMaxTrailerAge" pattern="[0-9]*" min="1" />
-                            <div class="fieldDescription">
-                                If specified, trailers older than this will not be presented
-                            </div>
+                            <label for="chkEnableMovieArchive">Enable movie trailer archive</label>
+                            <input type="checkbox" id="chkEnableMovieArchive" />
+                            <div class="fieldDescription">This adds a catalog of over 1500 trailers to your library, allowing them to be utilized within Cinema Mode, recommendations, and channel browsing. After enabling this your next library scan will take longer than usual. Please be patient.</div>
                         </li>
-                  
+                        <li>
+                            <label for="chkEnableLocalTrailers">Download trailers into my movie folders</label>
+                            <input type="checkbox" id="chkEnableLocalTrailers" />
+                        </li>
                         <li>
                             <button type="submit" data-theme="b">Save</button>
                             <button type="button" onclick="history.back();">Cancel</button>
@@ -33,41 +33,44 @@
 
         <script type="text/javascript">
 
-            var TrailersConfigurationPage = {
-                pluginUniqueId: "986a7283-205a-4436-862d-23135c067f8a"
-            };
+            (function () {
 
-            $('.trailersConfigurationPage').on('pageshow', function (event) {
+                var pluginId = "986a7283-205a-4436-862d-23135c067f8a";
 
-                Dashboard.showLoadingMsg();
+                $('.trailersConfigurationPage').on('pageshow', function (event) {
 
-                var page = this;
+                    var page = this;
 
-                ApiClient.getPluginConfiguration(TrailersConfigurationPage.pluginUniqueId).done(function (config) {
+                    Dashboard.showLoadingMsg();
 
-                    $('#txtMaxTrailerAge', page).val(config.MaxTrailerAge || "");
-                    Dashboard.hideLoadingMsg();
-                });
-            });
+                    ApiClient.getPluginConfiguration(pluginId).done(function (config) {
 
-            $('.trailersConfigurationForm').on('submit', function (e) {
+                        $('#chkEnableMovieArchive', page).checked(config.EnableMovieArchive).checkboxradio('refresh');
+                        $('#chkEnableLocalTrailers', page).checked(config.EnableLocalTrailerDownloads).checkboxradio('refresh');
 
-                Dashboard.showLoadingMsg();
-
-                var form = this;
-
-                ApiClient.getPluginConfiguration(TrailersConfigurationPage.pluginUniqueId).done(function (config) {
-
-                    var maxTrailerAge = $('#txtMaxTrailerAge', form).val();
-
-                    config.MaxTrailerAge = maxTrailerAge ? maxTrailerAge : null;
-
-                    ApiClient.updatePluginConfiguration(TrailersConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                        Dashboard.hideLoadingMsg();
+                    });
                 });
 
-                // Disable default form submission
-                return false;
-            });
+                $('.trailersConfigurationForm').off('submit.plugin').on('submit.plugin', function (e) {
+
+                    Dashboard.showLoadingMsg();
+
+                    var form = this;
+
+                    ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+
+                        config.EnableMovieArchive = $('#chkEnableMovieArchive', form).checked();
+                        config.EnableLocalTrailerDownloads = $('#chkEnableLocalTrailers', form).checked();
+
+                        ApiClient.updatePluginConfiguration(pluginId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                    });
+
+                    return false;
+                });
+
+            })();
+
         </script>
     </div>
 </body>
