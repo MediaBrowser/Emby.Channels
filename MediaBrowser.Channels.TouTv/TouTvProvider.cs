@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.ServiceModel;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Channels.TouTv.TouTvApi;
 using MediaBrowser.Controller.Channels;
@@ -52,7 +54,9 @@ namespace MediaBrowser.Channels.TouTv
         {
             long emissionId = Convert.ToInt64(showId, CultureInfo.InvariantCulture);
             var episodes = await _service.GetEpisodesForEmissionAsync(emissionId);
-            return episodes.Select(dto => CreateChannelItemInfo(dto, showId));
+            return episodes
+                .Reverse()
+                .Select(dto => CreateChannelItemInfo(dto, showId));
         }
 
         public async Task<EpisodeDTO> GetEpisode(string showId, string episodeId)
@@ -61,6 +65,12 @@ namespace MediaBrowser.Channels.TouTv
             long epId = Convert.ToInt64(episodeId, CultureInfo.InvariantCulture);
             var episodes = await _service.GetEpisodesForEmissionAsync(emissionId);
             return episodes.First(ep => ep.Id == epId);
+        }
+
+        public async Task<IEnumerable<ChannelItemInfo>> SearchShow(string searchTerm, CancellationToken cancellationToken)
+        {
+            var searchResult = await _service.SearchTermsAsync(searchTerm);
+            return searchResult.Results.Select(CreateChannelItemInfo);
         }
 
         private ChannelItemInfo CreateChannelItemInfo(GenreDTO genre)
@@ -96,15 +106,40 @@ namespace MediaBrowser.Channels.TouTv
         {
             var episodeId = episode.Id.ToString(CultureInfo.InvariantCulture);
             var ep = new Episode(showId, episodeId);
+            var name = FormatEpisodeName(episode);
             return new ChannelItemInfo
             {
                 ContentType = ChannelMediaContentType.Episode,
                 Id = ep.ToString(),
                 ImageUrl = episode.ImagePlayerLargeA,
                 MediaType = ChannelMediaType.Video,
-                Name = episode.Title,
+                Name = name,
+                PremiereDate = episode.OriginalAirDate,
+                RunTimeTicks = episode.LengthSpan.Ticks,
                 Type = ChannelItemType.Media
             };
+        }
+
+        private static string FormatEpisodeName(EpisodeDTO episode)
+        {
+            if (string.IsNullOrEmpty(episode.SeasonAndEpisode))
+            {
+                return episode.Title;
+            }
+            return string.Format("[{0}] {1}", episode.SeasonAndEpisode, episode.Title);
+        }
+
+        private ChannelItemInfo CreateChannelItemInfo(SearchResultDataDTO searchResultData)
+        {
+            if (searchResultData.ResultType == SearchResultDataTypeEnum.Emission)
+            {
+                return CreateChannelItemInfo(searchResultData.Emission);
+            }
+            else
+            {
+                return null;
+                //return CreateChannelItemInfo(searchResultData.Episode, searchResultData.Episode.)
+            }
         }
 
         private string GetShowImageUrl(string showName)
