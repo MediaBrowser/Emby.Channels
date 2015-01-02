@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -40,6 +41,12 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
                 html = html.Substring(0, rightIndex);
             }
 
+            rightIndex = html.LastIndexOf("content-box clearfix", StringComparison.OrdinalIgnoreCase);
+            if (rightIndex != -1)
+            {
+                html = html.Substring(rightIndex);
+            }
+
             // looking for HREF='/trailers/automata'
             const string hrefPattern = "href=\"(?<url>.*?)\"";
             var matches = Regex.Matches(html, hrefPattern, RegexOptions.IgnoreCase);
@@ -78,7 +85,13 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
             var document = new HtmlDocument();
             document.LoadHtml(html);
 
-            var titleElement = document.DocumentNode.SelectSingleNode("//h2");
+            var titleElement = document.DocumentNode.SelectSingleNode("//title");
+            var name = titleElement == null ? string.Empty : (titleElement.InnerText ?? string.Empty);
+            name = name.Replace("Movie Trailer", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Replace("Movie-List.com", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Replace("Movie-List", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Replace("|", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Trim();
 
             var posterElement = document.DocumentNode.SelectSingleNode("//a[@rel='prettyPhoto[posters]']//img");
             if (posterElement == null)
@@ -98,7 +111,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
                 Id = url,
                 MediaType = ChannelMediaType.Video,
                 Type = ChannelItemType.Media,
-                Name = titleElement == null ? null : titleElement.InnerText,
+                Name = name,
                 ImageUrl = string.IsNullOrWhiteSpace(imageSrc) ? null : (BaseUrl + imageSrc.TrimStart('/')),
                 MediaSources = GetMediaInfo(linksList, html),
                 DateCreated = DateTime.UtcNow
