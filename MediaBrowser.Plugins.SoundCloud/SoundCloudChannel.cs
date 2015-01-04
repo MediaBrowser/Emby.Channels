@@ -98,7 +98,7 @@ namespace MediaBrowser.Plugins.SoundCloud
 
             };
 
-            if (Plugin._SoundCloudClient.IsAuthenticated)
+            if (Plugin.Instance.SoundCloudClient.IsAuthenticated)
             {
                 _logger.Debug("AUTHENTICATED");
                 var u = global::SoundCloud.NET.User.Me();

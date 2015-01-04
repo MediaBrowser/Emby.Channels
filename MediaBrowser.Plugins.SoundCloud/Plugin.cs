@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Plugins;
@@ -15,7 +13,7 @@ namespace MediaBrowser.Plugins.SoundCloud
     /// </summary>
     public class Plugin : BasePlugin<PluginConfiguration>
     {
-        public static SoundCloudClient _SoundCloudClient;
+        public SoundCloudClient SoundCloudClient;
         private readonly IEncryptionManager _encryption;
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IEncryptionManager encryption)
             : base(applicationPaths, xmlSerializer)
@@ -35,12 +33,7 @@ namespace MediaBrowser.Plugins.SoundCloud
                     "ef6b3dbe724eff1d03298c2e787a69bd", username, _encryption.DecryptString(Instance.Configuration.PwData));
             }
 
-            _SoundCloudClient = new SoundCloudClient(creds);
-
-            if (username != null && password != null)
-            {
-                _SoundCloudClient.Authenticate();
-            }
+            SoundCloudClient = new SoundCloudClient(creds);
         }
 
         /// <summary>
