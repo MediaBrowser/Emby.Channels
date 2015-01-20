@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Drawing;
@@ -26,13 +27,15 @@ namespace MediaBrowser.Plugins.Trailers
         private readonly IApplicationPaths _appPaths;
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
+        private readonly IProviderManager _providerManager;
 
-        public TrailerChannel(IJsonSerializer json, IApplicationPaths appPaths, IHttpClient httpClient, ILogger logger)
+        public TrailerChannel(IJsonSerializer json, IApplicationPaths appPaths, IHttpClient httpClient, ILogger logger, IProviderManager providerManager)
         {
             _json = json;
             _appPaths = appPaths;
             _httpClient = httpClient;
             _logger = logger;
+            _providerManager = providerManager;
             Instance = this;
         }
 
@@ -96,7 +99,7 @@ namespace MediaBrowser.Plugins.Trailers
             {
                 return GetNonSupporterItems();
             }
-            
+
             if (string.IsNullOrEmpty(query.FolderId))
             {
                 return GetTopCategories();
@@ -264,13 +267,13 @@ namespace MediaBrowser.Plugins.Trailers
             {
                 return GetNonSupporterItems().Items;
             }
-            
+
             if (direct)
             {
                 return await GetDirectListings(cancellationToken).ConfigureAwait(false);
             }
 
-            var json = await EntryPoint.Instance.GetAndCacheResponse("https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Listings/filteredlistings.txt?v=" + DataVersion,
+            var json = await EntryPoint.Instance.GetAndCacheResponse("https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Listings/listingswithmetadata.txt?v=" + DataVersion,
                         TimeSpan.FromDays(3), cancellationToken);
 
             var items = _json.DeserializeFromString<List<ChannelItemInfo>>(json);
@@ -321,8 +324,138 @@ namespace MediaBrowser.Plugins.Trailers
             {
                 _fileLock.Release();
             }
-            
-            return items;
+
+            await FillMetadata(filteredItems, savePath, cancellationToken).ConfigureAwait(false);
+
+            await _fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                _json.SerializeToFile(filteredItems, Path.Combine(savePath, "listingswithmetadata.txt"));
+            }
+            finally
+            {
+                _fileLock.Release();
+            }
+
+            return filteredItems;
+        }
+
+        private async Task FillMetadata(IEnumerable<ChannelItemInfo> items, string savePath, CancellationToken cancellationToken)
+        {
+            List<TrailerMetadata> results = null;
+
+            try
+            {
+                using (var stream = GetType().Assembly.GetManifestResourceStream(GetType().Namespace + ".Listings.metadata.txt"))
+                {
+                    if (stream != null)
+                    {
+                        results = _json.DeserializeFromStream<List<TrailerMetadata>>(stream);
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            if (results == null)
+            {
+                results = new List<TrailerMetadata>();
+            }
+
+            await FillMetadata(items, results, cancellationToken).ConfigureAwait(false);
+
+            await _fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                _json.SerializeToFile(results, Path.Combine(savePath, "metadata.txt"));
+            }
+            finally
+            {
+                _fileLock.Release();
+            }
+        }
+
+        private async Task FillMetadata(IEnumerable<ChannelItemInfo> items, List<TrailerMetadata> metadata, CancellationToken cancellationToken)
+        {
+            foreach (var item in items)
+            {
+                try
+                {
+                    await FillMetadata(item, metadata, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error filling metadata for {0}", ex, item.Name);
+                }
+            }
+        }
+
+        private async Task FillMetadata(ChannelItemInfo item, List<TrailerMetadata> metadataList, CancellationToken cancellationToken)
+        {
+            var imdbId = item.GetProviderId(MetadataProviders.Imdb);
+            TrailerMetadata metadata = null;
+
+            if (!string.IsNullOrWhiteSpace(imdbId))
+            {
+                metadata = metadataList.FirstOrDefault(i => string.Equals(imdbId, i.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (metadata == null)
+            {
+                var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
+
+                if (!string.IsNullOrWhiteSpace(tmdbId))
+                {
+                    metadata = metadataList.FirstOrDefault(i => string.Equals(tmdbId, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase));
+                }
+            }
+
+            if (metadata == null)
+            {
+                var searchResults =
+                    await _providerManager.GetRemoteSearchResults<Movie, MovieInfo>(new RemoteSearchQuery<MovieInfo>
+                    {
+                        IncludeDisabledProviders = true,
+                        SearchInfo = new MovieInfo
+                        {
+                            Name = item.Name,
+                            Year = item.ProductionYear,
+                            ProviderIds = item.ProviderIds
+                        }
+
+                    }, cancellationToken).ConfigureAwait(false);
+
+                var result = searchResults.FirstOrDefault();
+
+                if (result != null)
+                {
+                    metadata = new TrailerMetadata
+                    {
+                        Name = result.Name,
+                        PremiereDate = result.PremiereDate,
+                        ProductionYear = result.ProductionYear,
+                        ProviderIds = result.ProviderIds
+                    };
+
+                    metadataList.Add(metadata);
+                }
+            }
+
+            if (metadata != null)
+            {
+                item.Name = metadata.Name ?? item.Name;
+                item.ProductionYear = metadata.ProductionYear ?? item.ProductionYear;
+                item.PremiereDate = metadata.PremiereDate ?? item.PremiereDate;
+
+                // Merge provider id's
+                foreach (var id in metadata.ProviderIds)
+                {
+                    item.SetProviderId(id.Key, id.Value);
+                }
+            }
         }
 
         private List<ChannelItemInfo> CreateFilteredListings(IEnumerable<ChannelItemInfo> items, ListingResults results)
