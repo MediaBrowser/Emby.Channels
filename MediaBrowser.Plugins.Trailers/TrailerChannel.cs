@@ -47,7 +47,9 @@ namespace MediaBrowser.Plugins.Trailers
         public string GetCacheKey(string userId)
         {
             return Plugin.Instance.Configuration.EnableMovieArchive + "-" +
-                   Plugin.Instance.Configuration.ForceDownloadListings;
+                   Plugin.Instance.Configuration.EnableDvd + "-" +
+                   Plugin.Instance.Configuration.EnableNetflix + "-" +
+                   Plugin.Instance.Configuration.EnableTheaters;
         }
 
         public string Description
@@ -263,7 +265,7 @@ namespace MediaBrowser.Plugins.Trailers
                 return GetNonSupporterItems().Items;
             }
             
-            if (direct || Plugin.Instance.Configuration.ForceDownloadListings)
+            if (direct)
             {
                 return await GetDirectListings(cancellationToken).ConfigureAwait(false);
             }
@@ -278,6 +280,21 @@ namespace MediaBrowser.Plugins.Trailers
                 items = items.Where(i => i.TrailerTypes.Count != 1 || i.TrailerTypes[0] != TrailerType.Archive)
                     .ToList();
             }
+            if (!Plugin.Instance.Configuration.EnableDvd)
+            {
+                items = items.Where(i => i.TrailerTypes.Count != 1 || i.TrailerTypes[0] != TrailerType.ComingSoonToDvd)
+                    .ToList();
+            }
+            if (!Plugin.Instance.Configuration.EnableNetflix)
+            {
+                items = items.Where(i => i.TrailerTypes.Count != 1 || i.TrailerTypes[0] != TrailerType.ComingSoonToStreaming)
+                    .ToList();
+            }
+            if (!Plugin.Instance.Configuration.EnableTheaters)
+            {
+                items = items.Where(i => i.TrailerTypes.Count != 1 || i.TrailerTypes[0] != TrailerType.ComingSoonToTheaters)
+                    .ToList();
+            }
 
             return items;
         }
@@ -289,11 +306,6 @@ namespace MediaBrowser.Plugins.Trailers
             var items = await GetChannelItems(EntryPoint.Instance.Providers, cancellationToken).ConfigureAwait(false);
 
             items = RemoveDuplicates(items);
-
-            if (!Plugin.Instance.Configuration.EnableMovieArchive)
-            {
-                items = items.Where(i => i.TrailerTypes.Count > 1 || !i.TrailerTypes.Contains(TrailerType.Archive));
-            }
 
             var list = items.ToList();
 
@@ -503,48 +515,47 @@ namespace MediaBrowser.Plugins.Trailers
         {
             var list = new List<ChannelItemInfo>();
 
-            //list.Add(new ChannelItemInfo
-            //{
-            //    FolderType = ChannelFolderType.Container,
-            //    Name = "Movies",
-            //    Type = ChannelItemType.Folder,
-            //    MediaType = ChannelMediaType.Video,
-            //    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower(),
-            //    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/thumb.jpg"
-            //});
-
-            list.Add(new ChannelItemInfo
+            if (Plugin.Instance.Configuration.EnableTheaters)
             {
-                FolderType = ChannelFolderType.Container,
-                Name = "New and Upcoming in Theaters",
-                Type = ChannelItemType.Folder,
-                MediaType = ChannelMediaType.Video,
-                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + ExtraType.Trailer + "|" + TrailerType.ComingSoonToTheaters,
+                list.Add(new ChannelItemInfo
+                {
+                    FolderType = ChannelFolderType.Container,
+                    Name = "New and Upcoming in Theaters",
+                    Type = ChannelItemType.Folder,
+                    MediaType = ChannelMediaType.Video,
+                    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + ExtraType.Trailer + "|" + TrailerType.ComingSoonToTheaters,
 
-                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/thumb.jpg"
-            });
+                    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/thumb.jpg"
+                });
+            }
 
-            list.Add(new ChannelItemInfo
+            if (Plugin.Instance.Configuration.EnableDvd)
             {
-                FolderType = ChannelFolderType.Container,
-                Name = "New and Upcoming Movies on Dvd & Blu-ray",
-                Type = ChannelItemType.Folder,
-                MediaType = ChannelMediaType.Video,
-                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + ExtraType.Trailer + "|" + TrailerType.ComingSoonToDvd,
+                list.Add(new ChannelItemInfo
+                {
+                    FolderType = ChannelFolderType.Container,
+                    Name = "New and Upcoming Movies on Dvd & Blu-ray",
+                    Type = ChannelItemType.Folder,
+                    MediaType = ChannelMediaType.Video,
+                    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + ExtraType.Trailer + "|" + TrailerType.ComingSoonToDvd,
 
-                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/bluray.jpg"
-            });
+                    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/bluray.jpg"
+                });
+            }
 
-            list.Add(new ChannelItemInfo
+            if (Plugin.Instance.Configuration.EnableNetflix)
             {
-                FolderType = ChannelFolderType.Container,
-                Name = "New and Upcoming Movies on Netflix",
-                Type = ChannelItemType.Folder,
-                MediaType = ChannelMediaType.Video,
-                Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + ExtraType.Trailer + "|" + TrailerType.ComingSoonToStreaming,
+                list.Add(new ChannelItemInfo
+                {
+                    FolderType = ChannelFolderType.Container,
+                    Name = "New and Upcoming Movies on Netflix",
+                    Type = ChannelItemType.Folder,
+                    MediaType = ChannelMediaType.Video,
+                    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + ExtraType.Trailer + "|" + TrailerType.ComingSoonToStreaming,
 
-                ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/netflix.png"
-            });
+                    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/netflix.png"
+                });
+            }
 
             if (Plugin.Instance.Configuration.EnableMovieArchive)
             {

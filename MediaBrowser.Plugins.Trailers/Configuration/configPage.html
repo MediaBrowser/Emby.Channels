@@ -11,12 +11,23 @@
 
                 <form class="trailersConfigurationForm">
 
-                    <ul class="ulForm" data-role="listview">
-                        <li>
-                            <label for="chkEnableMovieArchive">Enable movie trailer archive</label>
+                    <div>
+                        <fieldset data-role="controlgroup">
+                            <legend>Display sections:</legend>
+                            <label for="chkEnableMovieArchive">Movie trailer archive</label>
                             <input type="checkbox" id="chkEnableMovieArchive" />
-                            <div class="fieldDescription">This adds a catalog of over 1500 trailers to your library, allowing them to be utilized within Cinema Mode, recommendations, and channel browsing. After enabling this your next library scan will take longer than usual. Please be patient.</div>
-                        </li>
+                            <label for="chkTheaters">New and Upcoming in Theaters</label>
+                            <input type="checkbox" id="chkTheaters" />
+                            <label for="chkDvd">New and Upcoming on Dvd</label>
+                            <input type="checkbox" id="chkDvd" />
+                            <label for="chkStreaming">New and Upcoming on Netflix</label>
+                            <input type="checkbox" id="chkStreaming" />
+                        </fieldset>
+                        <div class="fieldDescription">The movie archive adds a catalog of over 1500 trailers to your library, allowing them to be utilized within Cinema Mode, recommendations, and channel browsing. After enabling this your next library scan will take longer than usual. Please be patient.</div>
+                    </div>
+                    <br />
+                    <br />
+                    <ul class="ulForm" data-role="listview">
                         <li>
                             <label for="chkEnableLocalTrailers">Download trailers into my movie folders</label>
                             <input type="checkbox" id="chkEnableLocalTrailers" />
@@ -46,6 +57,10 @@
                     ApiClient.getPluginConfiguration(pluginId).done(function (config) {
 
                         $('#chkEnableMovieArchive', page).checked(config.EnableMovieArchive).checkboxradio('refresh');
+                        $('#chkTheaters', page).checked(config.EnableTheaters).checkboxradio('refresh');
+                        $('#chkDvd', page).checked(config.EnableDvd).checkboxradio('refresh');
+                        $('#chkStreaming', page).checked(config.EnableNetflix).checkboxradio('refresh');
+
                         $('#chkEnableLocalTrailers', page).checked(config.EnableLocalTrailerDownloads).checkboxradio('refresh');
 
                         Dashboard.hideLoadingMsg();
@@ -61,6 +76,10 @@
                     ApiClient.getPluginConfiguration(pluginId).done(function (config) {
 
                         config.EnableMovieArchive = $('#chkEnableMovieArchive', form).checked();
+                        config.EnableTheaters = $('#chkTheaters', form).checked();
+                        config.EnableDvd = $('#chkDvd', form).checked();
+                        config.EnableNetflix = $('#chkStreaming', form).checked();
+
                         config.EnableLocalTrailerDownloads = $('#chkEnableLocalTrailers', form).checked();
 
                         ApiClient.updatePluginConfiguration(pluginId, config).done(Dashboard.processPluginConfigurationUpdateResult);
