@@ -280,21 +280,6 @@ namespace MediaBrowser.Plugins.Trailers
                 items = items.Where(i => i.TrailerTypes.Count != 1 || i.TrailerTypes[0] != TrailerType.Archive)
                     .ToList();
             }
-            if (!Plugin.Instance.Configuration.EnableDvd)
-            {
-                items = items.Where(i => i.TrailerTypes.Count != 1 || i.TrailerTypes[0] != TrailerType.ComingSoonToDvd)
-                    .ToList();
-            }
-            if (!Plugin.Instance.Configuration.EnableNetflix)
-            {
-                items = items.Where(i => i.TrailerTypes.Count != 1 || i.TrailerTypes[0] != TrailerType.ComingSoonToStreaming)
-                    .ToList();
-            }
-            if (!Plugin.Instance.Configuration.EnableTheaters)
-            {
-                items = items.Where(i => i.TrailerTypes.Count != 1 || i.TrailerTypes[0] != TrailerType.ComingSoonToTheaters)
-                    .ToList();
-            }
 
             return items;
         }
