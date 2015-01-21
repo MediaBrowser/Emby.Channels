@@ -29,6 +29,10 @@
                     <br />
                     <ul class="ulForm" data-role="listview">
                         <li>
+                            <label for="chkExcludeUnidentifiedContent">Exclude trailers that are not found on iMDB.com or theMovieDb.org</label>
+                            <input type="checkbox" id="chkExcludeUnidentifiedContent" />
+                        </li>
+                        <li>
                             <label for="chkEnableLocalTrailers">Download trailers into my movie folders</label>
                             <input type="checkbox" id="chkEnableLocalTrailers" />
                         </li>
@@ -61,6 +65,7 @@
                         $('#chkDvd', page).checked(config.EnableDvd).checkboxradio('refresh');
                         $('#chkStreaming', page).checked(config.EnableNetflix).checkboxradio('refresh');
 
+                        $('#chkExcludeUnidentifiedContent', page).checked(config.ExcludeUnIdentifiedContent).checkboxradio('refresh');
                         $('#chkEnableLocalTrailers', page).checked(config.EnableLocalTrailerDownloads).checkboxradio('refresh');
 
                         Dashboard.hideLoadingMsg();
@@ -80,6 +85,7 @@
                         config.EnableDvd = $('#chkDvd', form).checked();
                         config.EnableNetflix = $('#chkStreaming', form).checked();
 
+                        config.ExcludeUnIdentifiedContent = $('#chkExcludeUnidentifiedContent', form).checked();
                         config.EnableLocalTrailerDownloads = $('#chkEnableLocalTrailers', form).checked();
 
                         ApiClient.updatePluginConfiguration(pluginId, config).done(Dashboard.processPluginConfigurationUpdateResult);

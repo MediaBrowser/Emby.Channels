@@ -43,7 +43,7 @@ namespace MediaBrowser.Plugins.Trailers
         {
             get
             {
-                return "65";
+                return "66";
             }
         }
 
@@ -52,7 +52,8 @@ namespace MediaBrowser.Plugins.Trailers
             return Plugin.Instance.Configuration.EnableMovieArchive + "-" +
                    Plugin.Instance.Configuration.EnableDvd + "-" +
                    Plugin.Instance.Configuration.EnableNetflix + "-" +
-                   Plugin.Instance.Configuration.EnableTheaters;
+                   Plugin.Instance.Configuration.EnableTheaters + "-" +
+                   Plugin.Instance.Configuration.ExcludeUnIdentifiedContent;
         }
 
         public string Description
@@ -281,6 +282,12 @@ namespace MediaBrowser.Plugins.Trailers
             if (!Plugin.Instance.Configuration.EnableMovieArchive)
             {
                 items = items.Where(i => i.TrailerTypes.Count != 1 || i.TrailerTypes[0] != TrailerType.Archive)
+                    .ToList();
+            }
+
+            if (Plugin.Instance.Configuration.ExcludeUnIdentifiedContent)
+            {
+                items = items.Where(i => !string.IsNullOrWhiteSpace(i.GetProviderId(MetadataProviders.Imdb)) || !string.IsNullOrWhiteSpace(i.GetProviderId(MetadataProviders.Tmdb)))
                     .ToList();
             }
 

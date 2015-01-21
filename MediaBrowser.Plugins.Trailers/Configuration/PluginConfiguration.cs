@@ -14,12 +14,15 @@ namespace MediaBrowser.Plugins.Trailers.Configuration
 
         public bool EnableLocalTrailerDownloads { get; set; }
 
+        public bool ExcludeUnIdentifiedContent { get; set; }
+        
         public PluginConfiguration()
         {
             EnableNetflix = true;
             EnableNetflix = true;
             EnableDvd = true;
             EnableTheaters = true;
+            ExcludeUnIdentifiedContent = true;
         }
     }
 }
