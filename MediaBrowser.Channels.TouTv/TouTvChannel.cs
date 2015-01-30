@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Channels.TouTv.TouTvApi;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Drawing;
@@ -15,17 +15,18 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.TouTv
 {
-    public class TouTvChannel : IChannel, ISearchableChannel, IRequiresMediaInfoCallback
+    public class TouTvChannel : IChannel, IRequiresMediaInfoCallback
     {
         private readonly ILogger _logger;
-        private readonly TouTvVideoService _touTvVideoService;
         private readonly TouTvProvider _touTvProvider;
 
         public TouTvChannel(ILogManager logManager, IHttpClient httpClient, IJsonSerializer jsonSerializer)
         {
             _logger = logManager.GetLogger(GetType().Name);
-            _touTvVideoService = new TouTvVideoService(httpClient, jsonSerializer);
-            _touTvProvider = new TouTvProvider();
+
+            var presentationService = new PresentationService(httpClient, jsonSerializer);
+            var mediaValidationV1Service = new MediaValidationV1Service(httpClient, jsonSerializer);
+            _touTvProvider = new TouTvProvider(presentationService, mediaValidationV1Service);
         }
 
         public InternalChannelFeatures GetChannelFeatures()
@@ -51,7 +52,7 @@ namespace MediaBrowser.Channels.TouTv
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
             var folderId = FolderId.ParseFolderId(query.FolderId);
-            var channelItemInfos = await FindChannelItemInfos(folderId);
+            var channelItemInfos = await FindChannelItemInfos(folderId, cancellationToken);
             return new ChannelItemResult
             {
                 Items = channelItemInfos.ToList()
@@ -95,7 +96,7 @@ namespace MediaBrowser.Channels.TouTv
         // Increment as needed to invalidate all caches
         public string DataVersion
         {
-            get { return "2"; }
+            get { return "32"; }
         }
 
         public string HomePageUrl
@@ -108,24 +109,9 @@ namespace MediaBrowser.Channels.TouTv
             get { return ChannelParentalRating.GeneralAudience; }
         }
 
-        public async Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, CancellationToken cancellationToken)
-        {
-            return await _touTvProvider.SearchShow(searchInfo.SearchTerm, cancellationToken);
-        }
-
         public async Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo(string id, CancellationToken cancellationToken)
         {
-            var episode = new Episode(id);
-            var episodeMetadata = await _touTvProvider.GetEpisode(episode.ShowId, episode.EpisodeId);
-            var videoUrl = await _touTvVideoService.GetVideoUrl(episodeMetadata.PID, cancellationToken);
-            return new List<ChannelMediaInfo>
-            {
-                new ChannelMediaInfo
-                {
-                    Path = videoUrl.Url,
-                    RunTimeTicks = episodeMetadata.LengthSpan.Ticks
-                }
-            };
+            return await _touTvProvider.GetEpisode(id, cancellationToken);
         }
 
         private Task<DynamicImageResponse> GetImage(ImageType type, string imageFormat)
@@ -139,45 +125,20 @@ namespace MediaBrowser.Channels.TouTv
             });
         }
 
-        private async Task<IEnumerable<ChannelItemInfo>> FindChannelItemInfos(FolderId folderId)
+        private async Task<IEnumerable<ChannelItemInfo>> FindChannelItemInfos(FolderId folderId, CancellationToken cancellationToken)
         {
             switch (folderId.FolderIdType)
             {
                 case FolderIdType.Home:
-                    return CreateHomeFolders();
-                case FolderIdType.Genres:
-                    return await _touTvProvider.GetGenres();
-                case FolderIdType.Genre:
-                    return await _touTvProvider.GetGenreShows(folderId.Id);
-                case FolderIdType.Shows:
-                    return await _touTvProvider.GetShows();
+                    return await _touTvProvider.GetTypesOfMedia(cancellationToken);
+                case FolderIdType.Section:
+                    return await _touTvProvider.GetShows(folderId.Id, cancellationToken);
                 case FolderIdType.Show:
-                    return await _touTvProvider.GetShowEpisodes(folderId.Id);
+                    return await _touTvProvider.GetShowEpisodes(folderId.Id, cancellationToken);
                 default:
                     _logger.Error("Unknown FolderIdType" + folderId.FolderIdType);
                     return Enumerable.Empty<ChannelItemInfo>();
             }
-        }
-
-        private static IEnumerable<ChannelItemInfo> CreateHomeFolders()
-        {
-            return new List<ChannelItemInfo>
-            {
-                CreateFolderChannelItemInfo("Émissions", "", FolderId.CreateShowsFolderId()),
-                CreateFolderChannelItemInfo("Genres", "", FolderId.CreateGenresFolderId())
-            };
-        }
-
-        private static ChannelItemInfo CreateFolderChannelItemInfo(string name, string imageUrl, FolderId folderId)
-        {
-            return new ChannelItemInfo
-            {
-                FolderType = ChannelFolderType.Container,
-                Id = folderId.ToString(),
-                ImageUrl = imageUrl,
-                Name = name,
-                Type = ChannelItemType.Folder
-            };
         }
     }
 }

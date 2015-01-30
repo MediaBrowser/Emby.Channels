@@ -44,12 +44,12 @@
     <Reference Include="MediaBrowser.Model">
       <HintPath>..\packages\MediaBrowser.Common.3.0.544\lib\net45\MediaBrowser.Model.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\packages\ServiceStack.Interfaces.4.0.33\lib\portable-wp80+sl5+net40+win8+monotouch+monoandroid\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -58,100 +58,32 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="Episode.cs" />
+    <Compile Include="Configuration\ConfigurationPage.cs" />
     <Compile Include="FolderId.cs" />
     <Compile Include="FolderIdType.cs" />
     <Compile Include="Plugin.cs" />
-    <Compile Include="PluginConfiguration.cs" />
+    <Compile Include="Configuration\PluginConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Service References\TouTvApi\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
+    <Compile Include="RestfulService\LoginUrlBaseToken.cs" />
+    <Compile Include="TouTvApi\ApiService.cs" />
+    <Compile Include="TouTvApi\ClaimsResult.cs" />
+    <Compile Include="TouTvApi\Details.cs" />
+    <Compile Include="TouTvApi\Lineup.cs" />
+    <Compile Include="TouTvApi\LineupItem.cs" />
+    <Compile Include="TouTvApi\MediaValidationV2Service.cs" />
+    <Compile Include="TouTvApi\MediaValidationV1Service.cs" />
+    <Compile Include="TouTvApi\PresentationService.cs" />
+    <Compile Include="TouTvApi\Section.cs" />
+    <Compile Include="TouTvApi\SectionList.cs" />
+    <Compile Include="TouTvApi\Settings.cs" />
+    <Compile Include="TouTvApi\VideoResult.cs" />
     <Compile Include="TouTvChannel.cs" />
+    <Compile Include="RestfulService\TouTvRestfulService.cs" />
     <Compile Include="TouTvProvider.cs" />
-    <Compile Include="TouTvVideoService.cs" />
-    <Compile Include="VideoUrl.cs" />
+    <Compile Include="TouTvApi\VideoUrl.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="packages.config" />
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.ArborescenceDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.BlocPromoDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.BlocPromoItemDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.CarrouselItemDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.CollectionDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.ConfigurationDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.EmissionDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.EpisodeDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.GenreDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.iTunesLinkDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.PageAccueilDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.PageEmissionDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.PageEpisodeDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.PageGenreDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.PageRepertoireDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.PartenaireDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.SearchResultsDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\MediaBrowser.Channels.TouTv.TouTvApi.TeaserDTO.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\TouTvApi\TouTVAPIService.wsdl" />
-    <None Include="Service References\TouTvApi\TouTVAPIService.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\TouTvApi\TouTVAPIService1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\TouTvApi\TouTVAPIService2.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\TouTvApi\TouTVAPIService3.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\TouTvApi\TouTVAPIService4.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\TouTvApi\TouTVAPIService5.xsd">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Images\Thumb.jpg" />
@@ -159,25 +91,7 @@
     <EmbeddedResource Include="Images\Logo.png" />
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Service References\TouTvApi\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\TouTvApi\TouTVAPIService.disco" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\TouTvApi\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\TouTvApi\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\TouTvApi\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
+    <EmbeddedResource Include="Configuration\configPage.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
