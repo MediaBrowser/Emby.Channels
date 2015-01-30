@@ -33,26 +33,14 @@ namespace MediaBrowser.Channels.TouTv
             throw new ArgumentException("Argument format is not recognized. Only pass string which have been returned by FolderId.ToString().", "folderId");
         }
 
-        public static FolderId CreateGenresFolderId()
+        public static FolderId CreateSectionFolderId(string title)
         {
-            return new FolderId(FolderIdType.Genres);
+            return new FolderId(FolderIdType.Section, title);
         }
 
-        public static FolderId CreateGenreFolderId(long genreId)
+        public static FolderId CreateShowFolderId(string url)
         {
-            var id = genreId.ToString(CultureInfo.InvariantCulture);
-            return new FolderId(FolderIdType.Genre, id);
-        }
-
-        public static FolderId CreateShowsFolderId()
-        {
-            return new FolderId(FolderIdType.Shows);
-        }
-
-        public static FolderId CreateShowFolderId(long showId)
-        {
-            var id = showId.ToString(CultureInfo.InvariantCulture);
-            return new FolderId(FolderIdType.Show, id);
+            return new FolderId(FolderIdType.Show, url);
         }
 
         public override string ToString()

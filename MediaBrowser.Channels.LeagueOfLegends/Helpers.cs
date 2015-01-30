@@ -21,10 +21,7 @@ namespace MediaBrowser.Channels.LeagueOfLegends
         {
             get
             {
-                Assembly assembly = Assembly.GetExecutingAssembly();
-                var assemblyUri = new Uri(assembly.CodeBase);
-                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(assemblyUri.LocalPath);
-                string version = fileVersionInfo.FileVersion;
+                var version = GetAssemblyVersion();
                 return string.Format("Media Browser 3/{0} +http://mediabrowser.tv/", version);
             }
         }
@@ -38,6 +35,15 @@ namespace MediaBrowser.Channels.LeagueOfLegends
         internal static bool IsPlaceholderId(string id)
         {
             return !string.IsNullOrEmpty(id) && id.StartsWith(PlaceholderString);
+        }
+
+        private static string GetAssemblyVersion()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            // MediaBrowser.Channels.LeagueOfLegends, Version=1.0.5503.13083, Culture=neutral, PublicKeyToken=null
+            var versionMatch = Regex.Match(assembly.FullName, ".*, Version=(.*?), .*");
+            return versionMatch.Groups[1].Value;
         }
     }
 }
