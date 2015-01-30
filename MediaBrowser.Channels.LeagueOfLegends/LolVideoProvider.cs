@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Channels.LeagueOfLegends.LolEventVods;
 using MediaBrowser.Channels.LeagueOfLegends.Twitch;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Channels;
@@ -18,10 +19,10 @@ namespace MediaBrowser.Channels.LeagueOfLegends
         private readonly ILogger _logger;
         private readonly LolEventVodsService _lolEventVodsService;
 
-        public LolVideoProvider(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogger logger)
+        public LolVideoProvider(IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationHost applicationHost, ILogger logger)
         {
             _logger = logger;
-            _lolEventVodsService = new LolEventVodsService(httpClient, jsonSerializer);
+            _lolEventVodsService = new LolEventVodsService(httpClient, jsonSerializer, applicationHost);
         }
 
         public async Task<ChannelItemResult> FindEvents(int limit, int offset, CancellationToken cancellationToken)

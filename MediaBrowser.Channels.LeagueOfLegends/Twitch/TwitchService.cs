@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Serialization;
 
@@ -12,8 +13,8 @@ namespace MediaBrowser.Channels.LeagueOfLegends.Twitch
             get { return "https://api.twitch.tv/"; }
         }
 
-        public TwitchService(IHttpClient httpClient, IJsonSerializer jsonSerializer)
-            : base(httpClient, jsonSerializer)
+        public TwitchService(IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationHost applicationHost)
+            : base(httpClient, jsonSerializer, applicationHost)
         { }
 
         public Task<Broadcast> GetBroadcast(string id, CancellationToken cancellationToken)
