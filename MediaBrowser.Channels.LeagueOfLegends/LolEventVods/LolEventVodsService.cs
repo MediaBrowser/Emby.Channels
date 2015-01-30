@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Channels.LeagueOfLegends.Twitch;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Serialization;
 
@@ -17,8 +18,8 @@ namespace MediaBrowser.Channels.LeagueOfLegends.LolEventVods
             get { return "http://www.reddit.com/"; }
         }
 
-        public LolEventVodsService(IHttpClient httpClient, IJsonSerializer jsonSerializer)
-            : base(httpClient, jsonSerializer)
+        public LolEventVodsService(IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationHost applicationHost)
+            : base(httpClient, jsonSerializer, applicationHost)
         { }
 
         public async Task<Events> GetEvents(int limit, string after, CancellationToken cancellationToken)

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Channels.LeagueOfLegends.Twitch;
 using MediaBrowser.Channels.LeagueOfLegends.Vimeo;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
@@ -26,12 +27,12 @@ namespace MediaBrowser.Channels.LeagueOfLegends
         private readonly TwitchService _twitchService;
         private readonly VimeoService _vimeoService;
 
-        public LeagueOfLegendsChannel(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager)
+        public LeagueOfLegendsChannel(IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationHost applicationHost, ILogManager logManager)
         {
             _logger = logManager.GetLogger(GetType().Name);
-            _lolVideoProvider = new LolVideoProvider(httpClient, jsonSerializer, _logger);
-            _twitchService = new TwitchService(httpClient, jsonSerializer);
-            _vimeoService = new VimeoService(httpClient, jsonSerializer);
+            _lolVideoProvider = new LolVideoProvider(httpClient, jsonSerializer, applicationHost, _logger);
+            _twitchService = new TwitchService(httpClient, jsonSerializer, applicationHost);
+            _vimeoService = new VimeoService(httpClient, jsonSerializer, applicationHost);
         }
 
         public InternalChannelFeatures GetChannelFeatures()
