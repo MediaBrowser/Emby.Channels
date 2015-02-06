@@ -50,6 +50,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.Leagu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.TouTv", "MediaBrowser.Channels.TouTv\MediaBrowser.Channels.TouTv.csproj", "{9E014AED-5C47-4B81-96C7-F992658672C5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.HockeyStreams", "MediaBrowser.Channels.HockeyStreams\MediaBrowser.Channels.HockeyStreams.csproj", "{094173B3-8433-455A-83A5-F8F64BE8E4B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -136,6 +138,10 @@ Global
 		{9E014AED-5C47-4B81-96C7-F992658672C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E014AED-5C47-4B81-96C7-F992658672C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E014AED-5C47-4B81-96C7-F992658672C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{094173B3-8433-455A-83A5-F8F64BE8E4B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{094173B3-8433-455A-83A5-F8F64BE8E4B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{094173B3-8433-455A-83A5-F8F64BE8E4B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{094173B3-8433-455A-83A5-F8F64BE8E4B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

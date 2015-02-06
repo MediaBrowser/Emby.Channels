@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Hockey Streams</title>
+</head>
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage hockeyStreamsConfigurationPage">
+        <div data-role="content">
+            <div class="content-primary">
+                <form class="hockeyStreamsConfigurationForm">
+                    <ul class="ulForm" data-role="listview">
+                        <li>
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" required />
+                        </li>
+                        <li>
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" required />
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b">Save</button>
+                        </li>
+                        <li>
+                            <button onclick="window.open('http://www.hockeystreams.com/ref/111842', '_blank');" data-theme="b">Sign up</button>
+                        </li>
+                        <li>
+                            <button type="button" onclick="history.back();">Cancel</button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+
+            <div data-role="popup" id="errorPopup" class="ui-content" style="max-width:90%; min-width: 200px" data-overlay-theme="a" data-dismissible="false">
+                <h3 style="text-align: center" id="errorPopupMessage"></h3>
+                <button type="button" data-theme="c" onclick="$('#errorPopup').popup('close')">OK</button>
+            </div>
+
+            <script type="text/javascript">
+                var HockeyStreamsApi = new function () {
+                    var pluginId = '4e9e77ca-c8de-49ac-a07d-e0477eb98727';
+
+                    this.loadConfig = function (callback) {
+                        ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+                            callback(config.Username);
+                        });
+                    }
+
+                    this.saveConfig = function (username, token, favoriteTeam, callback) {
+                        ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+                            config.Username = username;
+                            config.Token = token;
+                            config.FavoriteTeam = favoriteTeam;
+
+                            ApiClient.updatePluginConfiguration(pluginId, config).done(callback);
+                        });
+                    }
+
+                    this.login = function (username, password, callback, error) {
+                        var url = ApiClient.getUrl('HockeyStreams/Auth/Login?username=' + username + '&password=' + password);
+                        $.ajax({
+                            type: 'GET',
+                            url: url,
+                            dataType: 'json',
+                            success: function (data) {
+                                if (data.Message) {
+                                    error(data.Message);
+                                } else {
+                                    callback(data);
+                                }
+                            }
+                        });
+                    }
+                };
+
+                var HockeyStreamsUi = new function () {
+                    this.username = function (value) {
+                        var element = $('#username');
+
+                        if (value) {
+                            element.val(value);
+                        } else {
+                            return element.val();
+                        }
+                    }
+
+                    this.password = function(value) {
+                        var element = $('#password');
+
+                        if (value) {
+                            element.val(value);
+                        } else {
+                            return element.val();
+                        }
+                    }
+
+                    this.showError = function (message) {
+                        $('#errorPopupMessage').text(message);
+                        $('#errorPopup').popup('open');
+                    }
+                }
+
+                $('.hockeyStreamsConfigurationPage').on('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+
+                    HockeyStreamsApi.loadConfig(function (username) {
+                        HockeyStreamsUi.username(username);
+
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+                $('.hockeyStreamsConfigurationForm').on('submit', function () {
+                    Dashboard.showLoadingMsg();
+
+                    var username = HockeyStreamsUi.username();
+                    var password = HockeyStreamsUi.password();
+
+                    HockeyStreamsApi.login(username, password, function (loginResponse) {
+                        HockeyStreamsApi.saveConfig(username, loginResponse.Token, loginResponse.FavoriteTeam, function () {
+                            Dashboard.hideLoadingMsg();
+                            Dashboard.processPluginConfigurationUpdateResult();
+                        });
+                    }, function (error) {
+                        Dashboard.hideLoadingMsg();
+                        HockeyStreamsUi.showError(error);
+                    });
+
+                    // Disable default form submission
+                    return false;
+                });
+            </script>
+        </div>
+    </div>
+</body>
+</html>
