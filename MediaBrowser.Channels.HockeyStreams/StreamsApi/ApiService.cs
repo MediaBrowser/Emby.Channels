@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +9,7 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
 {
-    internal abstract class ApiService
+    public abstract class ApiService
     {
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;

@@ -10,9 +10,9 @@ namespace MediaBrowser.Channels.HockeyStreams.Media.VideoProvider
     {
         private const string IdStart = "ondemand-";
 
-        private readonly BaseStreamsService _baseStreamsService;
+        private readonly StreamsService _baseStreamsService;
 
-        public OnDemandVideoProvider(BaseStreamsService baseStreamsService)
+        public OnDemandVideoProvider(StreamsService baseStreamsService)
         {
             _baseStreamsService = baseStreamsService;
         }

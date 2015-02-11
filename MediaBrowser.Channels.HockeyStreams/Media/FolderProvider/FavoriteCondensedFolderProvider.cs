@@ -12,9 +12,9 @@ namespace MediaBrowser.Channels.HockeyStreams.Media.FolderProvider
     {
         private const string FolderId = "favoritecondensed-home";
 
-        private readonly BaseStreamsService _baseStreamsService;
+        private readonly StreamsService _baseStreamsService;
 
-        public FavoriteCondensedFolderProvider(BaseStreamsService baseStreamsService)
+        public FavoriteCondensedFolderProvider(StreamsService baseStreamsService)
         {
             _baseStreamsService = baseStreamsService;
         }
@@ -38,7 +38,7 @@ namespace MediaBrowser.Channels.HockeyStreams.Media.FolderProvider
         private ChannelItemInfo CreateChannelItemInfo(HighlightsObject highlightsObject)
         {
             var id = CondensedVideoProvider.CreateId(highlightsObject.Id);
-            var name = ChannelInfoHelper.FormatMatchName(highlightsObject.HomeTeam, highlightsObject.AwayTeam);
+            var name = ChannelInfoHelper.FormatFavoriteMatchName(highlightsObject.HomeTeam, highlightsObject.AwayTeam);
             var overview = string.Format("Played on {0}<br>Event: {1}", highlightsObject.Date, highlightsObject.Event);
             var date = ChannelInfoHelper.ParseDate(highlightsObject.Date);
 

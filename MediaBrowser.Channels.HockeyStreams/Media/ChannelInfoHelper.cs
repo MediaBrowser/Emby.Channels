@@ -41,15 +41,6 @@ namespace MediaBrowser.Channels.HockeyStreams.Media
             };
         }
 
-        public static string GetOpposingTeam(string homeTeam, string awayTeam)
-        {
-            if (FavoriteTeam == homeTeam)
-            {
-                return awayTeam;
-            }
-            return homeTeam;
-        }
-
         public static DateTime ParseDate(string date)
         {
             return DateTime.ParseExact(date, "MM/dd/yyyy", CultureInfo.InvariantCulture);
@@ -63,6 +54,15 @@ namespace MediaBrowser.Channels.HockeyStreams.Media
         public static string FormatMatchName(string homeTeam, string awayTeam)
         {
             return string.Format("{0} @ {1}", awayTeam, homeTeam);
+        }
+
+        public static string FormatFavoriteMatchName(string homeTeam, string awayTeam)
+        {
+            if (FavoriteTeam == homeTeam)
+            {
+                return "vs " + awayTeam;
+            }
+            return "vs " + homeTeam;
         }
     }
 }

@@ -9,9 +9,9 @@ namespace MediaBrowser.Channels.HockeyStreams.Media.VideoProvider
     {
         private const string IdStart = "condensed-";
 
-        private readonly BaseStreamsService _baseStreamsService;
+        private readonly StreamsService _baseStreamsService;
 
-        public CondensedVideoProvider(BaseStreamsService baseStreamsService)
+        public CondensedVideoProvider(StreamsService baseStreamsService)
         {
             _baseStreamsService = baseStreamsService;
         }

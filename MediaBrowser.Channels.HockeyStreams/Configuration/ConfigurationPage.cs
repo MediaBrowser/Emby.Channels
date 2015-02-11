@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Plugins;
 
@@ -8,7 +9,7 @@ namespace MediaBrowser.Channels.HockeyStreams.Configuration
     {
         public string Name
         {
-            get { return HockeyStreams.Plugin.ChannelName.Replace(" ", ""); }
+            get { return Helper.ChannelName.Replace(" ", ""); }
         }
 
         public ConfigurationPageType ConfigurationPageType
@@ -23,9 +24,8 @@ namespace MediaBrowser.Channels.HockeyStreams.Configuration
 
         public Stream GetHtmlStream()
         {
-            var type = GetType();
-            var configPage = type.Namespace + ".configPage.html";
-            return type.Assembly.GetManifestResourceStream(configPage);
+            var configPage = Helper.ConfigPageEmbededResourceUrl();
+            return GetType().Assembly.GetManifestResourceStream(configPage);
         }
     }
 }

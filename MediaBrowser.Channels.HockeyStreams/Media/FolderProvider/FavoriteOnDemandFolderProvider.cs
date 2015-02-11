@@ -12,9 +12,9 @@ namespace MediaBrowser.Channels.HockeyStreams.Media.FolderProvider
     {
         private const string FolderId = "favoriteondemand-home";
 
-        private readonly BaseStreamsService _baseStreamsService;
+        private readonly StreamsService _baseStreamsService;
 
-        public FavoriteOnDemandFolderProvider(BaseStreamsService baseStreamsService)
+        public FavoriteOnDemandFolderProvider(StreamsService baseStreamsService)
         {
             _baseStreamsService = baseStreamsService;
         }
@@ -38,7 +38,7 @@ namespace MediaBrowser.Channels.HockeyStreams.Media.FolderProvider
         private static ChannelItemInfo CreateChannelItemInfo(OnDemandObject onDemandObject)
         {
             var id = OnDemandVideoProvider.CreateId(onDemandObject.Id);
-            var name = "vs " + ChannelInfoHelper.GetOpposingTeam(onDemandObject.HomeTeam, onDemandObject.AwayTeam);
+            var name = ChannelInfoHelper.FormatFavoriteMatchName(onDemandObject.HomeTeam, onDemandObject.AwayTeam);
             var overview = string.Format("Played on {0}<br>Event: {1}<br>Feed type: {2}", onDemandObject.Date, onDemandObject.Event, onDemandObject.FeedType);
             var date = ChannelInfoHelper.ParseDate(onDemandObject.Date);
 

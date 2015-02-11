@@ -15,10 +15,10 @@ namespace MediaBrowser.Channels.HockeyStreams.Media.FolderProvider
         private const string FolderIdCondensed = "dates-condensed";
         private const string FolderIdHighlights = "dates-highlights";
 
-        private readonly BaseStreamsService _baseStreamsService;
+        private readonly StreamsService _baseStreamsService;
         private readonly ILogger _logger;
 
-        public DatesFolderProvider(BaseStreamsService baseStreamsService, ILogger logger)
+        public DatesFolderProvider(StreamsService baseStreamsService, ILogger logger)
         {
             _baseStreamsService = baseStreamsService;
             _logger = logger;

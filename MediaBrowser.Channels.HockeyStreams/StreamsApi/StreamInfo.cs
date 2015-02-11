@@ -1,6 +1,6 @@
 ﻿namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
 {
-    internal class StreamInfo
+    public class StreamInfo
     {
         public string Type { get; set; }
         public string Src { get; set; }

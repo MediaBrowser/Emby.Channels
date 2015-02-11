@@ -59,9 +59,11 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Resources.cs" />
+    <Compile Include="StreamsChannel.cs" />
     <Compile Include="Configuration\ConfigurationPage.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
-    <Compile Include="HockeyStreamsChannel.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="Media\ChannelInfoHelper.cs" />
     <Compile Include="Media\FolderProvider\CondensedFolderProvider.cs" />
     <Compile Include="Media\FolderProvider\FavoriteCondensedFolderProvider.cs" />
@@ -81,24 +83,18 @@
     <Compile Include="Media\VideoProvider\OnDemandVideoProvider.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="RestfulService\HockeyStreamsRestfulService.cs" />
+    <Compile Include="RestfulService\StreamsRestfulService.cs" />
     <Compile Include="RestfulService\LoginToken.cs" />
     <Compile Include="RestfulService\LoginTokenResponse.cs" />
     <Compile Include="StreamsApi\ApiException.cs" />
     <Compile Include="StreamsApi\ApiService.cs" />
     <Compile Include="StreamsApi\BaseStreamsResponse.cs" />
-    <Compile Include="StreamsApi\BaseStreamsService.cs" />
+    <Compile Include="StreamsApi\StreamsService.cs" />
     <Compile Include="StreamsApi\CondensedResponse.cs" />
     <Compile Include="StreamsApi\HighlightsObject.cs" />
     <Compile Include="StreamsApi\HighlightsResponse.cs" />
     <Compile Include="StreamsApi\ListTeamsResponse.cs" />
     <Compile Include="StreamsApi\LiveResponse.cs" />
-    <Compile Include="StreamsApi\HockeyStreamsService.cs" />
     <Compile Include="StreamsApi\LiveSchedule.cs" />
     <Compile Include="StreamsApi\LiveStreamResponse.cs" />
     <Compile Include="StreamsApi\LoginResponse.cs" />
@@ -119,10 +115,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Images\Backdrop.gif" />
     <EmbeddedResource Include="Images\Thumb.gif" />
-    <EmbeddedResource Include="Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Configuration\configPage.html" />

@@ -10,9 +10,9 @@ namespace MediaBrowser.Channels.HockeyStreams.Media.VideoProvider
     {
         private const string IdStart = "live-";
 
-        private readonly BaseStreamsService _baseStreamsService;
+        private readonly StreamsService _baseStreamsService;
 
-        public LiveVideoProvider(BaseStreamsService baseStreamsService)
+        public LiveVideoProvider(StreamsService baseStreamsService)
         {
             _baseStreamsService = baseStreamsService;
         }

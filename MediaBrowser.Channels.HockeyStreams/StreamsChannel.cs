@@ -17,37 +17,35 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.HockeyStreams
 {
-    public class HockeyStreamsChannel : IChannel, IRequiresMediaInfoCallback
+    public class StreamsChannel : IChannel, IRequiresMediaInfoCallback
     {
         private readonly MediaProviderFactory _mediaProviderFactory;
 
-        public HockeyStreamsChannel(IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationHost applicationHost, ILogManager logManager)
+        public StreamsChannel(IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationHost applicationHost, ILogManager logManager)
         {
-            var hockeyStreamsService = new HockeyStreamsService(httpClient, jsonSerializer, applicationHost);
+            var baseStreamsService = new StreamsService(httpClient, jsonSerializer, applicationHost);
             var logger = logManager.GetLogger(GetType().Name);
-            _mediaProviderFactory = new MediaProviderFactory(hockeyStreamsService, logger);
+            _mediaProviderFactory = new MediaProviderFactory(baseStreamsService, logger);
         }
 
-        public string Name
-        {
-            get { return Plugin.ChannelName; }
-        }
-
-        public string Description
-        {
-            get { return Plugin.ChannelDescription; }
-        }
-
-        // Increment as needed to invalidate all caches
         public string DataVersion
         {
-            // TODO: set to "1" before commit
-            get { return "29"; }
+            get { return Helper.DataVersion; }
         }
 
         public string HomePageUrl
         {
-            get { return "www.hockeystreams.com"; }
+            get { return Helper.HomePageUrl; }
+        }
+
+        public string Name
+        {
+            get { return Helper.ChannelName; }
+        }
+
+        public string Description
+        {
+            get { return Helper.ChannelDescription; }
         }
 
         public ChannelParentalRating ParentalRating
