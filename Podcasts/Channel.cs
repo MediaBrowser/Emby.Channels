@@ -247,7 +247,9 @@ namespace PodCasts
                         ChannelItemSortField.Runtime
                    },
 
-                AutoRefreshLevels = 2
+                AutoRefreshLevels = 2,
+
+                SupportsContentDownloading = true
             };
         }
 

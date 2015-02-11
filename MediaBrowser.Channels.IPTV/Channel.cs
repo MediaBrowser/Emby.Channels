@@ -105,6 +105,8 @@ namespace MediaBrowser.Channels.IPTV
                 {
                     ChannelMediaType.Video
                 },
+
+                SupportsContentDownloading = true
             };
         }
 
