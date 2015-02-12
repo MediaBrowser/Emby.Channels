@@ -8,5 +8,6 @@
         internal const string Live = "Live";
         internal const string OnDemand = "On demand";
         internal const string ThisIsABug = "This is a bug, please report this in the forums";
+        internal const string SubscriptionRequired = "You must have an active subscription";
     }
 }

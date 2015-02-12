@@ -11,7 +11,6 @@
 
         // Increment as needed to invalidate all caches
         internal const string DataVersion = "1";
-        internal const string LoginRoute = "/HockeyStreams/Auth/Login";
 
         internal static string ConfigPageEmbededResourceUrl()
         {

@@ -3,7 +3,7 @@ using ServiceStack;
 
 namespace MediaBrowser.Channels.HockeyStreams.RestfulService
 {
-    [Route("/HockeyStreams/Auth/Login", "GET", Summary = "Returns info of an authenticated user")]
+    [Route("/BallStreams/Auth/Login", "GET", Summary = "Returns info of an authenticated user")]
     public class LoginToken : IReturn<QueryResult<LoginTokenResponse>>
     {
         public string Username { get; set; }
