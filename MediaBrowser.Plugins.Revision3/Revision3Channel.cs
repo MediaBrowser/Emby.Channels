@@ -39,7 +39,7 @@ namespace MediaBrowser.Plugins.Revision3
             get
             {
                 // Increment as needed to invalidate all caches
-                return "6";
+                return "11";
             }
         }
 
@@ -106,7 +106,7 @@ namespace MediaBrowser.Plugins.Revision3
                 MediaType = ChannelMediaType.Video,
                 Name = i.name,
                 Type = ChannelItemType.Media,
-                Id = i.slug,
+                Id = i.video_id,
                 RunTimeTicks = TimeSpan.FromSeconds(i.duration).Ticks,
                 DateCreated = !String.IsNullOrEmpty(i.published) ?
                     Convert.ToDateTime(i.published) : DateTime.MinValue,
@@ -136,7 +136,7 @@ namespace MediaBrowser.Plugins.Revision3
                 MediaType = ChannelMediaType.Video,
                 Name = i.show.name + " - " + i.name,
                 Type = ChannelItemType.Media,
-                Id = i.slug,
+                Id = i.video_id,
                 RunTimeTicks = TimeSpan.FromSeconds(i.duration).Ticks,
                 DateCreated = !String.IsNullOrEmpty(i.published) ?
                     Convert.ToDateTime(i.published) : DateTime.MinValue,
@@ -149,22 +149,26 @@ namespace MediaBrowser.Plugins.Revision3
             var page = new HtmlDocument();
             var items = new List<ChannelMediaInfo>();
 
-            using (var stream = await
-                        _httpClient.Get("http://revision3.com/api/oembed/?url=http://revision3.com/" + id + "/&format=json", cancellationToken)
-                            .ConfigureAwait(false))
+           // using (var stream = await
+             //           _httpClient.Get("http://revision3.com/api/getPlaylist.json?api_key=ba9c741bce1b9d8e3defcc22193f3651b8867e62&codecs=h264&video_id=" + id, cancellationToken)
+               //             .ConfigureAwait(false))
+            //{
+                //using (var reader = new StreamReader(stream))
+                //{
+                    //var html = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    //var idNode = Regex.Match(html, "videoId=(?<id>.*)&e", RegexOptions.IgnoreCase);
+
+                    var httpoptions = new HttpRequestOptions
             {
-                using (var reader = new StreamReader(stream))
+                Url = "http://revision3.com/api/flash?video_id=" + id,
+                CancellationToken = cancellationToken,
+                // Seeing errors about block length with this enabled
+                EnableHttpCompression = false
+            };
+
+                using (var video = await _httpClient.Get(httpoptions).ConfigureAwait(false))
                 {
-                    var html = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-                    var idNode = Regex.Match(html, "videoId=(?<id>.*)&e", RegexOptions.IgnoreCase);
-
-                    using (var video = await
-                        _httpClient.Get(
-                            "http://revision3.com/api/flash?video_id=" + idNode.Groups["id"].Value,
-                            cancellationToken)
-                            .ConfigureAwait(false))
-                    {
                         HtmlNode.ElementsFlags.Remove("link");
                         page.Load(video);
 
@@ -185,14 +189,14 @@ namespace MediaBrowser.Plugins.Revision3
                                 Path = url,
                                 Protocol = MediaProtocol.Http
                             });
-                            //}
-                        }
-                    }
+                            }
+                      }
+                   
 
                     
                     return items;
-                }
-            }
+                //}
+           // }
         }
 
         public Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken)
