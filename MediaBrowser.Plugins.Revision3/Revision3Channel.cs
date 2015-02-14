@@ -39,7 +39,7 @@ namespace MediaBrowser.Plugins.Revision3
             get
             {
                 // Increment as needed to invalidate all caches
-                return "10";
+                return "11";
             }
         }
 
@@ -159,12 +159,16 @@ namespace MediaBrowser.Plugins.Revision3
 
                     //var idNode = Regex.Match(html, "videoId=(?<id>.*)&e", RegexOptions.IgnoreCase);
 
-                    using (var video = await
-                        _httpClient.Get(
-                            "http://revision3.com/api/flash?video_id=" + id,
-                            cancellationToken)
-                            .ConfigureAwait(false))
-                    {
+                    var httpoptions = new HttpRequestOptions
+            {
+                Url = "http://revision3.com/api/flash?video_id=" + id,
+                CancellationToken = cancellationToken,
+                // Seeing errors about block length with this enabled
+                EnableHttpCompression = false
+            };
+
+                using (var video = await _httpClient.Get(httpoptions).ConfigureAwait(false))
+                {
                         HtmlNode.ElementsFlags.Remove("link");
                         page.Load(video);
 
