@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -97,7 +98,7 @@ namespace MediaBrowser.Plugins.SoundCloud
 
             };
 
-            if (Plugin._SoundCloudClient.IsAuthenticated)
+            if (Plugin.Instance.SoundCloudClient.IsAuthenticated)
             {
                 _logger.Debug("AUTHENTICATED");
                 var u = global::SoundCloud.NET.User.Me();

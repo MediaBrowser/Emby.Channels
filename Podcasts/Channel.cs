@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
@@ -246,7 +247,9 @@ namespace PodCasts
                         ChannelItemSortField.Runtime
                    },
 
-                AutoRefreshLevels = 2
+                AutoRefreshLevels = 2,
+
+                SupportsContentDownloading = true
             };
         }
 

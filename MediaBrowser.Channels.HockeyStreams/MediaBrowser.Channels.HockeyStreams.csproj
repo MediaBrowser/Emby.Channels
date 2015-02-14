@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{094173B3-8433-455A-83A5-F8F64BE8E4B4}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MediaBrowser.Channels.HockeyStreams</RootNamespace>
+    <AssemblyName>MediaBrowser.Channels.HockeyStreams</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MediaBrowser.Common, Version=3.0.5519.39534, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MediaBrowser.Common.3.0.567\lib\net45\MediaBrowser.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="MediaBrowser.Controller, Version=3.0.5519.39533, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MediaBrowser.Server.Core.3.0.567\lib\net45\MediaBrowser.Controller.dll</HintPath>
+    </Reference>
+    <Reference Include="MediaBrowser.Model, Version=3.0.5519.39535, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MediaBrowser.Common.3.0.567\lib\net45\MediaBrowser.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\packages\ServiceStack.Interfaces.4.0.33\lib\portable-wp80+sl5+net40+win8+monotouch+monoandroid\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
+    <Compile Include="Configuration\ConfigurationPage.cs" />
+    <Compile Include="Configuration\PluginConfiguration.cs" />
+    <Compile Include="HockeyStreamsChannel.cs" />
+    <Compile Include="Media\ChannelInfoHelper.cs" />
+    <Compile Include="Media\FolderProvider\CondensedFolderProvider.cs" />
+    <Compile Include="Media\FolderProvider\FavoriteCondensedFolderProvider.cs" />
+    <Compile Include="Media\FolderProvider\HighlightsFolderProvider.cs" />
+    <Compile Include="Media\VideoProvider\HighlightsVideoProvider.cs" />
+    <Compile Include="Media\VideoProvider\CondensedVideoProvider.cs" />
+    <Compile Include="Media\FolderProvider\FavoriteFolderProvider.cs" />
+    <Compile Include="Media\FolderProvider\FavoriteOnDemandFolderProvider.cs" />
+    <Compile Include="Media\FolderProvider\HomeFolderProvider.cs" />
+    <Compile Include="Media\FolderProvider\IFolderProvider.cs" />
+    <Compile Include="Media\VideoProvider\IVideoProvider.cs" />
+    <Compile Include="Media\FolderProvider\LiveFolderProvider.cs" />
+    <Compile Include="Media\VideoProvider\LiveVideoProvider.cs" />
+    <Compile Include="Media\MediaProviderFactory.cs" />
+    <Compile Include="Media\FolderProvider\DatesFolderProvider.cs" />
+    <Compile Include="Media\FolderProvider\OnDemandFolderProvider.cs" />
+    <Compile Include="Media\VideoProvider\OnDemandVideoProvider.cs" />
+    <Compile Include="Plugin.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="RestfulService\HockeyStreamsRestfulService.cs" />
+    <Compile Include="RestfulService\LoginToken.cs" />
+    <Compile Include="RestfulService\LoginTokenResponse.cs" />
+    <Compile Include="StreamsApi\ApiException.cs" />
+    <Compile Include="StreamsApi\ApiService.cs" />
+    <Compile Include="StreamsApi\BaseStreamsResponse.cs" />
+    <Compile Include="StreamsApi\BaseStreamsService.cs" />
+    <Compile Include="StreamsApi\CondensedResponse.cs" />
+    <Compile Include="StreamsApi\HighlightsObject.cs" />
+    <Compile Include="StreamsApi\HighlightsResponse.cs" />
+    <Compile Include="StreamsApi\ListTeamsResponse.cs" />
+    <Compile Include="StreamsApi\LiveResponse.cs" />
+    <Compile Include="StreamsApi\HockeyStreamsService.cs" />
+    <Compile Include="StreamsApi\LiveSchedule.cs" />
+    <Compile Include="StreamsApi\LiveStreamResponse.cs" />
+    <Compile Include="StreamsApi\LoginResponse.cs" />
+    <Compile Include="StreamsApi\Logo.cs" />
+    <Compile Include="StreamsApi\Membership.cs" />
+    <Compile Include="StreamsApi\OnDemandDatesResponse.cs" />
+    <Compile Include="StreamsApi\OnDemandObject.cs" />
+    <Compile Include="StreamsApi\OnDemandResponse.cs" />
+    <Compile Include="StreamsApi\OnDemandStream.cs" />
+    <Compile Include="StreamsApi\OnDemandStreamInfo.cs" />
+    <Compile Include="StreamsApi\Status.cs" />
+    <Compile Include="StreamsApi\StreamInfo.cs" />
+    <Compile Include="StreamsApi\Team.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\Backdrop.gif" />
+    <EmbeddedResource Include="Images\Thumb.gif" />
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration\configPage.html" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\..\MediaBrowser\ProgramData-Server\Plugins\" /y</PostBuildEvent>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

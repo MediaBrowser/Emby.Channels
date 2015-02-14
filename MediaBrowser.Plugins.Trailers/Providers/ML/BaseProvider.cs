@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using System;
@@ -17,13 +18,10 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
 {
     public abstract class BaseProvider : GlobalBaseProvider
     {
-        private readonly ILogger _logger;
-
         protected string BaseUrl = "http://www.movie-list.com/";
 
-        protected BaseProvider(ILogger logger)
+        protected BaseProvider(ILogger logger) : base(logger)
         {
-            _logger = logger;
         }
 
         public abstract TrailerType TrailerType { get; }
@@ -41,6 +39,12 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
             if (rightIndex != -1)
             {
                 html = html.Substring(0, rightIndex);
+            }
+
+            rightIndex = html.LastIndexOf("content-box clearfix", StringComparison.OrdinalIgnoreCase);
+            if (rightIndex != -1)
+            {
+                html = html.Substring(rightIndex);
             }
 
             // looking for HREF='/trailers/automata'
@@ -66,7 +70,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error getting trailer info", ex);
+                        Logger.ErrorException("Error getting trailer info", ex);
                     }
                 }
             }
@@ -81,7 +85,13 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
             var document = new HtmlDocument();
             document.LoadHtml(html);
 
-            var titleElement = document.DocumentNode.SelectSingleNode("//h2");
+            var titleElement = document.DocumentNode.SelectSingleNode("//title");
+            var name = titleElement == null ? string.Empty : (titleElement.InnerText ?? string.Empty);
+            name = name.Replace("Movie Trailer", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Replace("Movie-List.com", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Replace("Movie-List", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Replace("|", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Trim();
 
             var posterElement = document.DocumentNode.SelectSingleNode("//a[@rel='prettyPhoto[posters]']//img");
             if (posterElement == null)
@@ -101,7 +111,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
                 Id = url,
                 MediaType = ChannelMediaType.Video,
                 Type = ChannelItemType.Media,
-                Name = titleElement == null ? null : titleElement.InnerText,
+                Name = name,
                 ImageUrl = string.IsNullOrWhiteSpace(imageSrc) ? null : (BaseUrl + imageSrc.TrimStart('/')),
                 MediaSources = GetMediaInfo(linksList, html),
                 DateCreated = DateTime.UtcNow
@@ -229,6 +239,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
         private List<ChannelMediaInfo> GetMediaInfo(IEnumerable<HtmlNode> nodes, string html)
         {
             var links = nodes.Select(i => i.GetAttributeValue("href", ""))
+                .Where(i => !string.IsNullOrWhiteSpace(i))
                 .ToList();
 
             var list = new List<ChannelMediaInfo>();
@@ -287,7 +298,7 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
             }
 
             return list
-                .Where(i => ValidDomains.Any(d => i.Path.IndexOf(d, StringComparison.OrdinalIgnoreCase) != -1))
+                .Where(i => IsValidDomain(i.Path))
                 .Select(SetValues)
                 .ToList();
         }

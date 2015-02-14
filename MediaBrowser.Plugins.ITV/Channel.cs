@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -439,7 +440,8 @@ namespace MediaBrowser.Plugins.ITV
                             {
                                 Path = playURL,
                                 VideoBitrate = Convert.ToInt32(bitrate),
-                                Protocol = MediaProtocol.Rtmp
+                                Protocol = MediaProtocol.Rtmp,
+                                ReadAtNativeFramerate = true
                             });
                             _logger.Debug(strippedURL);
                         }

@@ -21,14 +21,19 @@ namespace MediaBrowser.Plugins.Revision3
 
         public async Task<RootObject> GetRevision3ChannelList(CancellationToken cancellationToken)
         {
-            RootObject reg;
-
-            using (var json = await _httpClient.Get("http://revision3.com/api/getShows.json?api_key=0b1faede6785d04b78735b139ddf2910f34ad601&grouping=latest", CancellationToken.None).ConfigureAwait(false))
+            var options = new HttpRequestOptions
             {
-                reg = _jsonSerializer.DeserializeFromStream<RootObject>(json);
-            }
+                Url = "http://revision3.com/api/getShows.json?api_key=0b1faede6785d04b78735b139ddf2910f34ad601&grouping=latest",
+                CancellationToken = cancellationToken,
 
-            return reg;
+                // Seeing errors about block length with this enabled
+                EnableHttpCompression = false
+            };
+
+            using (var json = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false))
+            {
+                return _jsonSerializer.DeserializeFromStream<RootObject>(json.Content);
+            }
         }
 
     }
