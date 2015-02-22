@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +9,7 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
 {
-    internal abstract class ApiService
+    public abstract class ApiService
     {
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
@@ -40,10 +39,10 @@ namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
         }
 
         protected async Task<T> GetRequest<T>(string url, CancellationToken cancellationToken)
+            where T : BaseStreamsResponse
         {
             var httpRequest = await PrepareHttpRequestOptions(url, cancellationToken);
-            var result = await _httpClient.Get(httpRequest);
-            return _jsonSerializer.DeserializeFromStream<T>(result);
+            return await TryGetRequest<T>(httpRequest);
         }
 
         protected async Task<T> PostRequest<T>(string url, IDictionary<string, string> data, CancellationToken cancellationToken)
@@ -68,6 +67,31 @@ namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
         private async Task<string> BuildUrl(string url, CancellationToken cancellationToken)
         {
             return await GetBaseUrl(cancellationToken) + url.TrimStart('/');
+        }
+
+        private async Task<T> TryGetRequest<T>(HttpRequestOptions httpRequest)
+            where T : BaseStreamsResponse
+        {
+            var resultStream = await _httpClient.Get(httpRequest);
+            var response = _jsonSerializer.DeserializeFromStream<T>(resultStream);
+
+            HandleResponseStatus(response);
+
+            return response;
+        }
+
+        private static void HandleResponseStatus<T>(T response)
+            where T : BaseStreamsResponse
+        {
+            if (response.Status == Status.Failed)
+            {
+                if (response.Msg == "Invalid Token")
+                {
+                    throw new ApiException(Resources.SubscriptionRequired);
+                }
+
+                throw new ApiException(response.Msg);
+            }
         }
 
         private async Task<T> TryPostRequest<T>(HttpRequestOptions httpRequest)

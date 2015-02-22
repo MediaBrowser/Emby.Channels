@@ -8,11 +8,9 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
 {
-    internal abstract class BaseStreamsService : ApiService
+    public class StreamsService : ApiService
     {
-        protected abstract string ApiKey { get; }
-
-        protected BaseStreamsService(IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationHost applicationHost)
+        public StreamsService(IHttpClient httpClient, IJsonSerializer jsonSerializer, IApplicationHost applicationHost)
             : base(httpClient, jsonSerializer, applicationHost)
         { }
 
@@ -22,7 +20,7 @@ namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
             {
                 { "username", username },
                 { "password", password },
-                { "key", ApiKey }
+                { "key", Helper.ApiKey }
             };
             return await PostRequest<LoginResponse>("/Login", data, cancellationToken);
         }
@@ -124,6 +122,11 @@ namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
         {
             var url = string.Format("/ListTeams?league={0}&token={1}", league, GetToken());
             return await GetRequest<ListTeamsResponse>(url, cancellationToken);
+        }
+
+        protected override Task<string> GetBaseUrl(CancellationToken cancellationToken)
+        {
+            return Task.FromResult(Helper.ApiUrl);
         }
 
         private string GetToken()

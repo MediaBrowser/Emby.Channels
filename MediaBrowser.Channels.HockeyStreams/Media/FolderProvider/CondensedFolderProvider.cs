@@ -12,9 +12,9 @@ namespace MediaBrowser.Channels.HockeyStreams.Media.FolderProvider
     {
         private const string FolderIdStart = "condensed-";
 
-        private readonly BaseStreamsService _baseStreamsService;
+        private readonly StreamsService _baseStreamsService;
 
-        public CondensedFolderProvider(BaseStreamsService baseStreamsService)
+        public CondensedFolderProvider(StreamsService baseStreamsService)
         {
             _baseStreamsService = baseStreamsService;
         }

@@ -12,9 +12,9 @@ namespace MediaBrowser.Channels.HockeyStreams.Media.FolderProvider
     {
         private const string FolderIdStart = "highlights-";
 
-        private readonly BaseStreamsService _baseStreamsService;
+        private readonly StreamsService _baseStreamsService;
 
-        public HighlightsFolderProvider(BaseStreamsService baseStreamsService)
+        public HighlightsFolderProvider(StreamsService baseStreamsService)
         {
             _baseStreamsService = baseStreamsService;
         }

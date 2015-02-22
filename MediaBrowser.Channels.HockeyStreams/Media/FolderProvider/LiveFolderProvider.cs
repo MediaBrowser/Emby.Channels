@@ -13,9 +13,9 @@ namespace MediaBrowser.Channels.HockeyStreams.Media.FolderProvider
     {
         private const string FolderId = "live-home";
 
-        private readonly BaseStreamsService _baseStreamsService;
+        private readonly StreamsService _baseStreamsService;
 
-        public LiveFolderProvider(BaseStreamsService baseStreamsService)
+        public LiveFolderProvider(StreamsService baseStreamsService)
         {
             _baseStreamsService = baseStreamsService;
         }

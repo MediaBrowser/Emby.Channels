@@ -1,6 +1,6 @@
 ﻿namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
 {
-    internal class LoginResponse : BaseStreamsResponse
+    public class LoginResponse : BaseStreamsResponse
     {
         public string Uid { get; set; }
         public string Username { get; set; }

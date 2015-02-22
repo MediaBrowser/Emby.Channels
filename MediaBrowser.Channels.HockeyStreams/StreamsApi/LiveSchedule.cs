@@ -1,6 +1,6 @@
 ﻿namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
 {
-    internal class LiveSchedule
+    public class LiveSchedule
     {
         public string Id { get; set; }
         public string Event { get; set; }

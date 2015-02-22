@@ -9,9 +9,9 @@ namespace MediaBrowser.Channels.HockeyStreams.Media.VideoProvider
     {
         private const string IdStart = "highlight-";
 
-        private readonly BaseStreamsService _baseStreamsService;
+        private readonly StreamsService _baseStreamsService;
 
-        public HighlightsVideoProvider(BaseStreamsService baseStreamsService)
+        public HighlightsVideoProvider(StreamsService baseStreamsService)
         {
             _baseStreamsService = baseStreamsService;
         }

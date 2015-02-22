@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Ball Streams</title>
+</head>
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage ballStreamsConfigurationPage">
+        <div data-role="content">
+            <div class="content-primary">
+                <form class="ballStreamsConfigurationForm">
+                    <ul class="ulForm" data-role="listview">
+                        <li>
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" required />
+                        </li>
+                        <li>
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" required />
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b">Save</button>
+                        </li>
+                        <li>
+                            <button onclick="window.open('http://www.ballstreams.com/ref/27170', '_blank');" data-theme="b">Sign up</button>
+                        </li>
+                        <li>
+                            <button type="button" onclick="history.back();">Cancel</button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+
+            <div data-role="popup" id="errorPopup" class="ui-content" style="max-width:90%; min-width: 200px" data-overlay-theme="a" data-dismissible="false">
+                <h3 style="text-align: center" id="errorPopupMessage"></h3>
+                <button type="button" data-theme="c" onclick="$('#errorPopup').popup('close')">OK</button>
+            </div>
+
+            <script type="text/javascript">
+                var BallStreamsApi = new function () {
+                    var pluginId = 'c63c5ac6-69a6-4e6f-89eb-8f46601404f5';
+
+                    this.loadConfig = function (callback) {
+                        ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+                            callback(config.Username);
+                        });
+                    }
+
+                    this.saveConfig = function (username, token, favoriteTeam, callback) {
+                        ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+                            config.Username = username;
+                            config.Token = token;
+                            config.FavoriteTeam = favoriteTeam;
+
+                            ApiClient.updatePluginConfiguration(pluginId, config).done(callback);
+                        });
+                    }
+
+                    this.login = function (username, password, callback, error) {
+                        var url = ApiClient.getUrl('BallStreams/Auth/Login?username=' + username + '&password=' + password);
+                        $.ajax({
+                            type: 'GET',
+                            url: url,
+                            dataType: 'json',
+                            success: function (data) {
+                                if (data.Message) {
+                                    error(data.Message);
+                                } else {
+                                    callback(data);
+                                }
+                            }
+                        });
+                    }
+                };
+
+                var BallStreamsUi = new function () {
+                    this.username = function (value) {
+                        var element = $('#username');
+
+                        if (value) {
+                            element.val(value);
+                        } else {
+                            return element.val();
+                        }
+                    }
+
+                    this.password = function(value) {
+                        var element = $('#password');
+
+                        if (value) {
+                            element.val(value);
+                        } else {
+                            return element.val();
+                        }
+                    }
+
+                    this.showError = function (message) {
+                        $('#errorPopupMessage').text(message);
+                        $('#errorPopup').popup('open');
+                    }
+                }
+
+                $('.ballStreamsConfigurationPage').on('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+
+                    BallStreamsApi.loadConfig(function (username) {
+                        BallStreamsUi.username(username);
+
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+                $('.ballStreamsConfigurationForm').on('submit', function () {
+                    Dashboard.showLoadingMsg();
+
+                    var username = BallStreamsUi.username();
+                    var password = BallStreamsUi.password();
+
+                    BallStreamsApi.login(username, password, function (loginResponse) {
+                        BallStreamsApi.saveConfig(username, loginResponse.Token, loginResponse.FavoriteTeam, function () {
+                            Dashboard.hideLoadingMsg();
+                            Dashboard.processPluginConfigurationUpdateResult();
+                        });
+                    }, function (error) {
+                        Dashboard.hideLoadingMsg();
+                        BallStreamsUi.showError(error);
+                    });
+
+                    // Disable default form submission
+                    return false;
+                });
+            </script>
+        </div>
+    </div>
+</body>
+</html>

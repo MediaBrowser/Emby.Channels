@@ -2,7 +2,7 @@
 
 namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
 {
-    internal class LiveStreamResponse : BaseStreamsResponse
+    public class LiveStreamResponse : BaseStreamsResponse
     {
         public string Id { get; set; }
         public string Event { get; set; }

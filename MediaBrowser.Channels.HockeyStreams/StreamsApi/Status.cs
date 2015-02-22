@@ -1,6 +1,6 @@
 ﻿namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
 {
-    internal enum Status
+    public enum Status
     {
         Success,
         Failed

@@ -1,6 +1,6 @@
 ﻿namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
 {
-    internal class OnDemandStreamInfo
+    public class OnDemandStreamInfo
     {
         public string LowQualitySrc { get; set; }
         public string MedQualitySrc { get; set; }

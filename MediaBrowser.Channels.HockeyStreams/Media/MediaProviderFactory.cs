@@ -14,7 +14,7 @@ namespace MediaBrowser.Channels.HockeyStreams.Media
         private readonly IList<IFolderProvider> _folderProviders;
         private readonly IList<IVideoProvider> _videoProviders;
 
-        public MediaProviderFactory(BaseStreamsService baseStreamsService, ILogger logger)
+        public MediaProviderFactory(StreamsService baseStreamsService, ILogger logger)
         {
             _logger = logger;
 

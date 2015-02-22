@@ -1,6 +1,6 @@
 ﻿namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
 {
-    internal class OnDemandObject
+    public class OnDemandObject
     {
         public string Id { get; set; }
         public string Date { get; set; }

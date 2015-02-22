@@ -1,6 +1,6 @@
 ﻿namespace MediaBrowser.Channels.HockeyStreams.StreamsApi
 {
-    internal class HighlightsObject
+    public class HighlightsObject
     {
         public string Id { get; set; }
         public string Date { get; set; }
