@@ -1,10 +1,10 @@
-﻿using System.IO;
-using MediaBrowser.Controller.Channels;
+﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Plugins.Trailers.Providers
 {
@@ -16,13 +16,18 @@ namespace MediaBrowser.Plugins.Trailers.Providers
 
         protected readonly string[] ValidDomains =
         {
-            "regentreleasing",
-            "regententertainment.com",
+            "regent",
             "movie-list",
-            "warnerbros.com",
+            //"warnerbros.",
             "apple.com",
-            "variancefilms.com",
-            "avideos."
+            "variancefilms",
+            "avideos.",
+            "hd-trailers",
+            "filmweb",
+            "ign.",
+            "llnwd",
+            "akamai",
+            "vitalstream"
         };
 
         protected GlobalBaseProvider(ILogger logger)
@@ -99,7 +104,6 @@ namespace MediaBrowser.Plugins.Trailers.Providers
 
         protected bool IsValidDomain(string url)
         {
-            return true;
             var ok = ValidDomains.Any(d => url.IndexOf(d, StringComparison.OrdinalIgnoreCase) != -1);
 
             if (!ok)
