@@ -18,7 +18,6 @@ namespace MediaBrowser.Plugins.Trailers.Providers
         {
             "regent",
             "movie-list",
-            //"warnerbros.",
             "apple.com",
             "variancefilms",
             "avideos.",
