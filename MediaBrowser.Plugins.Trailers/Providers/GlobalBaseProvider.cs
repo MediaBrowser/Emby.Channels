@@ -23,7 +23,6 @@ namespace MediaBrowser.Plugins.Trailers.Providers
             "avideos.",
             "hd-trailers",
             "filmweb",
-            "ign.",
             "llnwd",
             "akamai",
             "vitalstream"

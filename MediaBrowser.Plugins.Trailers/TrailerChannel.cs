@@ -779,7 +779,7 @@ namespace MediaBrowser.Plugins.Trailers
 
         public string HomePageUrl
         {
-            get { return "http://mediabrowser.tv"; }
+            get { return "http://emby.media"; }
         }
 
         public bool IsEnabledFor(string userId)
@@ -818,7 +818,7 @@ namespace MediaBrowser.Plugins.Trailers
                    },
 
                 AutoRefreshLevels = 3,
-                DailyDownloadLimit = 5
+                DailyDownloadLimit = 2
             };
         }
 
