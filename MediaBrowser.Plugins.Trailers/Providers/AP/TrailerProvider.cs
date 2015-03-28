@@ -115,7 +115,8 @@ namespace MediaBrowser.Plugins.Trailers.Providers.AP
                 AudioSampleRate = 44100,
                 Framerate = (float)23.976,
                 VideoProfile = isHd ? "high" : "main",
-                VideoLevel = isHd ? (float)3.1 : 3
+                VideoLevel = isHd ? (float)3.1 : 3,
+                SupportsDirectPlay = false
             };
 
             mediaInfo.RequiredHttpHeaders.Add("User-Agent", "QuickTime/7.7.4");

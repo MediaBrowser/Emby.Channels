@@ -262,7 +262,8 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
                         Container = Path.GetExtension(link).TrimStart('.'),
                         Path = url,
                         Protocol = MediaProtocol.Http,
-                        RequiredHttpHeaders = GetRequiredHttpHeaders(url)
+                        RequiredHttpHeaders = GetRequiredHttpHeaders(url),
+                        SupportsDirectPlay = false
                     });
                 }
             }
@@ -290,7 +291,8 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
                     Container = Path.GetExtension(url).TrimStart('.'),
                     Path = url,
                     Protocol = MediaProtocol.Http,
-                    RequiredHttpHeaders = GetRequiredHttpHeaders(url)
+                    RequiredHttpHeaders = GetRequiredHttpHeaders(url),
+                    SupportsDirectPlay = false
                 });
 
                 start = index + srch.Length;

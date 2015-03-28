@@ -127,7 +127,8 @@ namespace MediaBrowser.Plugins.Trailers.Providers.HD
                         Container = Path.GetExtension(link).TrimStart('.'),
                         Path = url,
                         Protocol = MediaProtocol.Http,
-                        RequiredHttpHeaders = GetRequiredHttpHeaders(url)
+                        RequiredHttpHeaders = GetRequiredHttpHeaders(url),
+                        SupportsDirectPlay = false
                     });
                 }
             }
