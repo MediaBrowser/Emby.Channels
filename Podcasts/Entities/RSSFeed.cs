@@ -48,7 +48,9 @@ namespace PodCasts.Entities
                 CacheMode = CacheMode.Unconditional,
                 CacheLength = TimeSpan.FromHours(3),
                 Url = url,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                // Seeing a block length error with some sites with this on
+                EnableHttpCompression = false
 
             }).ConfigureAwait(false);
 
