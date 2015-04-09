@@ -78,8 +78,8 @@ namespace MediaBrowser.Plugins.Trailers.LocalTrailers
             {
                 try
                 {
-                    await new LocalTrailerDownloader(_logger, _channelManager, _libraryMonitor)
-                        .DownloadTrailerForItem(item, ChannelMediaContentType.MovieExtra, movieProviderIds, cancellationToken).ConfigureAwait(false);
+                    //await new LocalTrailerDownloader(_logger, _channelManager, _libraryMonitor)
+                    //    .DownloadTrailerForItem(item, ChannelMediaContentType.MovieExtra, movieProviderIds, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {

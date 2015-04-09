@@ -817,8 +817,7 @@ namespace MediaBrowser.Plugins.Trailers
                         ChannelItemSortField.Runtime
                    },
 
-                AutoRefreshLevels = 3,
-                DailyDownloadLimit = 2
+                AutoRefreshLevels = 3
             };
         }
 
