@@ -19,7 +19,6 @@ namespace MediaBrowser.Plugins.Trailers.Configuration
         public PluginConfiguration()
         {
             EnableNetflix = true;
-            EnableNetflix = true;
             EnableDvd = true;
             EnableTheaters = true;
             ExcludeUnIdentifiedContent = true;
