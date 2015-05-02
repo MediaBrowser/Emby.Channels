@@ -25,7 +25,7 @@ namespace MediaBrowser.Channels.IPTV
         /// <value>The name.</value>
         public override string Name
         {
-            get { return "Video Bookmarks"; }
+            get { return "IPTV"; }
         }
 
         /// <summary>
