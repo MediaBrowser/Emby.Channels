@@ -1,11 +1,11 @@
-MediaBrowser.Channels
+Emby.Channels
 ====================
 
-This repository contains all of the channels managed by the Media Browser core team.
+This repository contains many of the channels managed by the Emby community.
 
 Each of the projects has a build event that copies it's output to the programdata/plugins folder. 
 
-By default this assumes you have the server repository side by side in a folder called 'MediaBrowser'. If this is not the case, or if you've installed the server than you'll need to update the build events manually in order to test code changes.
+By default this assumes you have the server repository side by side in a folder called 'Emby'. If this is not the case, or if you've installed the server than you'll need to update the build events manually in order to test code changes.
 
 
 ## More Information ##
