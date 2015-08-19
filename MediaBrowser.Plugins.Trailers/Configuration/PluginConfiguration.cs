@@ -12,8 +12,6 @@ namespace MediaBrowser.Plugins.Trailers.Configuration
         public bool EnableDvd { get; set; }
         public bool EnableTheaters { get; set; }
 
-        public bool EnableLocalTrailerDownloads { get; set; }
-
         public bool ExcludeUnIdentifiedContent { get; set; }
         
         public PluginConfiguration()

@@ -102,8 +102,6 @@
     <Compile Include="HtmlAgilityPack\Utilities.cs" />
     <Compile Include="Listings\ListingResults.cs" />
     <Compile Include="LocalTrailers\LocalTrailerDownloader.cs" />
-    <Compile Include="LocalTrailers\LocalTrailerDownloadTask.cs" />
-    <Compile Include="LocalTrailers\ServerEntryPoint.cs" />
     <Compile Include="Providers\AP\ArchiveProvider.cs" />
     <Compile Include="Providers\AP\TrailerListingDownloader.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
