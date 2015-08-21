@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Channel Downloader</title>
+</head>
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage channelDownloaderConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <form class="channelDownloaderConfigurationForm">
+
+                    <div class="channelDownloading">
+
+                        <div>
+                            <label>${LabelEnableChannelContentDownloadingFor}</label>
+                        </div>
+                        <div class="channelDownloadingList"></div>
+                        <div class="fieldDescription">${LabelEnableChannelContentDownloadingForHelp}</div>
+                        <br />
+                        <br />
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <label for="txtCachePath">${LabelChannelDownloadPath}</label>
+                                <div style="display: inline-block; width: 85%;">
+                                    <input type="text" id="txtCachePath" name="txtCachePath" />
+                                </div>
+                                <button id="btnSelectCachePath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                                <div class="fieldDescription">${LabelChannelDownloadPathHelp}</div>
+                            </li>
+                            <li>
+                                <label for="txtDownloadSizeLimit">${LabelChannelDownloadSizeLimit}</label>
+                                <input type="number" id="txtDownloadSizeLimit" pattern="[0-9]*" min="0.1" step=".1" />
+                                <div class="fieldDescription">${LabelChannelDownloadSizeLimitHelpText}</div>
+                            </li>
+                            <li>
+                                <label for="txtDownloadAge">${LabelChannelDownloadAge}</label>
+                                <input type="number" id="txtDownloadAge" pattern="[0-9]*" min="1" />
+                                <div class="fieldDescription">${LabelChannelDownloadAgeHelp}</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <br />
+                    <br />
+                    <ul class="ulForm" data-role="listview">
+                        <li>
+                            <button type="submit" data-theme="b">Save</button>
+                            <button type="button" onclick="history.back();">Cancel</button>
+                        </li>
+                    </ul>
+
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            (function () {
+
+                var pluginId = "c4cc6cd4-fb4a-4a9e-b52c-acc9570fc2e2";
+
+                function populateDownloadList(page, pluginConfig, downloadableList) {
+
+                    var html = '';
+
+                    if (downloadableList.length) {
+                        html += '<div data-role="controlgroup">';
+
+                        for (var i = 0, length = downloadableList.length; i < length; i++) {
+
+                            var channel = downloadableList[i];
+
+                            var id = 'chkChannelDownload' + i;
+
+                            var isChecked = pluginConfig.DownloadingChannels.indexOf(channel.Id) != -1 ? ' checked="checked"' : '';
+
+                            html += '<input class="chkChannelDownload" type="checkbox" name="' + id + '" id="' + id + '" data-channelid="' + channel.Id + '"' + isChecked + '>';
+                            html += '<label for="' + id + '">' + channel.Name + '</label>';
+                        }
+
+                        html += '</div>';
+                    } else {
+                        html += '<p>No installed channels currently support downloading.</p>';
+                    }
+
+                    $('.channelDownloadingList', page).html(html).trigger('create');
+                }
+
+                function loadPage(page, config, allChannelFeatures, pluginConfig) {
+
+                    if (allChannelFeatures.length) {
+                        $('.noChannelsHeader', page).hide();
+                    } else {
+                        $('.noChannelsHeader', page).show();
+                    }
+
+                    var downloadableList = allChannelFeatures.filter(function (i) {
+                        return i.SupportsContentDownloading;
+                    });
+
+                    populateDownloadList(page, pluginConfig, downloadableList);
+
+                    $('#txtDownloadAge', page).val(pluginConfig.MaxDownloadAge || '');
+                    $('#txtDownloadSizeLimit', page).val(pluginConfig.DownloadSizeLimit || '');
+
+                    $('#txtCachePath', page).val(config.DownloadPath || '');
+
+                    Dashboard.hideLoadingMsg();
+                }
+
+                $('.channelDownloaderConfigurationPage').on('pageinit', function (event) {
+
+                    var page = this;
+
+                    $('#btnSelectCachePath', page).on("click.selectDirectory", function () {
+
+                        var picker = new DirectoryBrowser(page);
+
+                        picker.show({
+
+                            callback: function (path) {
+
+                                if (path) {
+                                    $('#txtCachePath', page).val(path);
+                                }
+                                picker.close();
+                            },
+
+                            header: 'Select Channel Download Path'
+                        });
+                    });
+
+                }).on('pageshow', function (event) {
+
+                    Dashboard.showLoadingMsg();
+
+                    var page = this;
+
+                    var promise1 = ApiClient.getNamedConfiguration("channels");
+                    var promise2 = ApiClient.getJSON(ApiClient.getUrl("Channels/Features"));
+                    var promise3 = ApiClient.getPluginConfiguration(pluginId);
+
+                    $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
+
+                        var channelConfig = response1[0];
+                        var allFeatures = response2[0];
+                        var pluginConfig = response3[0];
+
+                        loadPage(page, channelConfig, allFeatures, pluginConfig);
+                    });
+                });
+
+                $('.channelDownloaderConfigurationForm').off('submit.plugin').on('submit.plugin', function (e) {
+
+                    Dashboard.showLoadingMsg();
+
+                    var form = this;
+
+                    ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+
+                        config.MaxDownloadAge = $('#txtDownloadAge', form).val() || null;
+                        config.DownloadSizeLimit = $('#txtDownloadSizeLimit', form).val() || null;
+                        config.DownloadingChannels = $('.chkChannelDownload:checked', form)
+                            .get()
+                            .map(function (i) {
+                                return i.getAttribute('data-channelid');
+                            });
+
+                        ApiClient.updatePluginConfiguration(pluginId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                    });
+
+                    ApiClient.getNamedConfiguration("channels").done(function (config) {
+
+                        // This should be null if empty
+
+                        config.DownloadPath = $('#txtCachePath', form).val() || null;
+
+                        ApiClient.updateNamedConfiguration("channels", config).done(Dashboard.processServerConfigurationUpdateResult);
+                    });
+
+                    // Disable default form submission
+                    return false;
+                });
+
+            })();
+
+        </script>
+    </div>
+</body>
+</html>
