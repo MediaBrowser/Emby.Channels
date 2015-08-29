@@ -153,8 +153,6 @@ namespace ChannelDownloader
         {
             var numComplete = 0;
 
-            var options = GetChannelsConfiguration();
-
             foreach (var item in result.Items)
             {
                 var channelItem = item as IChannelMediaItem;
@@ -165,11 +163,11 @@ namespace ChannelDownloader
 
                     if (channelFeatures.SupportsContentDownloading)
                     {
-                        if (options.DownloadingChannels.Contains(channelItem.ChannelId))
+                        if (Plugin.Instance.Configuration.DownloadingChannels.Contains(channelItem.ChannelId))
                         {
                             try
                             {
-                                await DownloadChannelItem(channelItem, options, cancellationToken, path);
+                                await DownloadChannelItem(channelItem, cancellationToken, path);
                             }
                             catch (OperationCanceledException)
                             {
@@ -196,13 +194,12 @@ namespace ChannelDownloader
             progress.Report(100);
         }
 
-        private double? GetDownloadLimit(ChannelOptions channelOptions)
+        private double? GetDownloadLimit()
         {
-            return channelOptions.DownloadSizeLimit;
+            return Plugin.Instance.Configuration.DownloadSizeLimit;
         }
 
         private async Task DownloadChannelItem(IChannelMediaItem item,
-            ChannelOptions channelOptions,
             CancellationToken cancellationToken,
             string path)
         {
@@ -218,7 +215,7 @@ namespace ChannelDownloader
                 return;
             }
 
-            var limit = GetDownloadLimit(channelOptions);
+            var limit = GetDownloadLimit();
 
             if (limit.HasValue)
             {
@@ -310,12 +307,12 @@ namespace ChannelDownloader
         {
             var options = GetChannelsConfiguration();
 
-            if (!options.MaxDownloadAge.HasValue)
+            if (!Plugin.Instance.Configuration.MaxDownloadAge.HasValue)
             {
                 return;
             }
 
-            var minDateModified = DateTime.UtcNow.AddDays(0 - options.MaxDownloadAge.Value);
+            var minDateModified = DateTime.UtcNow.AddDays(0 - Plugin.Instance.Configuration.MaxDownloadAge.Value);
 
             var path = _manager.ChannelDownloadPath;
 
