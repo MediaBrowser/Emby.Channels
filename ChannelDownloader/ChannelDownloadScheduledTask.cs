@@ -19,6 +19,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace ChannelDownloader
 {
@@ -243,7 +244,7 @@ namespace ChannelDownloader
 
         private async Task RefreshMediaSourceItem(string path, CancellationToken cancellationToken)
         {
-            var item = _libraryManager.ResolvePath(new FileInfo(path));
+            var item = _libraryManager.ResolvePath(_fileSystem.GetFileInfo(path));
 
             if (item != null)
             {
@@ -261,7 +262,7 @@ namespace ChannelDownloader
                     item = dbItem;
                 }
 
-                await item.RefreshMetadata(new MetadataRefreshOptions
+                await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
                 {
                     ForceSave = forceSave
 
@@ -335,7 +336,7 @@ namespace ChannelDownloader
         /// <param name="progress">The progress.</param>
         private void DeleteCacheFilesFromDirectory(CancellationToken cancellationToken, string directory, DateTime minDateModified, IProgress<double> progress)
         {
-            var filesToDelete = new DirectoryInfo(directory).EnumerateFiles("*", SearchOption.AllDirectories)
+            var filesToDelete = _fileSystem.GetFiles(directory, true)
                 .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)
                 .ToList();
 
