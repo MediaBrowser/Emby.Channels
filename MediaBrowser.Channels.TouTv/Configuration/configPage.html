@@ -30,7 +30,7 @@
                     }
 
                     this.loadConfig = function (callback) {
-                        ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+                        ApiClient.getPluginConfiguration(pluginId).then(function (config) {
                             // TODO: remove this when OAuth2 works
                             $('#accessToken').val(config.AccessToken);
 
@@ -39,10 +39,10 @@
                     }
 
                     this.saveConfig = function (accessToken, callback) {
-                        ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+                        ApiClient.getPluginConfiguration(pluginId).then(function (config) {
                             config.AccessToken = accessToken || null;
 
-                            ApiClient.updatePluginConfiguration(pluginId, config).done(callback);
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(callback);
                         });
                     }
 

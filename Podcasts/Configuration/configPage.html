@@ -131,7 +131,7 @@
 
                 var page = this;
 
-                ApiClient.getPluginConfiguration(PodCastsConfigurationPage.pluginUniqueId).done(function (config) {
+                ApiClient.getPluginConfiguration(PodCastsConfigurationPage.pluginUniqueId).then(function (config) {
 
                     PodCastsConfigurationPage.config = config;
 
@@ -155,12 +155,12 @@
                 Dashboard.showLoadingMsg();
 
 
-                ApiClient.getPluginConfiguration(PodCastsConfigurationPage.pluginUniqueId).done(function (config) {
+                ApiClient.getPluginConfiguration(PodCastsConfigurationPage.pluginUniqueId).then(function (config) {
                     var page = $($.mobile.activePage);
 
                     config.Feeds = PodCastsConfigurationPage.config.Feeds;
 
-                    ApiClient.updatePluginConfiguration(PodCastsConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                    ApiClient.updatePluginConfiguration(PodCastsConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                 });
 
                 // Disable default form submission

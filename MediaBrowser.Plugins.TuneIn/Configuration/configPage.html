@@ -51,7 +51,7 @@
 
                 var page = this;
 
-                ApiClient.getPluginConfiguration(TuneInConfigurationPage.pluginUniqueId).done(function (config) {
+                ApiClient.getPluginConfiguration(TuneInConfigurationPage.pluginUniqueId).then(function (config) {
 
                     $('#txtUsername', page).val(config.Username || "");
                     $('#txtLatLon', page).val(config.LatLon || "");
@@ -66,7 +66,7 @@
 
                 var form = this;
 
-                ApiClient.getPluginConfiguration(TuneInConfigurationPage.pluginUniqueId).done(function (config) {
+                ApiClient.getPluginConfiguration(TuneInConfigurationPage.pluginUniqueId).then(function (config) {
 
                     var Username = $('#txtUsername', form).val();
                     var LatLon = $('#txtLatLon', form).val();
@@ -74,7 +74,7 @@
                     config.Username = Username ? Username : null;
                     config.LatLon = LatLon ? LatLon : null;
 
-                    ApiClient.updatePluginConfiguration(TuneInConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                    ApiClient.updatePluginConfiguration(TuneInConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                 });
 
                 // Disable default form submission

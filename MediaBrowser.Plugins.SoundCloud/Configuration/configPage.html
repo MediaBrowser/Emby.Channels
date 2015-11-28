@@ -46,7 +46,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                ApiClient.getPluginConfiguration(VimeoConfigurationPage.pluginUniqueId).done(function (config) {
+                ApiClient.getPluginConfiguration(VimeoConfigurationPage.pluginUniqueId).then(function (config) {
 
                     $('#txtUsername', page).val(config.Username || '');
                     $('#txtPassword', page).val(config.Password || '');
@@ -61,7 +61,7 @@
 
                 var form = this;
 
-                ApiClient.getPluginConfiguration(VimeoConfigurationPage.pluginUniqueId).done(function (config) {
+                ApiClient.getPluginConfiguration(VimeoConfigurationPage.pluginUniqueId).then(function (config) {
 
                     var Username = $('#txtUsername', form).val();
                     var Password = $('#txtPassword', form).val();
@@ -69,7 +69,7 @@
                     config.Username = Username ? Username : null;
                     config.Password = Password ? Password : null;
                     
-                    ApiClient.updatePluginConfiguration(VimeoConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                    ApiClient.updatePluginConfiguration(VimeoConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                     
                     Dashboard.hideLoadingMsg();
                 });

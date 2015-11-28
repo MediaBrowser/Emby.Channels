@@ -42,7 +42,7 @@
 
                 var page = this;
 
-                ApiClient.getPluginConfiguration(SvtPlayConfigurationPage.pluginUniqueId).done(function (config) {
+                ApiClient.getPluginConfiguration(SvtPlayConfigurationPage.pluginUniqueId).then(function (config) {
 
                     $('#chkOnlyAllowedAbroad', page).checked(config.AvailableAbroadOnly || false);
                     Dashboard.hideLoadingMsg();
@@ -55,11 +55,11 @@
 
                 var form = this;
 
-                ApiClient.getPluginConfiguration(SvtPlayConfigurationPage.pluginUniqueId).done(function (config) {
+                ApiClient.getPluginConfiguration(SvtPlayConfigurationPage.pluginUniqueId).then(function (config) {
 
                     config.AvailableAbroadOnly = $('#chkOnlyAllowedAbroad', form).checked();
 
-                    ApiClient.updatePluginConfiguration(SvtPlayConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                    ApiClient.updatePluginConfiguration(SvtPlayConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                 });
 
                 // Disable default form submission

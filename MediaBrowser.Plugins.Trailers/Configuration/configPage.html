@@ -49,7 +49,7 @@
 
                     Dashboard.showLoadingMsg();
 
-                    ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
 
                         $('#chkEnableMovieArchive', page).checked(config.EnableMovieArchive).checkboxradio('refresh');
                         $('#chkTheaters', page).checked(config.EnableTheaters).checkboxradio('refresh');
@@ -66,14 +66,14 @@
 
                     var form = this;
 
-                    ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
 
                         config.EnableMovieArchive = $('#chkEnableMovieArchive', form).checked();
                         config.EnableTheaters = $('#chkTheaters', form).checked();
                         config.EnableDvd = $('#chkDvd', form).checked();
                         config.EnableNetflix = $('#chkStreaming', form).checked();
 
-                        ApiClient.updatePluginConfiguration(pluginId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                        ApiClient.updatePluginConfiguration(pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                     });
 
                     return false;

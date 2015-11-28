@@ -55,7 +55,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                ApiClient.getPluginConfiguration(VimeoConfigurationPage.pluginUniqueId).done(function (config) {
+                ApiClient.getPluginConfiguration(VimeoConfigurationPage.pluginUniqueId).then(function (config) {
 
                     $('#txtTokenAuth', page).val(config.TokenURL || '');
                     $('#txtAccessCode', page).val(config.AccessCode || '');
@@ -69,7 +69,7 @@
                         url: ApiClient.getUrl("Vimeo/Auth/Request"),
                         dataType: "json"
 
-                    }).done(function (data) {
+                    }).then(function (data) {
                         $('#txtTokenAuth', page).val(data.TokenURL || "");
                         Token = data.Token;
                         secretToken = data.SecretToken;
@@ -86,7 +86,7 @@
 
                 var form = this;
 
-                ApiClient.getPluginConfiguration(VimeoConfigurationPage.pluginUniqueId).done(function (config) {
+                ApiClient.getPluginConfiguration(VimeoConfigurationPage.pluginUniqueId).then(function (config) {
 
                     var accessCode = $('#txtAccessCode', form).val();
                     var tokenURL = $('#txtTokenAuth', form).val();
@@ -96,7 +96,7 @@
                     config.SecretToken = secretToken ? secretToken : null;
                     config.TokenURL = tokenURL ? tokenURL : null;
 
-                    ApiClient.updatePluginConfiguration(VimeoConfigurationPage.pluginUniqueId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                    ApiClient.updatePluginConfiguration(VimeoConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                 });
 
                 // Disable default form submission

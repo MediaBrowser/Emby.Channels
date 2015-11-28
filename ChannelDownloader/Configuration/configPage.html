@@ -141,7 +141,7 @@
                     var promise2 = ApiClient.getJSON(ApiClient.getUrl("Channels/Features"));
                     var promise3 = ApiClient.getPluginConfiguration(pluginId);
 
-                    $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
+                    $.when(promise1, promise2, promise3).then(function (response1, response2, response3) {
 
                         var channelConfig = response1[0];
                         var allFeatures = response2[0];
@@ -157,7 +157,7 @@
 
                     var form = this;
 
-                    ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
 
                         config.MaxDownloadAge = $('#txtDownloadAge', form).val() || null;
                         config.DownloadSizeLimit = $('#txtDownloadSizeLimit', form).val() || null;
@@ -167,16 +167,16 @@
                                 return i.getAttribute('data-channelid');
                             });
 
-                        ApiClient.updatePluginConfiguration(pluginId, config).done(Dashboard.processPluginConfigurationUpdateResult);
+                        ApiClient.updatePluginConfiguration(pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                     });
 
-                    ApiClient.getNamedConfiguration("channels").done(function (config) {
+                    ApiClient.getNamedConfiguration("channels").then(function (config) {
 
                         // This should be null if empty
 
                         config.DownloadPath = $('#txtCachePath', form).val() || null;
 
-                        ApiClient.updateNamedConfiguration("channels", config).done(Dashboard.processServerConfigurationUpdateResult);
+                        ApiClient.updateNamedConfiguration("channels", config).then(Dashboard.processServerConfigurationUpdateResult);
                     });
 
                     // Disable default form submission

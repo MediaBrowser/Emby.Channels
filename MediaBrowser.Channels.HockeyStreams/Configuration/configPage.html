@@ -40,18 +40,18 @@
                     var pluginId = '4e9e77ca-c8de-49ac-a07d-e0477eb98727';
 
                     this.loadConfig = function (callback) {
-                        ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+                        ApiClient.getPluginConfiguration(pluginId).then(function (config) {
                             callback(config.Username);
                         });
                     }
 
                     this.saveConfig = function (username, token, favoriteTeam, callback) {
-                        ApiClient.getPluginConfiguration(pluginId).done(function (config) {
+                        ApiClient.getPluginConfiguration(pluginId).then(function (config) {
                             config.Username = username;
                             config.Token = token;
                             config.FavoriteTeam = favoriteTeam;
 
-                            ApiClient.updatePluginConfiguration(pluginId, config).done(callback);
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(callback);
                         });
                     }
 
