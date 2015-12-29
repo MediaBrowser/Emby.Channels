@@ -17,7 +17,7 @@ using SoundCloud.NET;
 
 namespace MediaBrowser.Plugins.SoundCloud
 {
-    public class SoundCloudChannel : IChannel, ISupportsLatestMedia
+    public class SoundCloudChannel : IChannel, ISupportsLatestMedia, IHasCacheKey
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
@@ -321,6 +321,11 @@ namespace MediaBrowser.Plugins.SoundCloud
         public ChannelParentalRating ParentalRating
         {
             get { return ChannelParentalRating.GeneralAudience; }
+        }
+
+        public string GetCacheKey(string userId)
+        {
+            return Plugin.Instance.Configuration.Username;
         }
     }
 }
