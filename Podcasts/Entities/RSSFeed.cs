@@ -30,12 +30,26 @@ namespace PodCasts.Entities
             INotificationManager notificationManager,
             CancellationToken cancellationToken)
         {
+            try
+            {
+                using (XmlReader reader = XmlReader.Create(await httpClient.Get(url, cancellationToken).ConfigureAwait(false)))
+                {
+                    var feed = SyndicationFeed.Load(reader);
+
+                    return await GetChildren(feed, providerManager, notificationManager, cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+
             using (XmlReader reader = new SyndicationFeedXmlReader(await httpClient.Get(url, cancellationToken).ConfigureAwait(false)))
             {
                 var feed = SyndicationFeed.Load(reader);
 
                 return await GetChildren(feed, providerManager, notificationManager, cancellationToken);
             }
+
         }
 
         public async Task<SyndicationFeed> GetFeed(IProviderManager providerManager,
