@@ -16,38 +16,155 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.XPath;
+using MediaBrowser.Controller.Channels;
+using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
 
 namespace PodCasts.Entities
 {
     public class RssFeed
     {
+        private readonly ILogger _logger;
 
-        public async Task<IEnumerable<BaseItem>> Refresh(IProviderManager providerManager,
+        public async Task<IEnumerable<ChannelItemInfo>> Refresh(IProviderManager providerManager,
             IHttpClient httpClient,
             string url,
             INotificationManager notificationManager,
             CancellationToken cancellationToken)
         {
-            try
+            var options = new HttpRequestOptions
             {
-                using (XmlReader reader = new SyndicationFeedXmlReader(await httpClient.Get(url, cancellationToken).ConfigureAwait(false)))
-                {
-                    var feed = SyndicationFeed.Load(reader);
+                Url = url,
+                CancellationToken = cancellationToken,
 
-                    return await GetChildren(feed, providerManager, notificationManager, cancellationToken);
+                // Seeing some deflate stream errors
+                EnableHttpCompression = false
+            };
+
+            using (Stream stream = await httpClient.Get(options).ConfigureAwait(false))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    XDocument document = XDocument.Parse(reader.ReadToEnd());
+                    var x = from c in document.Root.Element("channel").Elements("item") select c;
+
+                    return x.Select(CreatePodcast).Where(i => i != null);
                 }
             }
-            catch (Exception ex)
+        }
+
+        private ChannelItemInfo CreatePodcast(XElement element)
+        {
+            var overview = GetValue(element, "description");
+            var title = GetValue(element, "title");
+            var enclosureElement = element.Element("enclosure");
+            var link = enclosureElement == null ? null : enclosureElement.Attribute("url").Value;
+
+            if (string.IsNullOrWhiteSpace(link))
             {
+                return null;
             }
 
-            using (XmlReader reader = XmlReader.Create(await httpClient.Get(url, cancellationToken).ConfigureAwait(false)))
-            {
-                var feed = SyndicationFeed.Load(reader);
+            var pubDate = GetDateTime(element, "pubDate");
 
-                return await GetChildren(feed, providerManager, notificationManager, cancellationToken);
+            string posterUrl = null;
+
+            // itunes podcasts sometimes don't have a summary 
+            if (!string.IsNullOrWhiteSpace(overview))
+            {
+                overview = WebUtility.HtmlDecode(Regex.Replace(overview, @"<(.|\n)*?>", string.Empty));
+            }
+
+            long? runtimeTicks = null;
+
+            var itunesDuration = GetValue(element, "duration", "itunes");
+            TimeSpan runtime;
+            if (!string.IsNullOrEmpty(itunesDuration) && TimeSpan.TryParse(itunesDuration, out runtime))
+            {
+                runtimeTicks = runtime.Ticks;
+            }
+
+            string rating = null;
+            var itunesExplicit = GetValue(element, "explicit", "itunes");
+            if (string.Equals(itunesExplicit, "yes", StringComparison.OrdinalIgnoreCase))
+            {
+                rating = "R";
+            }
+            else if (string.Equals(itunesExplicit, "clean", StringComparison.OrdinalIgnoreCase))
+            {
+                rating = "R";
+            }
+
+            if (string.IsNullOrWhiteSpace(posterUrl) && !string.IsNullOrWhiteSpace(overview))
+            {
+                var match = Regex.Match(overview, @"<img src=[\""\']([^\'\""]+)", RegexOptions.IgnoreCase);
+                if (match.Groups.Count > 1)
+                {
+                    // this will get downloaded later if we need it
+                    posterUrl = match.Groups[1].Value;
+                }
+            }
+
+            return new ChannelItemInfo
+            {
+                Name = title,
+                Overview = overview,
+                ImageUrl = posterUrl ?? "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/Podcasts/Images/thumb.png",
+                Id = link.GetMD5().ToString("N"),
+                Type = ChannelItemType.Media,
+                ContentType = ChannelMediaContentType.Podcast,
+                MediaType = !IsAudioFile(link) ? ChannelMediaType.Video : ChannelMediaType.Audio,
+
+                MediaSources = new List<ChannelMediaInfo>
+                    {
+                        new ChannelMediaInfo
+                        {
+                            Path = link
+                        }  
+                    },
+
+                DateCreated = pubDate,
+                PremiereDate = pubDate,
+
+                RunTimeTicks = runtimeTicks,
+                OfficialRating = rating
+            };
+        }
+
+        private DateTime GetDateTime(XElement element, string name, string namespaceName = null)
+        {
+            var value = GetValue(element, name, namespaceName);
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return DateTime.MinValue;
+            }
+
+            DateTime date;
+            // Microsofts parser bailed 
+            if (!SyndicationFeedXmlReader.TryParseRfc3339DateTime(value, out date) && !SyndicationFeedXmlReader.TryParseRfc822DateTime(value, out date))
+            {
+                date = DateTime.UtcNow;
+            }
+
+            return date;
+        }
+
+        private string GetValue(XElement element, string name, string namespaceName = null)
+        {
+            if (!string.IsNullOrWhiteSpace(namespaceName))
+            {
+                var elem = element.Element(XName.Get(name, namespaceName));
+
+                return elem == null ? null : elem.Value;
+            }
+            else
+            {
+                var elem = element.Element(name);
+
+                return elem == null ? null : elem.Value;
             }
         }
 
@@ -73,153 +190,6 @@ namespace PodCasts.Entities
             }
         }
 
-        private static async Task<IEnumerable<BaseItem>> GetChildren(SyndicationFeed feed, IProviderManager providerManager, INotificationManager notificationManager, CancellationToken cancellationToken)
-        {
-            var podcasts = new List<BaseItem>();
-
-            if (feed == null) return podcasts;
-
-            foreach (var item in feed.Items)
-            {
-                try
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    string path = null;
-
-                    foreach (var link in item.Links.Where(link => link.RelationshipType == "enclosure"))
-                    {
-                        path = (link.Uri.AbsoluteUri);
-                    }
-
-                    if (path == null)
-                    {
-                        Plugin.Logger.Warn("No path. Skipping...");
-                        continue;
-                    }
-
-                    var podcast = IsAudioFile(path) ? (BaseItem)new PodCastAudio { DateCreated = item.PublishDate.UtcDateTime, DateModified = item.PublishDate.UtcDateTime, Name = item.Title.Text, DisplayMediaType = "Audio" } :
-                                                        new VodCastVideo { DateCreated = item.PublishDate.UtcDateTime, DateModified = item.PublishDate.UtcDateTime, Name = item.Title.Text, DisplayMediaType = "Movie" };
-
-                    podcast.Path = path;
-                    podcast.Id = podcast.Path.GetMBId(podcast.GetType());
-                    podcasts.Add(podcast);
-
-                    // itunes podcasts sometimes don't have a summary 
-                    if (item.Summary != null && item.Summary.Text != null)
-                    {
-                        podcast.Overview = WebUtility.HtmlDecode(Regex.Replace(item.Summary.Text, @"<(.|\n)*?>", string.Empty));
-
-                        var match = Regex.Match(item.Summary.Text, @"<img src=[\""\']([^\'\""]+)", RegexOptions.IgnoreCase);
-                        if (match.Groups.Count > 1)
-                        {
-                            // this will get downloaded later if we need it
-                            (podcast as IHasRemoteImage).RemoteImagePath = match.Groups[1].Value;
-                        }
-                    }
-
-                    if (item.PublishDate != null) podcast.PremiereDate = item.PublishDate.DateTime;
-
-                    // Get values of syndication extension elements for a given namespace
-                    var iTunesNamespaceUri = "http://www.itunes.com/dtds/podcast-1.0.dtd";
-                    var yahooNamespaceUri = "http://search.yahoo.com/mrss/";
-                    var iTunesExt = item.ElementExtensions.FirstOrDefault(x => x.OuterNamespace == iTunesNamespaceUri);
-                    var yahooExt = item.ElementExtensions.FirstOrDefault(x => x.OuterNamespace == yahooNamespaceUri);
-                    var iTunesNavigator = iTunesExt != null ? new XPathDocument(iTunesExt.GetReader()).CreateNavigator() : null;
-                    var yahooNavigator = yahooExt != null ? new XPathDocument(yahooExt.GetReader()).CreateNavigator() : null;
-
-                    var iTunesResolver = iTunesNavigator != null ? new XmlNamespaceManager(iTunesNavigator.NameTable) : null;
-                    var yahooResolver = yahooNavigator != null ? new XmlNamespaceManager(yahooNavigator.NameTable) : null;
-                    if (iTunesResolver != null) iTunesResolver.AddNamespace("itunes", iTunesNamespaceUri);
-                    if (yahooResolver != null) yahooResolver.AddNamespace("media", yahooNamespaceUri);
-
-                    // Prefer this image
-                    //if (string.IsNullOrEmpty(podcast.PrimaryImagePath))
-                    {
-                        var thumbNavigator = yahooNavigator != null ? yahooNavigator.SelectSingleNode("media:thumbnail", yahooResolver) : null;
-                        if (thumbNavigator == null && yahooNavigator != null)
-                        {
-                            // Some feeds bury them all inside a content element - try that
-                            var contentNavigator = yahooNavigator.SelectSingleNode("media:content", yahooResolver);
-                            thumbNavigator = contentNavigator.SelectSingleNode("media:thumbnail", yahooResolver);
-                        }
-
-                        var imageUrl = thumbNavigator != null ? thumbNavigator.GetAttribute("url", "") : "";
-                        if (!string.IsNullOrEmpty(imageUrl))
-                        {
-                            // This will get downloaded later if we need it...
-                            (podcast as IHasRemoteImage).RemoteImagePath = imageUrl;
-                        }
-                    }
-
-                    var explicitNavigator = iTunesNavigator != null ? iTunesNavigator.SelectSingleNode("itunes:explicit", iTunesResolver) : null;
-                    podcast.OfficialRating = explicitNavigator != null ? explicitNavigator.Value == "no" ? "None" : "R" : null;
-
-                    //if (podcast.Name.Contains("Film")) Debugger.Break();
-
-                    var durationNavigator = iTunesNavigator != null ? iTunesNavigator.SelectSingleNode("itunes:duration", iTunesResolver) : null;
-
-                    var duration = durationNavigator != null ? durationNavigator.Value : String.Empty;
-                    if (!string.IsNullOrEmpty(duration))
-                    {
-                        try
-                        {
-                            podcast.RunTimeTicks = Convert.ToInt32(duration) * TimeSpan.TicksPerSecond;
-                        }
-                        catch (Exception)
-                        {
-                        } // we don't really care
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    notificationManager.SendNotification(new NotificationRequest
-                    {
-                        Description = "Error refreshing podcast item " + e,
-                        Date = DateTime.Now,
-                        Level = NotificationLevel.Error,
-                        SendToUserMode = SendToUserType.Admins
-                    }, cancellationToken);
-                    Plugin.Logger.ErrorException("Error refreshing podcast item ", e);
-                }
-            }
-
-            // TED Talks appends the same damn string on each title, fix it
-            if (podcasts.Count > 5)
-            {
-                var common = podcasts[0].Name;
-
-                foreach (var video in podcasts.Skip(1))
-                {
-                    while (!video.Name.StartsWith(common))
-                    {
-                        if (common.Length < 2)
-                        {
-                            break;
-                        }
-                        common = common.Substring(0, common.Length - 1);
-                    }
-
-                    if (common.Length < 2)
-                    {
-                        break;
-                    }
-                }
-
-                if (common.Length > 2)
-                {
-                    foreach (var video in podcasts.Where(video => video.Name.Length > common.Length))
-                    {
-                        video.Name = video.Name.Substring(common.Length);
-                    }
-                }
-
-            }
-
-            return podcasts;
-        }
-
         /// <summary>
         /// The audio file extensions
         /// </summary>
@@ -240,6 +210,11 @@ namespace PodCasts.Entities
             };
 
         private static readonly Dictionary<string, string> AudioFileExtensionsDictionary = AudioFileExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
+        public RssFeed(ILogger logger)
+        {
+            _logger = logger;
+        }
 
         /// <summary>
         /// Determines whether [is audio file] [the specified args].

@@ -24,7 +24,7 @@ namespace PodCasts
         private readonly ILogger _logger;
         private readonly IProviderManager _providerManager;
         public INotificationManager _notificationManager { get; set; }
-        
+
         public Channel(IHttpClient httpClient, ILogManager logManager, IProviderManager providerManager, INotificationManager notificationManager)
         {
             _httpClient = httpClient;
@@ -60,7 +60,7 @@ namespace PodCasts
 
             if (!Plugin.Instance.Registration.IsValid)
             {
-                
+
                 Plugin.Logger.Warn("PodCasts trial has expired.");
                 await _notificationManager.SendNotification(new NotificationRequest
                 {
@@ -78,7 +78,7 @@ namespace PodCasts
 
             foreach (var feedUrl in Plugin.Instance.Configuration.Feeds)
             {
-                var feed = await new RssFeed().GetFeed(_providerManager, _httpClient, feedUrl, cancellationToken).ConfigureAwait(false);
+                var feed = await new RssFeed(_logger).GetFeed(_providerManager, _httpClient, feedUrl, cancellationToken).ConfigureAwait(false);
 
                 _logger.Debug(feedUrl);
 
@@ -162,44 +162,9 @@ namespace PodCasts
             };
         }
 
-        private async Task<IEnumerable<ChannelItemInfo>> GetChannelItemsInternal(string feedUrl, CancellationToken cancellationToken)
+        private Task<IEnumerable<ChannelItemInfo>> GetChannelItemsInternal(string feedUrl, CancellationToken cancellationToken)
         {
-            var items = new List<ChannelItemInfo>();
-
-            var rssItems = await new RssFeed().Refresh(_providerManager, _httpClient, feedUrl, _notificationManager, cancellationToken).ConfigureAwait(false);
-
-            foreach (var child in rssItems)
-            {
-                var podcast = (IHasRemoteImage)child;
-
-                var item = new ChannelItemInfo
-                {
-                    Name = child.Name,
-                    Overview = child.Overview,
-                    ImageUrl = podcast.RemoteImagePath ?? "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/Podcasts/Images/thumb.png",
-                    Id = child.Id.ToString("N"),
-                    Type = ChannelItemType.Media,
-                    ContentType = ChannelMediaContentType.Podcast,
-                    MediaType = child is Video ? ChannelMediaType.Video : ChannelMediaType.Audio,
-
-                    MediaSources = new List<ChannelMediaInfo>
-                    {
-                        new ChannelMediaInfo
-                        {
-                            Path = child.Path
-                        }  
-                    },
-
-                    DateCreated = child.DateCreated,
-                    PremiereDate = child.PremiereDate,
-
-                    RunTimeTicks = child.RunTimeTicks,
-                    OfficialRating = child.OfficialRating
-                };
-
-                items.Add(item);
-            }
-            return items;
+            return new RssFeed(_logger).Refresh(_providerManager, _httpClient, feedUrl, _notificationManager, cancellationToken);
         }
 
         public IEnumerable<ImageType> GetSupportedChannelImages()

@@ -61,10 +61,7 @@
     <Compile Include="Channel.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
     <Compile Include="Configuration\MyConfigurationPage.cs" />
-    <Compile Include="Entities\IHasRemoteImage.cs" />
-    <Compile Include="Entities\PodCastAudio.cs" />
     <Compile Include="Entities\RSSFeed.cs" />
-    <Compile Include="Entities\VodCastVideo.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerEntryPoint.cs" />
