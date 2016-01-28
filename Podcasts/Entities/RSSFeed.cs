@@ -112,7 +112,7 @@ namespace PodCasts.Entities
             {
                 Name = title,
                 Overview = overview,
-                ImageUrl = posterUrl ?? "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/Podcasts/Images/thumb.png",
+                ImageUrl = posterUrl,
                 Id = link.GetMD5().ToString("N"),
                 Type = ChannelItemType.Media,
                 ContentType = ChannelMediaContentType.Podcast,
@@ -144,7 +144,7 @@ namespace PodCasts.Entities
 
             DateTime date;
             // Microsofts parser bailed 
-            if (!SyndicationFeedXmlReader.TryParseRfc3339DateTime(value, out date) && !SyndicationFeedXmlReader.TryParseRfc822DateTime(value, out date))
+            if (!TryParseRfc3339DateTime(value, out date) && !TryParseRfc822DateTime(value, out date))
             {
                 date = DateTime.UtcNow;
             }
@@ -165,28 +165,6 @@ namespace PodCasts.Entities
                 var elem = element.Element(name);
 
                 return elem == null ? null : elem.Value;
-            }
-        }
-
-        public async Task<SyndicationFeed> GetFeed(IProviderManager providerManager,
-            IHttpClient httpClient,
-            string url,
-            CancellationToken cancellationToken)
-        {
-            var response = await httpClient.Get(new HttpRequestOptions
-            {
-                CacheMode = CacheMode.Unconditional,
-                CacheLength = TimeSpan.FromHours(3),
-                Url = url,
-                CancellationToken = cancellationToken,
-                // Seeing a block length error with some sites with this on
-                EnableHttpCompression = false
-
-            }).ConfigureAwait(false);
-
-            using (XmlReader reader = new SyndicationFeedXmlReader(response))
-            {
-                return SyndicationFeed.Load(reader);
             }
         }
 
@@ -231,108 +209,6 @@ namespace PodCasts.Entities
             }
 
             return AudioFileExtensionsDictionary.ContainsKey(extension);
-        }
-
-    }
-
-
-    /// <summary>
-    /// http://stackoverflow.com/questions/210375/problems-reading-rss-with-c-and-net-3-5 workaround datetime issues
-    /// </summary>
-    public class SyndicationFeedXmlReader : XmlTextReader
-    {
-        readonly string[] Rss20DateTimeHints = { "pubDate" };
-        readonly string[] Atom10DateTimeHints = { "updated", "published", "lastBuildDate" };
-        private bool isRss2DateTime = false;
-        private bool isAtomDateTime = false;
-
-        public SyndicationFeedXmlReader(Stream stream) : base(stream) { }
-
-        public override bool IsStartElement(string localname, string ns)
-        {
-            isRss2DateTime = false;
-            isAtomDateTime = false;
-
-            if (Rss20DateTimeHints.Contains(localname)) isRss2DateTime = true;
-            if (Atom10DateTimeHints.Contains(localname)) isAtomDateTime = true;
-
-            return base.IsStartElement(localname, ns);
-        }
-
-        /// <summary>
-        /// From Argotic MIT : http://argotic.codeplex.com/releases/view/14436
-        /// </summary>
-        private static string ReplaceRfc822TimeZoneWithOffset(string value)
-        {
-
-            //------------------------------------------------------------
-            //	Perform conversion
-            //------------------------------------------------------------
-            value = value.Trim();
-            if (value.EndsWith("UT", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}+0:00", value.TrimEnd("UT".ToCharArray()));
-            }
-            else if (value.EndsWith("UTC", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}+0:00", value.TrimEnd("UTC".ToCharArray()));
-            }
-            else if (value.EndsWith("EST", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}-05:00", value.TrimEnd("EST".ToCharArray()));
-            }
-            else if (value.EndsWith("EDT", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}-04:00", value.TrimEnd("EDT".ToCharArray()));
-            }
-            else if (value.EndsWith("CST", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}-06:00", value.TrimEnd("CST".ToCharArray()));
-            }
-            else if (value.EndsWith("CDT", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}-05:00", value.TrimEnd("CDT".ToCharArray()));
-            }
-            else if (value.EndsWith("MST", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}-07:00", value.TrimEnd("MST".ToCharArray()));
-            }
-            else if (value.EndsWith("MDT", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}-06:00", value.TrimEnd("MDT".ToCharArray()));
-            }
-            else if (value.EndsWith("PST", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}-08:00", value.TrimEnd("PST".ToCharArray()));
-            }
-            else if (value.EndsWith("PDT", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}-07:00", value.TrimEnd("PDT".ToCharArray()));
-            }
-            else if (value.EndsWith("Z", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}GMT", value.TrimEnd("Z".ToCharArray()));
-            }
-            else if (value.EndsWith("A", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}-01:00", value.TrimEnd("A".ToCharArray()));
-            }
-            else if (value.EndsWith("M", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}-12:00", value.TrimEnd("M".ToCharArray()));
-            }
-            else if (value.EndsWith("N", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}+01:00", value.TrimEnd("N".ToCharArray()));
-            }
-            else if (value.EndsWith("Y", StringComparison.OrdinalIgnoreCase))
-            {
-                return String.Format(null, "{0}+12:00", value.TrimEnd("Y".ToCharArray()));
-            }
-            else
-            {
-                return value;
-            }
         }
 
         /// <summary>
@@ -417,41 +293,80 @@ namespace PodCasts.Entities
             return DateTime.TryParseExact(value, formats, dateTimeFormat, DateTimeStyles.AssumeUniversal, out result);
         }
 
-        public override string ReadString()
+        /// <summary>
+        /// From Argotic MIT : http://argotic.codeplex.com/releases/view/14436
+        /// </summary>
+        private static string ReplaceRfc822TimeZoneWithOffset(string value)
         {
-            string dateVal = base.ReadString();
 
-            try
+            //------------------------------------------------------------
+            //	Perform conversion
+            //------------------------------------------------------------
+            value = value.Trim();
+            if (value.EndsWith("UT", StringComparison.OrdinalIgnoreCase))
             {
-                if (isRss2DateTime)
-                {
-                    MethodInfo objMethod = typeof(Rss20FeedFormatter).GetMethod("DateFromString", BindingFlags.NonPublic | BindingFlags.Static);
-                    Debug.Assert(objMethod != null);
-                    objMethod.Invoke(null, new object[] { dateVal, this });
-
-                }
-                if (isAtomDateTime)
-                {
-                    MethodInfo objMethod = typeof(Atom10FeedFormatter).GetMethod("DateFromString", BindingFlags.NonPublic | BindingFlags.Instance);
-                    Debug.Assert(objMethod != null);
-                    objMethod.Invoke(new Atom10FeedFormatter(), new object[] { dateVal, this });
-                }
+                return String.Format(null, "{0}+0:00", value.TrimEnd("UT".ToCharArray()));
             }
-            catch (TargetInvocationException)
+            else if (value.EndsWith("UTC", StringComparison.OrdinalIgnoreCase))
             {
-                DateTime date;
-                // Microsofts parser bailed 
-                if (!TryParseRfc3339DateTime(dateVal, out date) && !TryParseRfc822DateTime(dateVal, out date))
-                {
-                    date = DateTime.UtcNow;
-                }
-
-                DateTimeFormatInfo dtfi = CultureInfo.InvariantCulture.DateTimeFormat;
-                dateVal = date.ToString(dtfi.RFC1123Pattern, dtfi);
+                return String.Format(null, "{0}+0:00", value.TrimEnd("UTC".ToCharArray()));
             }
-
-            return dateVal;
-
+            else if (value.EndsWith("EST", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}-05:00", value.TrimEnd("EST".ToCharArray()));
+            }
+            else if (value.EndsWith("EDT", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}-04:00", value.TrimEnd("EDT".ToCharArray()));
+            }
+            else if (value.EndsWith("CST", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}-06:00", value.TrimEnd("CST".ToCharArray()));
+            }
+            else if (value.EndsWith("CDT", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}-05:00", value.TrimEnd("CDT".ToCharArray()));
+            }
+            else if (value.EndsWith("MST", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}-07:00", value.TrimEnd("MST".ToCharArray()));
+            }
+            else if (value.EndsWith("MDT", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}-06:00", value.TrimEnd("MDT".ToCharArray()));
+            }
+            else if (value.EndsWith("PST", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}-08:00", value.TrimEnd("PST".ToCharArray()));
+            }
+            else if (value.EndsWith("PDT", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}-07:00", value.TrimEnd("PDT".ToCharArray()));
+            }
+            else if (value.EndsWith("Z", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}GMT", value.TrimEnd("Z".ToCharArray()));
+            }
+            else if (value.EndsWith("A", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}-01:00", value.TrimEnd("A".ToCharArray()));
+            }
+            else if (value.EndsWith("M", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}-12:00", value.TrimEnd("M".ToCharArray()));
+            }
+            else if (value.EndsWith("N", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}+01:00", value.TrimEnd("N".ToCharArray()));
+            }
+            else if (value.EndsWith("Y", StringComparison.OrdinalIgnoreCase))
+            {
+                return String.Format(null, "{0}+12:00", value.TrimEnd("Y".ToCharArray()));
+            }
+            else
+            {
+                return value;
+            }
         }
 
     }

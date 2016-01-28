@@ -12,9 +12,11 @@ using MediaBrowser.Model.Notifications;
 using PodCasts.Entities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace PodCasts
 {
@@ -78,29 +80,72 @@ namespace PodCasts
 
             foreach (var feedUrl in Plugin.Instance.Configuration.Feeds)
             {
-                var feed = await new RssFeed(_logger).GetFeed(_providerManager, _httpClient, feedUrl, cancellationToken).ConfigureAwait(false);
-
-                _logger.Debug(feedUrl);
-
-                var item = new ChannelItemInfo
+                try
                 {
-                    Name = feed.Title == null ? null : feed.Title.Text,
-                    Overview = feed.Description == null ? null : feed.Description.Text,
-                    Id = feedUrl,
-                    Type = ChannelItemType.Folder
-                };
+                    var options = new HttpRequestOptions
+                    {
+                        Url = feedUrl,
+                        CancellationToken = cancellationToken,
 
-                if (feed.ImageUrl != null)
-                {
-                    item.ImageUrl = feed.ImageUrl.AbsoluteUri;
+                        // Seeing some deflate stream errors
+                        EnableHttpCompression = false
+                    };
+
+                    using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
+                    {
+                        using (var reader = new StreamReader(stream))
+                        {
+                            XDocument document = XDocument.Parse(reader.ReadToEnd());
+                            var root = document.Root.Element("channel");
+
+                            var item = new ChannelItemInfo
+                            {
+                                Name = GetValue(root, "title"),
+                                Overview = GetValue(root, "description"),
+                                Id = feedUrl,
+                                Type = ChannelItemType.Folder
+                            };
+
+                            if (!string.IsNullOrWhiteSpace(item.Name))
+                            {
+                                _logger.Debug("Found rss channel: {0}", item.Name);
+
+                                var imageElement = root.Element("image");
+                                if (imageElement != null)
+                                {
+                                    item.ImageUrl = GetValue(imageElement, "url");
+                                }
+
+                                items.Add(item);
+                            }
+                        }
+                    }
                 }
-
-                items.Add(item);
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting feed", ex);
+                }
             }
             return new ChannelItemResult
             {
                 Items = items.ToList()
             };
+        }
+
+        private string GetValue(XElement element, string name, string namespaceName = null)
+        {
+            if (!string.IsNullOrWhiteSpace(namespaceName))
+            {
+                var elem = element.Element(XName.Get(name, namespaceName));
+
+                return elem == null ? null : elem.Value;
+            }
+            else
+            {
+                var elem = element.Element(name);
+
+                return elem == null ? null : elem.Value;
+            }
         }
 
         private async Task<ChannelItemResult> GetChannelItemsInternal(InternalChannelItemQuery query, CancellationToken cancellationToken)

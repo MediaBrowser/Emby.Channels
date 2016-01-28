@@ -22,11 +22,11 @@
                         <br />
                         <ul data-role="listview" class="ulForm">
                             <li>
-                                <label for="txtCachePath">${LabelChannelDownloadPath}</label>
+                                <label for="txtCachePath" style="display: block;">${LabelChannelDownloadPath}</label>
                                 <div style="display: inline-block; width: 85%;">
                                     <input type="text" id="txtCachePath" name="txtCachePath" />
                                 </div>
-                                <button id="btnSelectCachePath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                                <button id="btnSelectCachePath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">...</button>
                                 <div class="fieldDescription">${LabelChannelDownloadPathHelp}</div>
                             </li>
                             <li>
@@ -141,11 +141,11 @@
                     var promise2 = ApiClient.getJSON(ApiClient.getUrl("Channels/Features"));
                     var promise3 = ApiClient.getPluginConfiguration(pluginId);
 
-                    $.when(promise1, promise2, promise3).then(function (response1, response2, response3) {
+                    Promise.all([promise1, promise2, promise3]).then(function (responses) {
 
-                        var channelConfig = response1[0];
-                        var allFeatures = response2[0];
-                        var pluginConfig = response3[0];
+                        var channelConfig = responses[0];
+                        var allFeatures = responses[1];
+                        var pluginConfig = responses[2];
 
                         loadPage(page, channelConfig, allFeatures, pluginConfig);
                     });
