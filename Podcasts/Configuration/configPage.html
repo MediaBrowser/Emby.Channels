@@ -85,13 +85,13 @@
 
                         html += "<a><h3>" + feed + "</h3></a>";
 
-                        html += "<a data-feedname='" + feed + "' onclick='PodCastsConfigurationPage.deleteFeed(this);' href='#'>Delete</a>";
+                        html += "<a data-feedname='" + feed + "' onclick='PodCastsConfigurationPage.deleteFeed(this);' href='#' data-icon='delete'>Delete</a>";
 
                         html += "</li>";
                     }
                 }
 
-                $('#ulFeeds', page).html(html).listview('refresh');
+                $('#ulFeeds', page).html(html);
 
             },
 
