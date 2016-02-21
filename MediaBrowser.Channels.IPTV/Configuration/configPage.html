@@ -98,13 +98,13 @@
 
                             html += "<a><h3>" + stream.Name + "</h3></a>";
 
-                            html += "<a data-streamname='" + stream.Name + "' onclick='IPTVConfigurationPage.deleteStream(this);' href='#'>Delete</a>";
+                            html += "<a data-streamname='" + stream.Name + "' onclick='IPTVConfigurationPage.deleteStream(this);' href='#' data-icon='delete'>Delete</a>";
 
                             html += "</li>";
                         }
                     }
 
-                    $('#ulStreams', page).html(html).listview('refresh');
+                    $('#ulStreams', page).html(html);
 
                 },
 
