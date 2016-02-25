@@ -14,6 +14,8 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Plugins.Twitch
 {
@@ -121,7 +123,11 @@ namespace MediaBrowser.Plugins.Twitch
             {
                 var r = _jsonSerializer.DeserializeFromStream<RootObject>(json);
 
-                var token = WebUtility.UrlEncode(r.token);
+                //_logger.Debug("Response from twitch: " + json);
+
+                var token = r.token;
+
+                _logger.Debug("Twitch token: {0}", token);
 
                 var playURL = "http://usher.twitch.tv/api/channel/hls/" + id + ".m3u8?token=" + token + "&sig=" +
                                     r.sig;

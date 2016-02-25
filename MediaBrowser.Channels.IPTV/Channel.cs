@@ -43,9 +43,14 @@ namespace MediaBrowser.Channels.IPTV
         {
             var items = new List<ChannelItemInfo>();
 
-            foreach (var s in Plugin.Instance.Configuration.Bookmarks
-                .Where(i => string.Equals(i.UserId, userId, StringComparison.OrdinalIgnoreCase)))
+            foreach (var s in Plugin.Instance.Configuration.Bookmarks)
             {
+                // Until we have user configuration in the UI, we have to disable this.
+                //if (!string.Equals(s.UserId, userId, StringComparison.OrdinalIgnoreCase))
+                //{
+                //    continue;
+                //}
+
                 var item = new ChannelItemInfo
                 {
                     Name = s.Name,
