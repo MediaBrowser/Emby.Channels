@@ -156,7 +156,7 @@ namespace ChannelDownloader
 
             foreach (var item in result.Items)
             {
-                var channelItem = item as IChannelMediaItem;
+                var channelItem = item;
 
                 if (channelItem != null)
                 {
@@ -200,7 +200,7 @@ namespace ChannelDownloader
             return Plugin.Instance.Configuration.DownloadSizeLimit;
         }
 
-        private async Task DownloadChannelItem(IChannelMediaItem item,
+        private async Task DownloadChannelItem(BaseItem item,
             CancellationToken cancellationToken,
             string path)
         {
