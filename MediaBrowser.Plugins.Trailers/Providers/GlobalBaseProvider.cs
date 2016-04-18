@@ -96,6 +96,12 @@ namespace MediaBrowser.Plugins.Trailers.Providers
 
             info.Container = (Path.GetExtension(url) ?? string.Empty).TrimStart('.');
 
+            if (string.Equals(info.Container, "mov", StringComparison.OrdinalIgnoreCase))
+            {
+                info.AudioCodec = null;
+                info.VideoCodec = null;
+            }
+
             return info;
         }
 

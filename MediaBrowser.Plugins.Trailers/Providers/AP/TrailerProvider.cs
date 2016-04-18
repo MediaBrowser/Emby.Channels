@@ -119,6 +119,12 @@ namespace MediaBrowser.Plugins.Trailers.Providers.AP
                 SupportsDirectPlay = false
             };
 
+            if (string.Equals(mediaInfo.Container, "mov", StringComparison.OrdinalIgnoreCase))
+            {
+                mediaInfo.AudioCodec = null;
+                mediaInfo.VideoCodec = null;
+            }
+
             mediaInfo.RequiredHttpHeaders.Add("User-Agent", "QuickTime/7.7.4");
 
             return mediaInfo;
