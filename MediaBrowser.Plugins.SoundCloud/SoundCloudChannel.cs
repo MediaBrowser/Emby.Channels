@@ -8,28 +8,23 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Plugins.SoundCloud.ClientApi;
+using MediaBrowser.Plugins.SoundCloud.ClientApi.Model;
+using MediaBrowser.Plugins.SoundCloud.ExternalIds;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SoundCloud.NET;
 
 namespace MediaBrowser.Plugins.SoundCloud
 {
     public class SoundCloudChannel : IChannel, ISupportsLatestMedia, IHasCacheKey
     {
-        private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
-        private readonly IJsonSerializer _jsonSerializer;
-        private readonly IEncryptionManager _encryption;
-
-        public SoundCloudChannel(IHttpClient httpClient, IJsonSerializer jsonSerializer, ILogManager logManager, IEncryptionManager encryption)
+        public SoundCloudChannel(ILogManager logManager)
         {
-            _httpClient = httpClient;
             _logger = logManager.GetLogger(GetType().Name);
-            _jsonSerializer = jsonSerializer;
-            _encryption = encryption;
         }
 
         public string DataVersion
@@ -37,8 +32,13 @@ namespace MediaBrowser.Plugins.SoundCloud
             get
             {
                 // Increment as needed to invalidate all caches
-                return "8";
+                return "26";
             }
+        }
+
+        public string Name
+        {
+            get { return "SoundCloud"; }
         }
 
         public string Description
@@ -46,225 +46,11 @@ namespace MediaBrowser.Plugins.SoundCloud
             get { return "SoundCloud is the world’s leading social sound platform where anyone can create sounds and share them everywhere."; }
         }
 
-        public bool IsEnabledFor(string userId)
-        {
-            return true;
-        }
-
-        public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
-        {
-            if (query.FolderId == null)
-            {
-                return await GetChannels(cancellationToken).ConfigureAwait(false);
-            }
-
-            var catSplit = query.FolderId.Split('_');
-            
-
-            if (catSplit[0] == "cat")
-            {
-                query.FolderId = catSplit[1];
-                return await GetTracks(query, cancellationToken).ConfigureAwait(false);
-            }
-            if (catSplit[0] == "myPlaylists")
-            {
-                return await GetPlayLists(query, cancellationToken).ConfigureAwait(false);
-            }
-            if (catSplit[0] == "playlist")
-            {
-                query.FolderId = catSplit[1];
-                return await GetPlayListTracks(Convert.ToInt32(query.FolderId), query, cancellationToken).ConfigureAwait(false);
-            }
-
-            return null;
-        }
-
-        private async Task<ChannelItemResult> GetChannels(CancellationToken cancellationToken)
-        {
-            var items = new List<ChannelItemInfo>
-            {
-                new ChannelItemInfo
-                {
-                    Name = "Hot",
-                    Id = "cat_hot",
-                    Type = ChannelItemType.Folder
-                },
-                new ChannelItemInfo
-                {
-                    Name = "Latest",
-                    Id = "cat_latest",
-                    Type = ChannelItemType.Folder
-                }
-
-            };
-
-            if (Plugin.Instance.SoundCloudClient.IsAuthenticated)
-            {
-                _logger.Debug("AUTHENTICATED");
-                var u = global::SoundCloud.NET.User.Me();
-                var play = u.Playlists;
-                if (play > 0)
-                {
-                    _logger.Debug("PLAYLIST");
-                    items.Add(new ChannelItemInfo
-                    {
-                        Name = "My Playlists",
-                        Id = "myPlaylists",
-                        Type = ChannelItemType.Folder
-                    });
-                }
-                
-            }
-
-            return new ChannelItemResult
-            {
-                Items = items.ToList()
-            };
-        }
-
-        private async Task<ChannelItemResult> GetTracks(InternalChannelItemQuery query, CancellationToken cancellationToken)
-        {
-            var offset = query.StartIndex.GetValueOrDefault();
-
-            var limit = query.Limit.HasValue ? query.Limit.Value : 50;
-            
-            var type = "hotness";
-            if (query.FolderId == "latest") type = "created_at";
-
-            var songs = Track.Search(null, null, Filter.Streamable, null, type, null, null, null, null, DateTime.MinValue, DateTime.MinValue, null, null, null, offset, limit);
-
-            if (songs == null) _logger.Debug("NULL!!!");
-
-            var tracks = songs.Select(i => new ChannelItemInfo
-            {
-                ContentType = ChannelMediaContentType.Song,
-                ImageUrl = i.Artwork,
-                IsInfiniteStream = false,
-                MediaType = ChannelMediaType.Audio,
-                Name = i.Title,
-                Type = ChannelItemType.Media,
-                Id = i.Id.ToString(),
-                RunTimeTicks = TimeSpan.FromMilliseconds(i.Duration).Ticks,
-                DateCreated = i.CreationDate,
-
-                MediaSources = new List<ChannelMediaInfo>
-                {
-                    new ChannelMediaInfo
-                    {
-                        Path = i.StreamUrl + "?client_id=78fd88dde7ebf8fdcad08106f6d56ab6"
-                    }
-                }
-            });
-
-            var channelItemInfos = tracks as IList<ChannelItemInfo> ?? tracks.ToList();
-
-            return new ChannelItemResult
-            {
-                Items = channelItemInfos.ToList(),
-                TotalRecordCount = channelItemInfos.Count() + offset + 1
-
-            };
-        }
-
-        private async Task<ChannelItemResult> GetPlayLists(InternalChannelItemQuery query, CancellationToken cancellationToken)
-        {
-            var offset = query.StartIndex.GetValueOrDefault();
-
-            var limit = query.Limit.HasValue ? query.Limit.Value : 50;
-
-            var u = global::SoundCloud.NET.User.Me();
-            var playlists = u.GetPlaylists(u.Id);
-
-            var tracks = playlists.Select(i => new ChannelItemInfo
-            {
-                ImageUrl = i.ArtworkUrl,
-                MediaType = ChannelMediaType.Audio,
-                Name = i.Title,
-                Type = ChannelItemType.Folder,
-                Id = "playlist_" + i.Id.ToString(),
-                DateCreated = i.CreationDate
-            });
-
-            var channelItemInfos = tracks as IList<ChannelItemInfo> ?? tracks.ToList();
-
-            return new ChannelItemResult
-            {
-                Items = channelItemInfos.ToList(),
-                TotalRecordCount = channelItemInfos.Count() + offset + 1
-
-            };
-        }
-
-        private async Task<ChannelItemResult> GetPlayListTracks(int PlayListID, InternalChannelItemQuery query, CancellationToken cancellationToken)
-        {
-            var offset = query.StartIndex.GetValueOrDefault();
-
-            var play = Playlist.GetPlaylist(PlayListID);
-            
-            var tracks = play.Tracks.Select(i => new ChannelItemInfo
-            {
-                ContentType = ChannelMediaContentType.Song,
-                ImageUrl = i.Artwork,
-                IsInfiniteStream = false,
-                MediaType = ChannelMediaType.Audio,
-                Name = i.Title,
-                Type = ChannelItemType.Media,
-                Id = i.Id.ToString(),
-                RunTimeTicks = TimeSpan.FromMilliseconds(i.Duration).Ticks,
-                DateCreated = i.CreationDate,
-
-                MediaSources = new List<ChannelMediaInfo>
-                {
-                    new ChannelMediaInfo
-                    {
-                        Path = i.StreamUrl + "?client_id=78fd88dde7ebf8fdcad08106f6d56ab6"
-                    }
-                }
-            });
-
-            var channelItemInfos = tracks as IList<ChannelItemInfo> ?? tracks.ToList();
-
-            return new ChannelItemResult
-            {
-                Items = channelItemInfos.ToList(),
-                TotalRecordCount = channelItemInfos.Count() + offset + 1
-
-            };
-        }
-
-        public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
-        {
-            var downloader = new SoundCloudListingDownloader(_logger, _jsonSerializer, _httpClient);
-            var songs = await downloader.GetTrackList(new InternalChannelItemQuery {FolderId = "latest", Limit = 6}, cancellationToken).ConfigureAwait(false);
-
-            return songs.Select(i => new ChannelItemInfo
-            {
-                ContentType = ChannelMediaContentType.Song,
-                ImageUrl = i.artwork_url,
-                IsInfiniteStream = false,
-                MediaType = ChannelMediaType.Audio,
-                Name = i.title,
-                Type = ChannelItemType.Media,
-                Id = i.id.ToString(),
-                RunTimeTicks = TimeSpan.FromMilliseconds(i.duration).Ticks,
-                DateCreated = DateTime.Parse(i.created_at),
-
-                MediaSources = new List<ChannelMediaInfo>
-                {
-                    new ChannelMediaInfo
-                    {
-                        Path = i.stream_url + "?client_id=78fd88dde7ebf8fdcad08106f6d56ab6"
-                    }
-                }
-            }).OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
-        }
-
         public Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken)
         {
             switch (type)
             {
                 case ImageType.Thumb:
-                case ImageType.Backdrop:
                 case ImageType.Primary:
                     {
                         var path = GetType().Namespace + ".Images." + type.ToString().ToLower() + ".png";
@@ -286,14 +72,8 @@ namespace MediaBrowser.Plugins.SoundCloud
             return new List<ImageType>
             {
                 ImageType.Thumb,
-                ImageType.Backdrop,
                 ImageType.Primary
             };
-        }
-
-        public string Name
-        {
-            get { return "SoundCloud"; }
         }
 
         public InternalChannelFeatures GetChannelFeatures()
@@ -302,14 +82,20 @@ namespace MediaBrowser.Plugins.SoundCloud
             {
                 ContentTypes = new List<ChannelMediaContentType>
                  {
-                     ChannelMediaContentType.Song
+                     ChannelMediaContentType.Song,
+                     ChannelMediaContentType.Podcast
                  },
+
+                SupportsSortOrderToggle = false,
 
                 MediaTypes = new List<ChannelMediaType>
                   {
                        ChannelMediaType.Audio
                   },
-                MaxPageSize = 200
+
+                MaxPageSize = 50,
+
+                AutoRefreshLevels = 3
             };
         }
 
@@ -326,6 +112,764 @@ namespace MediaBrowser.Plugins.SoundCloud
         public string GetCacheKey(string userId)
         {
             return Plugin.Instance.Configuration.Username;
+        }
+
+        public bool IsEnabledFor(string userId)
+        {
+            return true;
+        }
+
+        public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            if (query.FolderId == null)
+            {
+                query.SortBy = null;
+                return await GetRootFolders(cancellationToken);
+            }
+
+            var catSplit = query.FolderId.Split('_');
+
+
+            if (catSplit[0] == "myDashboard")
+            {
+                return await GetDashboard(query, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (catSplit[0] == "user")
+            {
+                query.SortBy = null;
+                var userId = Convert.ToInt32(catSplit[1]);
+                return await GetUserRoot(userId, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (catSplit[0] == "followings")
+            {
+                var userId = Convert.ToInt32(catSplit[1]);
+                return await GetFollowings(userId, query, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (catSplit[0] == "followers")
+            {
+                var userId = Convert.ToInt32(catSplit[1]);
+                return await GetFollowers(userId, query, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (catSplit[0] == "userplaylists")
+            {
+                var userId = Convert.ToInt32(catSplit[1]);
+                return await GetPlayLists(userId, query, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (catSplit[0] == "usertracks")
+            {
+                var userId = Convert.ToInt32(catSplit[1]);
+                return await GetUserTracks(userId, query, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (catSplit[0] == "playlist")
+            {
+                var playlistId = Convert.ToInt32(catSplit[1]);
+                return await GetPlayListTracks(playlistId, query, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (catSplit[0] == "favorites")
+            {
+                var playlistId = Convert.ToInt32(catSplit[1]);
+                return await GetUserFavorites(playlistId, query, cancellationToken).ConfigureAwait(false);
+            }
+
+            ////if (catSplit[0] == "cat")
+            ////{
+            ////    query.FolderId = catSplit[1];
+            ////    return await GetTracks(query, cancellationToken).ConfigureAwait(false);
+            ////}
+
+            return null;
+        }
+
+        private async Task<ChannelItemResult> GetRootFolders(CancellationToken cancellationToken)
+        {
+            var items = new List<ChannelItemInfo>();
+
+            if (Plugin.Instance.IsAuthenticated)
+            {
+                try
+                {
+                    var user = await Plugin.Instance.Client.Api.GetMe(cancellationToken);
+
+                    items.Add(this.CreatePersonInfoFromUser(user));
+
+                    items.Add(new ChannelItemInfo
+                    {
+                        FolderType = ChannelFolderType.Container,
+                        MediaType = ChannelMediaType.Audio,
+                        Name = user.username + " - Dashboard",
+                        Id = "myDashboard",
+                        Type = ChannelItemType.Folder,
+                        ImageUrl = user.avatar_url
+                    });
+
+                    if (user.track_count > 0)
+                    {
+                        items.Add(new ChannelItemInfo
+                        {
+                            FolderType = ChannelFolderType.Container,
+                            MediaType = ChannelMediaType.Audio,
+                            Name = string.Format("My Tracks [{0}]", user.track_count),
+                            Id = string.Format("usertracks_{0}", user.id),
+                            Type = ChannelItemType.Folder
+                        });
+                    }
+
+                    if (user.playlist_count > 0)
+                    {
+                        items.Add(new ChannelItemInfo
+                        {
+                            FolderType = ChannelFolderType.Container,
+                            MediaType = ChannelMediaType.Audio,
+                            Name = string.Format("My Playlists [{0}]", user.playlist_count),
+                            Id = string.Format("userplaylists_{0}", user.id),
+                            Type = ChannelItemType.Folder
+                        });
+                    }
+
+                    if (user.followings_count > 0)
+                    {
+                        items.Add(new ChannelItemInfo
+                        {
+                            FolderType = ChannelFolderType.Container,
+                            MediaType = ChannelMediaType.Audio,
+                            Name = string.Format("I'm Following [{0}]", user.followings_count),
+                            Id = string.Format("followings_{0}", user.id),
+                            Type = ChannelItemType.Folder
+                        });
+                    }
+
+                    if (user.followers_count > 0)
+                    {
+                        items.Add(new ChannelItemInfo
+                        {
+                            FolderType = ChannelFolderType.Container,
+                            MediaType = ChannelMediaType.Audio,
+                            Name = string.Format("My Followers [{0}]", user.followers_count),
+                            Id = string.Format("followers_{0}", user.id),
+                            Type = ChannelItemType.Folder
+                        });
+                    }
+
+                    if (user.public_favorites_count > 0)
+                    {
+                        items.Add(new ChannelItemInfo
+                        {
+                            FolderType = ChannelFolderType.Container,
+                            MediaType = ChannelMediaType.Audio,
+                            Name = string.Format("My Favorites [{0}]", user.public_favorites_count),
+                            Id = string.Format("favorites_{0}", user.id),
+                            Type = ChannelItemType.Folder
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error loading SoundCloud user data", ex);
+                }
+            }
+
+            items.Add(new ChannelItemInfo
+            {
+                Name = "Hot",
+                Id = "cat_hot",
+                Type = ChannelItemType.Folder
+            });
+
+            items.Add(new ChannelItemInfo
+            {
+                Name = "Latest",
+                Id = "cat_latest",
+                Type = ChannelItemType.Folder
+            });
+
+            return new ChannelItemResult
+            {
+                Items = items.ToList(),
+                TotalRecordCount = items.Count
+            };
+        }
+
+        private async Task<ChannelItemResult> GetUserRoot(int userId, CancellationToken cancellationToken)
+        {
+            var items = new List<ChannelItemInfo>();
+
+            try
+            {
+                var user = await Plugin.Instance.Client.Api.GetUser(userId, cancellationToken);
+
+                items.Add(this.CreatePersonInfoFromUser(user));
+
+                if (user.playlist_count > 0)
+                {
+                    if (user.track_count > 0)
+                    {
+                        items.Add(new ChannelItemInfo
+                        {
+                            FolderType = ChannelFolderType.Container,
+                            MediaType = ChannelMediaType.Audio,
+                            Name = string.Format("{0}: Tracks [{1}]", user.username, user.track_count),
+                            Id = string.Format("usertracks_{0}", user.id),
+                            Type = ChannelItemType.Folder
+                        });
+                    }
+
+                    items.Add(new ChannelItemInfo
+                    {
+                        FolderType = ChannelFolderType.Container,
+                        MediaType = ChannelMediaType.Audio,
+                        Name = string.Format("{0}: Playlists [{1}]", user.username, user.playlist_count),
+                        Id = string.Format("userplaylists_{0}", user.id),
+                        Type = ChannelItemType.Folder
+                    });
+                }
+
+                if (user.followings_count > 0)
+                {
+                    items.Add(new ChannelItemInfo
+                    {
+                        FolderType = ChannelFolderType.Container,
+                        MediaType = ChannelMediaType.Audio,
+                        Name = string.Format("{0}: Following [{1}]", user.username, user.followings_count),
+                        Id = string.Format("followings_{0}", user.id),
+                        Type = ChannelItemType.Folder
+                    });
+                }
+
+                if (user.followers_count > 0)
+                {
+                    items.Add(new ChannelItemInfo
+                    {
+                        FolderType = ChannelFolderType.Container,
+                        MediaType = ChannelMediaType.Audio,
+                        Name = string.Format("{0}: Followers [{1}]", user.username, user.followers_count),
+                        Id = string.Format("followers_{0}", user.id),
+                        Type = ChannelItemType.Folder
+                    });
+                }
+
+                if (user.public_favorites_count > 0)
+                {
+                    items.Add(new ChannelItemInfo
+                    {
+                        FolderType = ChannelFolderType.Container,
+                        MediaType = ChannelMediaType.Audio,
+                        Name = string.Format("{0}: Favorites [{1}]", user.username, user.public_favorites_count),
+                        Id = string.Format("favorites_{0}", user.id),
+                        Type = ChannelItemType.Folder
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error loading SoundCloud user data", ex);
+            }
+
+            return new ChannelItemResult
+            {
+                Items = items.ToList()
+            };
+        }
+
+        private async Task<ChannelItemResult> GetUserTracks(int userId, InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            var user = await Plugin.Instance.Client.Api.GetUser(userId, cancellationToken);
+
+            query.Limit = 50;
+
+            var trackResult = await Plugin.Instance.Client.Api.GetUserTracks(userId, cancellationToken, this.GetPagingInfo(query));
+
+            var items = trackResult.collection.Select(this.CreateInfoFromTrack).ToList();
+
+            return new ChannelItemResult
+            {
+                Items = items,
+                TotalRecordCount = user.track_count
+            };
+        }
+
+        private async Task<ChannelItemResult> GetUserFavorites(int userId, InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            return new ChannelItemResult();
+
+            ////var user = await Plugin.Instance.Client.Api.GetUser(userId, cancellationToken);
+
+            ////var result = await Plugin.Instance.Client.Api.GetFavorites(userId, cancellationToken, this.GetPagingInfo(query));
+
+            ////var items = result.Select(this.CreateInfoFromTrack).ToList();
+
+            ////return new ChannelItemResult
+            ////{
+            ////    Items = items,
+            ////    TotalRecordCount = user.public_favorites_count
+            ////};
+        }
+
+        private async Task<ChannelItemResult> GetPlayLists(int userId, InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            var user = await Plugin.Instance.Client.Api.GetUser(userId, cancellationToken);
+
+            var result = await Plugin.Instance.Client.Api.GetPlaylists(userId, cancellationToken, this.GetPagingInfo(query));
+            var playlists = result;
+
+            var itemInfos = playlists.Select(this.CreateInfoFromPlaylist);
+
+            return new ChannelItemResult
+            {
+                Items = itemInfos.ToList(),
+                TotalRecordCount = user.playlist_count
+            };
+        }
+
+        private async Task<ChannelItemResult> GetPlayListTracks(int playlistID, InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            var result = await Plugin.Instance.Client.Api.GetPlaylist(playlistID, cancellationToken);
+
+            var items = result.tracks.Select(this.CreateInfoFromTrack).ToList();
+            this.SetIndexNumbers(items);
+
+            return new ChannelItemResult
+            {
+                Items = items,
+                TotalRecordCount = items.Count()
+            };
+        }
+
+        private void SetIndexNumbers(IList<ChannelItemInfo> items)
+        {
+            int index = 1;
+
+            foreach (var item in items)
+            {
+                item.IndexNumber = index;
+                index++;
+            }
+        }
+
+        private PagingInfo GetPagingInfo(InternalChannelItemQuery query)
+        {
+            int page = 0;
+
+            if (query.StartIndex.HasValue && query.Limit.HasValue)
+            {
+                page = (query.StartIndex.Value / query.Limit.Value) % query.Limit.Value;
+            }
+
+            return new PagingInfo(query.Limit ?? this.GetChannelFeatures().MaxPageSize.Value, page);
+        }
+
+        private async Task<ChannelItemResult> GetDashboard(InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            query.SortBy = ChannelItemSortField.DateCreated;
+            query.SortDescending = true;
+
+            var offset = query.StartIndex.GetValueOrDefault();
+
+            var result = await Plugin.Instance.Client.Api.GetActivities(cancellationToken, this.GetPagingInfo(query));
+
+            if (result.collection != null)
+            {
+                var items = result.collection.Where(e => e.IsTrack() || e.IsPlaylist()).Select(i =>
+                    i.IsTrack() ? this.CreateInfoFromOriginTrack(i.origin, i.created_at) : this.CreateInfoFromOriginPlaylist(i.origin, i.created_at)
+                );
+
+                return new ChannelItemResult
+                {
+                    Items = items.ToList(),
+                    TotalRecordCount = items.Count() + offset + 1
+                };
+            }
+
+            return new ChannelItemResult();
+        }
+
+        private async Task<ChannelItemResult> GetFollowings(int userId, InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            var user = await Plugin.Instance.Client.Api.GetUser(userId, cancellationToken);
+
+            var result = await Plugin.Instance.Client.Api.GetFollowings(userId, cancellationToken, this.GetPagingInfo(query));
+
+            if (result.collection != null)
+            {
+                var users = result.collection;
+
+                var itemInfos = users.Select(this.CreateFolderInfoFromUser);
+
+                return new ChannelItemResult
+                {
+                    Items = itemInfos.ToList(),
+                    TotalRecordCount = user.followings_count
+                };
+            }
+
+            return new ChannelItemResult();
+        }
+
+        private async Task<ChannelItemResult> GetFollowers(int userId, InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            var user = await Plugin.Instance.Client.Api.GetUser(userId, cancellationToken);
+
+            var result = await Plugin.Instance.Client.Api.GetFollowers(userId, cancellationToken, this.GetPagingInfo(query));
+
+            if (result.collection != null)
+            {
+                var users = result.collection;
+
+                var itemInfos = users.Select(this.CreateFolderInfoFromUser);
+
+                return new ChannelItemResult
+                {
+                    Items = itemInfos.ToList(),
+                    TotalRecordCount = user.followers_count
+                };
+            }
+
+            return new ChannelItemResult();
+        }
+
+        private async Task<ChannelItemResult> GetFavorites(int userId, InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            var user = await Plugin.Instance.Client.Api.GetUser(userId, cancellationToken);
+
+            var result = await Plugin.Instance.Client.Api.GetFavorites(userId, cancellationToken, this.GetPagingInfo(query));
+
+            if (result.collection != null)
+            {
+                var itemInfos = result.collection.Select(this.CreateInfoFromTrack);
+
+                return new ChannelItemResult
+                {
+                    Items = itemInfos.ToList(),
+                    TotalRecordCount = user.public_favorites_count
+                };
+            }
+
+            return new ChannelItemResult();
+        }
+
+        public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
+        {
+            return new List<ChannelItemInfo>();
+
+            //var downloader = new SoundCloudListingDownloader(_logger, _jsonSerializer, _httpClient);
+            //var songs = await downloader.GetTrackList(new InternalChannelItemQuery { FolderId = "latest", Limit = 6 }, cancellationToken).ConfigureAwait(false);
+
+            //return songs.Select(i => new ChannelItemInfo
+            //{
+            //    ContentType = ChannelMediaContentType.Song,
+            //    ImageUrl = i.artwork_url,
+            //    IsInfiniteStream = false,
+            //    MediaType = ChannelMediaType.Audio,
+            //    Name = i.title,
+            //    Type = ChannelItemType.Media,
+            //    Id = i.id.ToString(),
+            //    RunTimeTicks = TimeSpan.FromMilliseconds(i.duration).Ticks,
+            //    DateCreated = DateTime.Parse(i.created_at),
+
+            //    MediaSources = new List<ChannelMediaInfo>
+            //    {
+            //        new ChannelMediaInfo
+            //        {
+            //            Path = i.stream_url + "?client_id=78fd88dde7ebf8fdcad08106f6d56ab6"
+            //        }
+            //    }
+            //}).OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
+        }
+
+        private ChannelItemInfo CreateInfoFromTrack(Track track)
+        {
+            return new ChannelItemInfo
+                {
+                    CommunityRating = Convert.ToSingle(track.playback_count),
+                    ContentType = ChannelMediaContentType.Song,
+                    PremiereDate = DateTime.Parse(track.created_at),
+                    DateCreated = DateTime.Parse(track.created_at),
+                    Genres = new List<string> { track.genre },
+                    Id = track.id.ToString(),
+                    ImageUrl = this.FixArtworkUrl(track.artwork_url),
+                    IsInfiniteStream = false,
+                    MediaType = ChannelMediaType.Audio,
+                    Name = track.title,
+                    Type = ChannelItemType.Media,
+                    Overview = track.description,
+                    RunTimeTicks = TimeSpan.FromMilliseconds(track.duration).Ticks,
+                    Tags = this.ParseTagList(track.tag_list),
+                    HomePageUrl = track.permalink_url,
+
+                    MediaSources = new List<ChannelMediaInfo>
+                    {
+                        new ChannelMediaInfo
+                        {
+                            Path = AppendClientId(track.stream_url)
+                        }
+                    },
+
+                    People = new List<MediaBrowser.Controller.Entities.PersonInfo>
+                    {
+                        new MediaBrowser.Controller.Entities.PersonInfo
+                        {
+                            ImageUrl = this.FixArtworkUrl(track.user.avatar_url),
+                            Name = track.user.username,
+                            Role = "Artist",
+                            Type = PersonType.Producer,
+                            ProviderIds = this.CreateProvIdsUser(track.user.id)
+                        }
+                    }
+                };
+        }
+
+        private ChannelItemInfo CreateInfoFromOriginTrack(Origin origin, string created)
+        {
+            return new ChannelItemInfo
+                {
+                    CommunityRating = Convert.ToSingle(origin.likes_count),
+                    ContentType = ChannelMediaContentType.Song,
+                    PremiereDate = DateTime.Parse(origin.created_at),
+                    DateCreated = DateTime.Parse(created),
+                    Genres = new List<string> { origin.genre },
+                    Id = origin.id.ToString(),
+                    ImageUrl = this.FixArtworkUrl(origin.artwork_url),
+                    IsInfiniteStream = false,
+                    MediaType = ChannelMediaType.Audio,
+                    Name = origin.title,
+                    Type = ChannelItemType.Media,
+                    Overview = origin.description,
+                    RunTimeTicks = TimeSpan.FromMilliseconds(origin.duration).Ticks,
+                    Tags = this.ParseTagList(origin.tag_list),
+                    HomePageUrl = origin.permalink_url,
+
+                    MediaSources = new List<ChannelMediaInfo>
+                    {
+                        new ChannelMediaInfo
+                        {
+                            Path = AppendClientId(origin.stream_url)
+                        }
+                    },
+
+                    People = new List<MediaBrowser.Controller.Entities.PersonInfo>
+                    {
+                        new MediaBrowser.Controller.Entities.PersonInfo
+                        {
+                            ImageUrl = this.FixArtworkUrl(origin.user.avatar_url),
+                            Name = origin.user.username,
+                            Role = "Artist",
+                            Type = PersonType.Producer,
+                            ProviderIds = this.CreateProvIdsUser(origin.user.id)
+                        }
+                    }
+                };
+        }
+
+        private ChannelItemInfo CreateInfoFromPlaylist(Playlist playlist)
+        {
+            return new ChannelItemInfo
+                {
+                    PremiereDate = DateTime.Parse(playlist.created_at),
+                    DateCreated = DateTime.Parse(playlist.created_at),
+                    Id = string.Format("playlist_{0}", playlist.id),
+                    ImageUrl = this.FixArtworkUrl(playlist.artwork_url),
+                    ////MediaType = ChannelMediaType.Audio,
+                    Name = playlist.title,
+                    Type = ChannelItemType.Folder,
+                    FolderType = ChannelFolderType.MusicAlbum,
+                    Overview = playlist.description,
+                    ProviderIds = this.CreateProvIdsPlaylist(playlist.id),
+                    Genres = this.CreateSingleGenreList(playlist.genre),
+                    HomePageUrl = playlist.permalink_url,
+                    Tags = this.ParseTagList(playlist.tag_list),
+
+                    People = new List<MediaBrowser.Controller.Entities.PersonInfo>
+                    {
+                        new MediaBrowser.Controller.Entities.PersonInfo
+                        {
+                            ImageUrl = this.FixArtworkUrl(playlist.user.avatar_url),
+                            Name = playlist.user.username,
+                            Role = "AlbumArtist",
+                            Type = PersonType.Producer,
+                            ProviderIds = this.CreateProvIdsUser(playlist.user.id)
+                        }
+                    }
+                };
+        }
+
+        private ChannelItemInfo CreateInfoFromOriginPlaylist(Origin origin, string created)
+        {
+            return new ChannelItemInfo
+                {
+                    CommunityRating = Convert.ToSingle(origin.likes_count),
+                    PremiereDate = DateTime.Parse(origin.created_at),
+                    DateCreated = DateTime.Parse(created),
+                    Id = string.Format("playlist_{0}", origin.id),
+                    ImageUrl = this.FixArtworkUrl(origin.artwork_url),
+                    Name = origin.title,
+                    Type = ChannelItemType.Folder,
+                    FolderType = ChannelFolderType.MusicAlbum,
+                    Overview = origin.description,
+                    ProviderIds = this.CreateProvIdsPlaylist(origin.id),
+                    Genres = this.CreateSingleGenreList(origin.genre),
+                    HomePageUrl = origin.permalink_url,
+                    Tags = this.ParseTagList(origin.tag_list),
+
+                    People = new List<MediaBrowser.Controller.Entities.PersonInfo>
+                    {
+                        new MediaBrowser.Controller.Entities.PersonInfo
+                        {
+                            ImageUrl = this.FixArtworkUrl(origin.user.avatar_url),
+                            Name = origin.user.username,
+                            Role = "AlbumArtist",
+                            Type = PersonType.Producer,
+                            ProviderIds = this.CreateProvIdsUser(origin.user.id)
+                        }
+                    }
+                };
+        }
+
+        private ChannelItemInfo CreateFolderInfoFromUser(User user)
+        {
+            return new ChannelItemInfo
+                {
+                    Id = string.Format("user_{0}", user.id),
+                    ImageUrl = this.FixArtworkUrl(user.avatar_url),
+                    MediaType = ChannelMediaType.Audio,
+                    Name = user.username,
+                    Type = ChannelItemType.Folder,
+                    Overview = user.description,
+                    HomePageUrl = user.website,
+
+                    People = new List<MediaBrowser.Controller.Entities.PersonInfo>
+                    {
+                        new MediaBrowser.Controller.Entities.PersonInfo
+                        {
+                            ImageUrl = this.FixArtworkUrl(user.avatar_url),
+                            Name = user.username,
+                            Role = "Owner",
+                            Type = "user",
+                            ProviderIds = this.CreateProvIdsUser(user.id)
+                        }
+                    }
+                };
+        }
+
+        private ChannelItemInfo CreatePersonInfoFromUser(User user)
+        {
+            var location = user.city ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(user.country))
+            {
+                if (location.Length > 0)
+                {
+                    location += ", ";
+                }
+
+                location += user.country;
+            }
+
+            var productionLocations = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(location))
+            {
+                productionLocations.Add(location);
+            }
+
+            return new ChannelItemInfo
+                {
+                    Type = ChannelItemType.Folder,
+                    FolderType = ChannelFolderType.MusicArtist,
+                    Id = string.Format("userinfo_{0}", user.id),
+                    ImageUrl = this.FixArtworkUrl(user.avatar_url),
+                    Name = user.username,
+                    Overview = user.description,
+                    ProviderIds = this.CreateProvIdsUser(user.id),
+                    HomePageUrl = user.website,
+                    Studios = productionLocations
+                };
+        }
+
+        private string AppendClientId(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return null;
+            }
+
+            return string.Format("{0}?client_id={1}", url, SoundCloudApi.ClientIdForTracks);
+        }
+
+        private string FixArtworkUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return null;
+            }
+
+            return url.Replace("-large.jpg", "-crop.jpg");
+        }
+
+        private Dictionary<string, string> CreateProvIdsUser(int userId)
+        {
+            var dic = new Dictionary<string, string>();
+
+            dic.Add(new SoundCloudUserId().Key, userId.ToString());
+
+            return dic;
+        }
+
+        private Dictionary<string, string> CreateProvIdsPlaylist(int playlistId)
+        {
+            var dic = new Dictionary<string, string>();
+
+            dic.Add(new SoundCloudPlaylistId().Key, playlistId.ToString());
+
+            return dic;
+        }
+
+        private Dictionary<string, string> CreateProvIdsTrack(int trackId)
+        {
+            var dic = new Dictionary<string, string>();
+
+            dic.Add(new SoundCloudTrackId().Key, trackId.ToString());
+
+            return dic;
+        }
+
+        private List<string> CreateSingleGenreList(string genre)
+        {
+            var list = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(genre))
+            {
+                list.Add(genre.Trim());
+            }
+
+            return list;
+        }
+
+        private List<string> ParseTagList(string tagstring)
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(tagstring))
+                {
+                    var result = tagstring.Split('"')
+                                         .Select((element, index) => index % 2 == 0  // If even index
+                                                               ? element.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)  // Split the item
+                                                               : new string[] { element })  // Keep the entire item
+                                         .SelectMany(e1 => e1)
+                                         .Where(e2 => !string.IsNullOrWhiteSpace(e2))
+                                         .Select(e3 => e3.Trim()).ToList();
+
+                    return result;
+                }
+            }
+            catch (Exception) { }
+
+            return new List<string>();
         }
     }
 }

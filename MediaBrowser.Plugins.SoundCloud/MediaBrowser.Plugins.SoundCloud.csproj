@@ -39,17 +39,14 @@
       <HintPath>..\packages\Interfaces.IO.1.0.0.5\lib\portable-net45+sl4+wp71+win8+wpa81\Interfaces.IO.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MediaBrowser.Common, Version=3.0.5942.36705, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Common.3.0.645\lib\net45\MediaBrowser.Common.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="MediaBrowser.Common">
+      <HintPath>..\..\Emby\MediaBrowser.ServerApplication\bin\Debug\MediaBrowser.Common.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.Controller, Version=3.0.5942.36704, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Server.Core.3.0.645\lib\net45\MediaBrowser.Controller.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="MediaBrowser.Controller">
+      <HintPath>..\..\Emby\MediaBrowser.ServerApplication\bin\Debug\MediaBrowser.Controller.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.Model, Version=3.0.5942.36706, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Common.3.0.645\lib\net45\MediaBrowser.Model.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="MediaBrowser.Model">
+      <HintPath>..\..\Emby\MediaBrowser.ServerApplication\bin\Debug\MediaBrowser.Model.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -63,49 +60,46 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="API\ActivityType.cs" />
-    <Compile Include="API\ApiCommand.cs" />
-    <Compile Include="API\Comment.cs" />
-    <Compile Include="API\Connection.cs" />
-    <Compile Include="API\ConnectionType.cs" />
-    <Compile Include="API\Filter.cs" />
-    <Compile Include="API\Group.cs" />
-    <Compile Include="API\HttpMethod.cs" />
-    <Compile Include="API\JsonSerializer.cs" />
-    <Compile Include="API\Playlist.cs" />
-    <Compile Include="API\SoundCloudAccessToken.cs" />
-    <Compile Include="API\SoundCloudApi.cs" />
-    <Compile Include="API\SoundCloudApplication.cs" />
-    <Compile Include="API\SoundCloudClient.cs" />
-    <Compile Include="API\SoundCloudCredentials.cs" />
-    <Compile Include="API\SoundCloudEventArgs.cs" />
-    <Compile Include="API\SoundCloudException.cs" />
-    <Compile Include="API\Track.cs" />
-    <Compile Include="API\User.cs" />
-    <Compile Include="API\Utils.cs" />
+    <Compile Include="ClientApi\Helpers.cs" />
+    <Compile Include="ClientApi\HttpMethod.cs" />
+    <Compile Include="ClientApi\MiniUser.cs" />
+    <Compile Include="ClientApi\Model\AccessToken.cs" />
+    <Compile Include="ClientApi\Model\Activity.cs" />
+    <Compile Include="ClientApi\Model\BaseResult.cs" />
+    <Compile Include="ClientApi\Model\CreatedWith.cs" />
+    <Compile Include="ClientApi\Model\F2.cs" />
+    <Compile Include="ClientApi\Model\Playlist.cs" />
+    <Compile Include="ClientApi\Model\Track.cs" />
+    <Compile Include="ClientApi\Model\PlaylistResult.cs" />
+    <Compile Include="ClientApi\Model\TrackResult.cs" />
+    <Compile Include="ClientApi\Model\UserResult.cs" />
+    <Compile Include="ClientApi\Model\ActivityResult.cs" />
+    <Compile Include="ClientApi\Model\Origin.cs" />
+    <Compile Include="ClientApi\Model\User.cs" />
+    <Compile Include="ClientApi\PagingInfo.cs" />
+    <Compile Include="ClientApi\SoundCloudApi.cs" />
     <Compile Include="Configuration\ConfigurationPage.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
     <Compile Include="EntryPoint.cs" />
+    <Compile Include="ExternalIds\SoundCloudUserId.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SoundCloudChannel.cs" />
-    <Compile Include="SoundCloudInfo.cs" />
-    <Compile Include="SoundCloudListingDownloader.cs" />
+    <Compile Include="ClientApi\SoundCloudClient.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Images\backdrop.png" />
     <EmbeddedResource Include="Images\thumb.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Images\primary.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="API\License.txt" />
     <EmbeddedResource Include="Configuration\configPage.html" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)\..\Emby.dev\ProgramData-Server\Plugins\" /y</PostBuildEvent>

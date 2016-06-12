@@ -6,13 +6,7 @@ namespace MediaBrowser.Plugins.SoundCloud
     {
         public void Run()
         {
-            var username = Plugin.Instance.Configuration.Username;
-            var password = Plugin.Instance.Configuration.PwData;
-
-            if (!string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(password))
-            {
-                Plugin.Instance.SoundCloudClient.Authenticate();
-            }
+            Plugin.Instance.AttemptLogin(true);
         }
 
         public void Dispose()
