@@ -18,8 +18,8 @@ namespace MediaBrowser.Plugins.SoundCloud.ClientApi.Model
         public string full_name { get; set; }
         public string city { get; set; }
         public string description { get; set; }
-        public object discogs_name { get; set; }
-        public object myspace_name { get; set; }
+        public string discogs_name { get; set; }
+        public string myspace_name { get; set; }
         public string website { get; set; }
         public string website_title { get; set; }
         public bool online { get; set; }

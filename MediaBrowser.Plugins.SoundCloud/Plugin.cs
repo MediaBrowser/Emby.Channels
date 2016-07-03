@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Logging;
@@ -10,7 +11,9 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Plugins.SoundCloud.ClientApi;
 using MediaBrowser.Plugins.SoundCloud.Configuration;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -27,10 +30,15 @@ namespace MediaBrowser.Plugins.SoundCloud
         private readonly INotificationManager _notificationManager;
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IChannelManager _channelManager;
 
         private SoundCloudClient soundCloudClient;
 
-        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IEncryptionManager encryption, ILogManager logManager, INotificationManager notificationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        private List<string> _resourceNames = new List<string>();
+        private readonly object _saveLock = new object();
+        private string ownChannelId;
+
+        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IEncryptionManager encryption, ILogManager logManager, INotificationManager notificationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient, IChannelManager channelManager)
             : base(applicationPaths, xmlSerializer)
         {
             Instance = this;
@@ -39,6 +47,7 @@ namespace MediaBrowser.Plugins.SoundCloud
             _notificationManager = notificationManager;
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
+            _channelManager = channelManager;
 
             soundCloudClient = new SoundCloudClient(_logger, _jsonSerializer, _httpClient);
         }
@@ -123,6 +132,36 @@ namespace MediaBrowser.Plugins.SoundCloud
             }
         }
 
+        internal ILogger Logger
+        {
+            get { return this._logger; }
+        }
+
+        internal IChannelManager ChannelManager
+        {
+            get { return _channelManager; }
+        }
+
+        internal string OwnChannelId
+        {
+            get
+            {
+                if (ownChannelId == null)
+                {
+                    ownChannelId = string.Empty;
+                    foreach (var channel in _channelManager.GetAllChannelFeatures())
+                    {
+                        if (channel.Name == SoundCloudChannel.ChannelName)
+                        {
+                            ownChannelId = channel.Id;
+                        }
+                    }
+                }
+
+                return ownChannelId;
+            }
+        }
+
         /// <summary>
         /// Gets the instance.
         /// </summary>
@@ -144,5 +183,95 @@ namespace MediaBrowser.Plugins.SoundCloud
             // This will throw with invalid credentials
             this.AttemptLogin(false);
         }
+
+        public string GetResourceCachePath(string category, string name)
+        {
+            if (!Path.HasExtension(name))
+            {
+                name = string.Concat(name, ".png");
+            }
+            return Path.Combine(new string[] { base.ApplicationPaths.CachePath, "soundcloud", base.Version.ToString(), category, name });
+        }
+
+        public string GetTempDirectory()
+        {
+            return base.ApplicationPaths.TempDirectory;
+        }
+
+        public string GetExtractedResourceFilePath(string name)
+        {
+            string str;
+            string manifestStreamName = this.GetManifestStreamName(name);
+            if (!string.IsNullOrWhiteSpace(manifestStreamName))
+            {
+                string extension = Path.GetExtension(manifestStreamName);
+                if (!string.IsNullOrWhiteSpace(extension))
+                {
+                    name = string.Concat(name, extension);
+                }
+                else
+                {
+                    _logger.Error(string.Concat("Resource found without extension: ", manifestStreamName), new object[0]);
+                }
+                string resourceCachePath = this.GetResourceCachePath("resources", name);
+                if (!File.Exists(resourceCachePath))
+                {
+                    lock (this._saveLock)
+                    {
+                        if (!File.Exists(resourceCachePath))
+                        {
+                            string str1 = Path.Combine(base.ApplicationPaths.TempDirectory, string.Concat(Guid.NewGuid(), Path.GetExtension(resourceCachePath)));
+                            Directory.CreateDirectory(Path.GetDirectoryName(str1));
+                            Directory.CreateDirectory(Path.GetDirectoryName(resourceCachePath));
+                            using (Stream manifestResourceStream = base.GetType().Assembly.GetManifestResourceStream(manifestStreamName))
+                            {
+                                using (FileStream fileStream = new FileStream(str1, FileMode.Create, FileAccess.Write, FileShare.Read))
+                                {
+                                    manifestResourceStream.CopyTo(fileStream);
+                                }
+                            }
+                            try
+                            {
+                                File.Copy(str1, resourceCachePath, false);
+                            }
+                            catch (Exception exception)
+                            {
+                            }
+                            str = str1;
+                            return str;
+                        }
+                    }
+                }
+                str = resourceCachePath;
+            }
+            else
+            {
+                _logger.Error(string.Concat("Resource not found: ", name), new object[0]);
+                str = null;
+            }
+            return str;
+        }
+
+        private string GetManifestStreamName(string name)
+        {
+            string str = name;
+            str = string.Concat(base.GetType().Namespace, ".Images.", str);
+            string str1 = this.GetManifestStreamNames().FirstOrDefault<string>((string i) => (string.Equals(i, string.Concat(str, ".png"), StringComparison.OrdinalIgnoreCase) ? true : string.Equals(i, string.Concat(str, ".jpg"), StringComparison.OrdinalIgnoreCase)));
+            return str1;
+        }
+
+        private IEnumerable<string> GetManifestStreamNames()
+        {
+            lock (_resourceNames)
+            {
+                if (_resourceNames.Count == 0)
+                {
+                    _resourceNames = base.GetType().Assembly.GetManifestResourceNames().ToList<string>();
+                }
+
+                return _resourceNames;
+            }
+        }
     }
+
 }

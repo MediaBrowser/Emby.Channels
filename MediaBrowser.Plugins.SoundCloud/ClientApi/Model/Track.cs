@@ -22,9 +22,9 @@ namespace MediaBrowser.Plugins.SoundCloud.ClientApi.Model
         public bool streamable { get; set; }
         public string embeddable_by { get; set; }
         public bool downloadable { get; set; }
-        public object purchase_url { get; set; }
-        public object label_id { get; set; }
-        public object purchase_title { get; set; }
+        public string purchase_url { get; set; }
+        public int? label_id { get; set; }
+        public string purchase_title { get; set; }
         public string genre { get; set; }
         public string title { get; set; }
         public string description { get; set; }
@@ -33,16 +33,18 @@ namespace MediaBrowser.Plugins.SoundCloud.ClientApi.Model
         public string track_type { get; set; }
         public string key_signature { get; set; }
         public string isrc { get; set; }
-        public object video_url { get; set; }
-        public object bpm { get; set; }
-        public object release_year { get; set; }
-        public object release_month { get; set; }
-        public object release_day { get; set; }
+        public string video_url { get; set; }
+        public double? bpm { get; set; }
+        public int? release_year { get; set; }
+        public int? release_month { get; set; }
+        public int? release_day { get; set; }
         public string original_format { get; set; }
         public string license { get; set; }
         public string uri { get; set; }
         public MiniUser user { get; set; }
         public CreatedWith created_with { get; set; }
+        public int user_playback_count { get; set; }
+        public bool user_favorite { get; set; }
         public string permalink_url { get; set; }
         public string artwork_url { get; set; }
         public string waveform_url { get; set; }
@@ -53,5 +55,6 @@ namespace MediaBrowser.Plugins.SoundCloud.ClientApi.Model
         public int comment_count { get; set; }
         public string attachments_uri { get; set; }
         public string download_url { get; set; }
+        public Label label { get; set; }
     }
 }

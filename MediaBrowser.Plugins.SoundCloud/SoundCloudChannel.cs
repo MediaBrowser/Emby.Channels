@@ -21,6 +21,8 @@ namespace MediaBrowser.Plugins.SoundCloud
 {
     public class SoundCloudChannel : IChannel, ISupportsLatestMedia, IHasCacheKey
     {
+        public const string ChannelName = "SoundCloud";
+
         private readonly ILogger _logger;
         public SoundCloudChannel(ILogManager logManager)
         {
@@ -32,13 +34,13 @@ namespace MediaBrowser.Plugins.SoundCloud
             get
             {
                 // Increment as needed to invalidate all caches
-                return "26";
+                return "35";
             }
         }
 
         public string Name
         {
-            get { return "SoundCloud"; }
+            get { return ChannelName; }
         }
 
         public string Description
@@ -86,7 +88,8 @@ namespace MediaBrowser.Plugins.SoundCloud
                      ChannelMediaContentType.Podcast
                  },
 
-                SupportsSortOrderToggle = false,
+                SupportsSortOrderToggle = true,
+                DefaultSortFields = new List<ChannelItemSortField> { ChannelItemSortField.Name, ChannelItemSortField.PremiereDate, ChannelItemSortField.DateCreated, ChannelItemSortField.CommunityRating, ChannelItemSortField.Runtime },
 
                 MediaTypes = new List<ChannelMediaType>
                   {
@@ -175,14 +178,13 @@ namespace MediaBrowser.Plugins.SoundCloud
             if (catSplit[0] == "favorites")
             {
                 var playlistId = Convert.ToInt32(catSplit[1]);
-                return await GetUserFavorites(playlistId, query, cancellationToken).ConfigureAwait(false);
+                return await GetFavorites(playlistId, query, cancellationToken).ConfigureAwait(false);
             }
 
-            ////if (catSplit[0] == "cat")
-            ////{
-            ////    query.FolderId = catSplit[1];
-            ////    return await GetTracks(query, cancellationToken).ConfigureAwait(false);
-            ////}
+            if (catSplit[0] == "cat")
+            {
+                return await GetLatestTracks(query, cancellationToken).ConfigureAwait(false);
+            }
 
             return null;
         }
@@ -206,7 +208,7 @@ namespace MediaBrowser.Plugins.SoundCloud
                         Name = user.username + " - Dashboard",
                         Id = "myDashboard",
                         Type = ChannelItemType.Folder,
-                        ImageUrl = user.avatar_url
+                        ImageUrl = this.FixArtworkUrl(user.avatar_url)
                     });
 
                     if (user.track_count > 0)
@@ -217,7 +219,8 @@ namespace MediaBrowser.Plugins.SoundCloud
                             MediaType = ChannelMediaType.Audio,
                             Name = string.Format("My Tracks [{0}]", user.track_count),
                             Id = string.Format("usertracks_{0}", user.id),
-                            Type = ChannelItemType.Folder
+                            Type = ChannelItemType.Folder,
+                            ImageUrl = this.FixArtworkUrl(user.avatar_url)
                         });
                     }
 
@@ -229,7 +232,8 @@ namespace MediaBrowser.Plugins.SoundCloud
                             MediaType = ChannelMediaType.Audio,
                             Name = string.Format("My Playlists [{0}]", user.playlist_count),
                             Id = string.Format("userplaylists_{0}", user.id),
-                            Type = ChannelItemType.Folder
+                            Type = ChannelItemType.Folder,
+                            ImageUrl = this.FixArtworkUrl(user.avatar_url)
                         });
                     }
 
@@ -241,7 +245,8 @@ namespace MediaBrowser.Plugins.SoundCloud
                             MediaType = ChannelMediaType.Audio,
                             Name = string.Format("I'm Following [{0}]", user.followings_count),
                             Id = string.Format("followings_{0}", user.id),
-                            Type = ChannelItemType.Folder
+                            Type = ChannelItemType.Folder,
+                            ImageUrl = this.FixArtworkUrl(user.avatar_url)
                         });
                     }
 
@@ -253,7 +258,8 @@ namespace MediaBrowser.Plugins.SoundCloud
                             MediaType = ChannelMediaType.Audio,
                             Name = string.Format("My Followers [{0}]", user.followers_count),
                             Id = string.Format("followers_{0}", user.id),
-                            Type = ChannelItemType.Folder
+                            Type = ChannelItemType.Folder,
+                            ImageUrl = this.FixArtworkUrl(user.avatar_url)
                         });
                     }
 
@@ -265,7 +271,8 @@ namespace MediaBrowser.Plugins.SoundCloud
                             MediaType = ChannelMediaType.Audio,
                             Name = string.Format("My Favorites [{0}]", user.public_favorites_count),
                             Id = string.Format("favorites_{0}", user.id),
-                            Type = ChannelItemType.Folder
+                            Type = ChannelItemType.Folder,
+                            ImageUrl = this.FixArtworkUrl(user.avatar_url)
                         });
                     }
                 }
@@ -274,20 +281,23 @@ namespace MediaBrowser.Plugins.SoundCloud
                     _logger.ErrorException("Error loading SoundCloud user data", ex);
                 }
             }
-
-            items.Add(new ChannelItemInfo
+            else
             {
-                Name = "Hot",
-                Id = "cat_hot",
-                Type = ChannelItemType.Folder
-            });
+                items.Add(new ChannelItemInfo
+                {
+                    Name = "Latest Items",
+                    Id = "cat_hot",
+                    Type = ChannelItemType.Folder
+                });
 
-            items.Add(new ChannelItemInfo
-            {
-                Name = "Latest",
-                Id = "cat_latest",
-                Type = ChannelItemType.Folder
-            });
+                items.Add(new ChannelItemInfo
+                {
+                    Name = "Please Login for Full Experience",
+                    Id = "cat_latest",
+                    Type = ChannelItemType.Folder,
+                    ImageUrl = ImageLinks.ImageLogin
+                });
+            }
 
             return new ChannelItemResult
             {
@@ -316,7 +326,8 @@ namespace MediaBrowser.Plugins.SoundCloud
                             MediaType = ChannelMediaType.Audio,
                             Name = string.Format("{0}: Tracks [{1}]", user.username, user.track_count),
                             Id = string.Format("usertracks_{0}", user.id),
-                            Type = ChannelItemType.Folder
+                            Type = ChannelItemType.Folder,
+                            ImageUrl = this.FixArtworkUrl(user.avatar_url)
                         });
                     }
 
@@ -326,7 +337,8 @@ namespace MediaBrowser.Plugins.SoundCloud
                         MediaType = ChannelMediaType.Audio,
                         Name = string.Format("{0}: Playlists [{1}]", user.username, user.playlist_count),
                         Id = string.Format("userplaylists_{0}", user.id),
-                        Type = ChannelItemType.Folder
+                        Type = ChannelItemType.Folder,
+                        ImageUrl = this.FixArtworkUrl(user.avatar_url)
                     });
                 }
 
@@ -338,7 +350,8 @@ namespace MediaBrowser.Plugins.SoundCloud
                         MediaType = ChannelMediaType.Audio,
                         Name = string.Format("{0}: Following [{1}]", user.username, user.followings_count),
                         Id = string.Format("followings_{0}", user.id),
-                        Type = ChannelItemType.Folder
+                        Type = ChannelItemType.Folder,
+                        ImageUrl = this.FixArtworkUrl(user.avatar_url)
                     });
                 }
 
@@ -350,7 +363,8 @@ namespace MediaBrowser.Plugins.SoundCloud
                         MediaType = ChannelMediaType.Audio,
                         Name = string.Format("{0}: Followers [{1}]", user.username, user.followers_count),
                         Id = string.Format("followers_{0}", user.id),
-                        Type = ChannelItemType.Folder
+                        Type = ChannelItemType.Folder,
+                        ImageUrl = this.FixArtworkUrl(user.avatar_url)
                     });
                 }
 
@@ -362,7 +376,8 @@ namespace MediaBrowser.Plugins.SoundCloud
                         MediaType = ChannelMediaType.Audio,
                         Name = string.Format("{0}: Favorites [{1}]", user.username, user.public_favorites_count),
                         Id = string.Format("favorites_{0}", user.id),
-                        Type = ChannelItemType.Folder
+                        Type = ChannelItemType.Folder,
+                        ImageUrl = this.FixArtworkUrl(user.avatar_url)
                     });
                 }
             }
@@ -394,21 +409,19 @@ namespace MediaBrowser.Plugins.SoundCloud
             };
         }
 
-        private async Task<ChannelItemResult> GetUserFavorites(int userId, InternalChannelItemQuery query, CancellationToken cancellationToken)
+        private async Task<ChannelItemResult> GetLatestTracks(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
-            return new ChannelItemResult();
+            var offset = query.StartIndex.GetValueOrDefault();
 
-            ////var user = await Plugin.Instance.Client.Api.GetUser(userId, cancellationToken);
+            var trackResult = await Plugin.Instance.Client.Api.GetLatestTracks(cancellationToken, this.GetPagingInfo(query));
 
-            ////var result = await Plugin.Instance.Client.Api.GetFavorites(userId, cancellationToken, this.GetPagingInfo(query));
+            var items = trackResult.collection.Select(this.CreateInfoFromTrack).ToList();
 
-            ////var items = result.Select(this.CreateInfoFromTrack).ToList();
-
-            ////return new ChannelItemResult
-            ////{
-            ////    Items = items,
-            ////    TotalRecordCount = user.public_favorites_count
-            ////};
+            return new ChannelItemResult
+            {
+                Items = items,
+                TotalRecordCount = items.Count() + offset + 1
+            };
         }
 
         private async Task<ChannelItemResult> GetPlayLists(int userId, InternalChannelItemQuery query, CancellationToken cancellationToken)
@@ -555,40 +568,38 @@ namespace MediaBrowser.Plugins.SoundCloud
 
         public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
         {
+            if (Plugin.Instance.IsAuthenticated)
+            {
+                var result = await Plugin.Instance.Client.Api.GetActivities(cancellationToken, new PagingInfo(10, 0));
+
+                if (result.collection != null)
+                {
+                    var items = result.collection.Where(e => e.IsTrack() || e.IsPlaylist()).Select(i =>
+                        i.IsTrack() ? this.CreateInfoFromOriginTrack(i.origin, i.created_at) : this.CreateInfoFromOriginPlaylist(i.origin, i.created_at)
+                    );
+
+                    return items.ToList();
+                }
+            }
+
             return new List<ChannelItemInfo>();
-
-            //var downloader = new SoundCloudListingDownloader(_logger, _jsonSerializer, _httpClient);
-            //var songs = await downloader.GetTrackList(new InternalChannelItemQuery { FolderId = "latest", Limit = 6 }, cancellationToken).ConfigureAwait(false);
-
-            //return songs.Select(i => new ChannelItemInfo
-            //{
-            //    ContentType = ChannelMediaContentType.Song,
-            //    ImageUrl = i.artwork_url,
-            //    IsInfiniteStream = false,
-            //    MediaType = ChannelMediaType.Audio,
-            //    Name = i.title,
-            //    Type = ChannelItemType.Media,
-            //    Id = i.id.ToString(),
-            //    RunTimeTicks = TimeSpan.FromMilliseconds(i.duration).Ticks,
-            //    DateCreated = DateTime.Parse(i.created_at),
-
-            //    MediaSources = new List<ChannelMediaInfo>
-            //    {
-            //        new ChannelMediaInfo
-            //        {
-            //            Path = i.stream_url + "?client_id=78fd88dde7ebf8fdcad08106f6d56ab6"
-            //        }
-            //    }
-            //}).OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
         }
 
         private ChannelItemInfo CreateInfoFromTrack(Track track)
         {
+            var premiereDate = DateTime.Parse(track.created_at);
+
+            if (track.release_year.HasValue && track.release_month.HasValue)
+            {
+                var day = track.release_day.HasValue ? track.release_day.Value : 1;
+                premiereDate = new DateTime(track.release_year.Value, track.release_month.Value, day);
+            }
+
             return new ChannelItemInfo
                 {
                     CommunityRating = Convert.ToSingle(track.playback_count),
                     ContentType = ChannelMediaContentType.Song,
-                    PremiereDate = DateTime.Parse(track.created_at),
+                    PremiereDate = premiereDate,
                     DateCreated = DateTime.Parse(track.created_at),
                     Genres = new List<string> { track.genre },
                     Id = track.id.ToString(),
@@ -600,7 +611,9 @@ namespace MediaBrowser.Plugins.SoundCloud
                     Overview = track.description,
                     RunTimeTicks = TimeSpan.FromMilliseconds(track.duration).Ticks,
                     Tags = this.ParseTagList(track.tag_list),
-                    HomePageUrl = track.permalink_url,
+                    HomePageUrl = track.user.permalink_url,
+                    Artists = new List<string> { track.user.username },
+                    ProviderIds = this.CreateProvIdsTrack(track.id, track.permalink_url, track.purchase_url, track.download_url),
 
                     MediaSources = new List<ChannelMediaInfo>
                     {
@@ -608,29 +621,25 @@ namespace MediaBrowser.Plugins.SoundCloud
                         {
                             Path = AppendClientId(track.stream_url)
                         }
-                    },
-
-                    People = new List<MediaBrowser.Controller.Entities.PersonInfo>
-                    {
-                        new MediaBrowser.Controller.Entities.PersonInfo
-                        {
-                            ImageUrl = this.FixArtworkUrl(track.user.avatar_url),
-                            Name = track.user.username,
-                            Role = "Artist",
-                            Type = PersonType.Producer,
-                            ProviderIds = this.CreateProvIdsUser(track.user.id)
-                        }
                     }
                 };
         }
 
         private ChannelItemInfo CreateInfoFromOriginTrack(Origin origin, string created)
         {
+            var premiereDate = DateTime.Parse(created);
+
+            if (origin.release_year.HasValue && origin.release_month.HasValue)
+            {
+                var day = origin.release_day.HasValue ? origin.release_day.Value : 1;
+                premiereDate = new DateTime(origin.release_year.Value, origin.release_month.Value, day);
+            }
+
             return new ChannelItemInfo
                 {
                     CommunityRating = Convert.ToSingle(origin.likes_count),
                     ContentType = ChannelMediaContentType.Song,
-                    PremiereDate = DateTime.Parse(origin.created_at),
+                    PremiereDate = premiereDate,
                     DateCreated = DateTime.Parse(created),
                     Genres = new List<string> { origin.genre },
                     Id = origin.id.ToString(),
@@ -642,7 +651,9 @@ namespace MediaBrowser.Plugins.SoundCloud
                     Overview = origin.description,
                     RunTimeTicks = TimeSpan.FromMilliseconds(origin.duration).Ticks,
                     Tags = this.ParseTagList(origin.tag_list),
-                    HomePageUrl = origin.permalink_url,
+                    HomePageUrl = origin.user.permalink_url,
+                    Artists = new List<string> { origin.user.username },
+                    ProviderIds = this.CreateProvIdsTrack(origin.id, origin.permalink_url, origin.purchase_url, origin.download_url),
 
                     MediaSources = new List<ChannelMediaInfo>
                     {
@@ -650,60 +661,63 @@ namespace MediaBrowser.Plugins.SoundCloud
                         {
                             Path = AppendClientId(origin.stream_url)
                         }
-                    },
-
-                    People = new List<MediaBrowser.Controller.Entities.PersonInfo>
-                    {
-                        new MediaBrowser.Controller.Entities.PersonInfo
-                        {
-                            ImageUrl = this.FixArtworkUrl(origin.user.avatar_url),
-                            Name = origin.user.username,
-                            Role = "Artist",
-                            Type = PersonType.Producer,
-                            ProviderIds = this.CreateProvIdsUser(origin.user.id)
-                        }
                     }
                 };
         }
 
         private ChannelItemInfo CreateInfoFromPlaylist(Playlist playlist)
         {
+            var premiereDate = DateTime.Parse(playlist.created_at);
+
+            if (playlist.release_year.HasValue && playlist.release_month.HasValue)
+            {
+                var day = playlist.release_day.HasValue ? playlist.release_day.Value : 1;
+                premiereDate = new DateTime(playlist.release_year.Value, playlist.release_month.Value, day);
+            }
+
+            var albumArtists = new List<string>();
+
+            foreach(var track in playlist.tracks)
+            {
+                if (track.user != null && !string.IsNullOrEmpty(track.user.username) && !albumArtists.Contains(track.user.username))
+                {
+                    albumArtists.Add(track.user.username);
+                }
+            }
+
             return new ChannelItemInfo
                 {
-                    PremiereDate = DateTime.Parse(playlist.created_at),
+                    PremiereDate = premiereDate,
                     DateCreated = DateTime.Parse(playlist.created_at),
                     Id = string.Format("playlist_{0}", playlist.id),
-                    ImageUrl = this.FixArtworkUrl(playlist.artwork_url),
-                    ////MediaType = ChannelMediaType.Audio,
+                    ImageUrl = this.FixArtworkUrl(playlist.artwork_url, playlist.user.avatar_url),
                     Name = playlist.title,
                     Type = ChannelItemType.Folder,
                     FolderType = ChannelFolderType.MusicAlbum,
                     Overview = playlist.description,
-                    ProviderIds = this.CreateProvIdsPlaylist(playlist.id),
+                    ProviderIds = this.CreateProvIdsPlaylist(playlist.id, playlist.permalink_url, playlist.purchase_url),
                     Genres = this.CreateSingleGenreList(playlist.genre),
-                    HomePageUrl = playlist.permalink_url,
+                    HomePageUrl = playlist.user.permalink_url,
                     Tags = this.ParseTagList(playlist.tag_list),
-
-                    People = new List<MediaBrowser.Controller.Entities.PersonInfo>
-                    {
-                        new MediaBrowser.Controller.Entities.PersonInfo
-                        {
-                            ImageUrl = this.FixArtworkUrl(playlist.user.avatar_url),
-                            Name = playlist.user.username,
-                            Role = "AlbumArtist",
-                            Type = PersonType.Producer,
-                            ProviderIds = this.CreateProvIdsUser(playlist.user.id)
-                        }
-                    }
+                    Artists = new List<string> { playlist.user.username },
+                    AlbumArtists = albumArtists
                 };
         }
 
         private ChannelItemInfo CreateInfoFromOriginPlaylist(Origin origin, string created)
         {
+            var premiereDate = DateTime.Parse(created);
+
+            if (origin.release_year.HasValue && origin.release_month.HasValue)
+            {
+                var day = origin.release_day.HasValue ? origin.release_day.Value : 1;
+                premiereDate = new DateTime(origin.release_year.Value, origin.release_month.Value, day);
+            }
+
             return new ChannelItemInfo
                 {
                     CommunityRating = Convert.ToSingle(origin.likes_count),
-                    PremiereDate = DateTime.Parse(origin.created_at),
+                    PremiereDate = premiereDate,
                     DateCreated = DateTime.Parse(created),
                     Id = string.Format("playlist_{0}", origin.id),
                     ImageUrl = this.FixArtworkUrl(origin.artwork_url),
@@ -711,22 +725,11 @@ namespace MediaBrowser.Plugins.SoundCloud
                     Type = ChannelItemType.Folder,
                     FolderType = ChannelFolderType.MusicAlbum,
                     Overview = origin.description,
-                    ProviderIds = this.CreateProvIdsPlaylist(origin.id),
+                    ProviderIds = this.CreateProvIdsPlaylist(origin.id, origin.permalink_url, origin.purchase_url),
                     Genres = this.CreateSingleGenreList(origin.genre),
-                    HomePageUrl = origin.permalink_url,
+                    HomePageUrl = origin.user.permalink_url,
                     Tags = this.ParseTagList(origin.tag_list),
-
-                    People = new List<MediaBrowser.Controller.Entities.PersonInfo>
-                    {
-                        new MediaBrowser.Controller.Entities.PersonInfo
-                        {
-                            ImageUrl = this.FixArtworkUrl(origin.user.avatar_url),
-                            Name = origin.user.username,
-                            Role = "AlbumArtist",
-                            Type = PersonType.Producer,
-                            ProviderIds = this.CreateProvIdsUser(origin.user.id)
-                        }
-                    }
+                    Artists = new List<string> { origin.user.username }
                 };
         }
 
@@ -734,6 +737,7 @@ namespace MediaBrowser.Plugins.SoundCloud
         {
             return new ChannelItemInfo
                 {
+                    CommunityRating = user.followers_count,
                     Id = string.Format("user_{0}", user.id),
                     ImageUrl = this.FixArtworkUrl(user.avatar_url),
                     MediaType = ChannelMediaType.Audio,
@@ -750,7 +754,7 @@ namespace MediaBrowser.Plugins.SoundCloud
                             Name = user.username,
                             Role = "Owner",
                             Type = "user",
-                            ProviderIds = this.CreateProvIdsUser(user.id)
+                            ProviderIds = this.CreateProvIdsUser(user.id, user.permalink_url)
                         }
                     }
                 };
@@ -779,13 +783,14 @@ namespace MediaBrowser.Plugins.SoundCloud
 
             return new ChannelItemInfo
                 {
+                    CommunityRating = user.followers_count,
                     Type = ChannelItemType.Folder,
                     FolderType = ChannelFolderType.MusicArtist,
                     Id = string.Format("userinfo_{0}", user.id),
                     ImageUrl = this.FixArtworkUrl(user.avatar_url),
                     Name = user.username,
                     Overview = user.description,
-                    ProviderIds = this.CreateProvIdsUser(user.id),
+                    ProviderIds = this.CreateProvIdsUser(user.id, user.permalink_url),
                     HomePageUrl = user.website,
                     Studios = productionLocations
                 };
@@ -801,39 +806,76 @@ namespace MediaBrowser.Plugins.SoundCloud
             return string.Format("{0}?client_id={1}", url, SoundCloudApi.ClientIdForTracks);
         }
 
-        private string FixArtworkUrl(string url)
+        private string FixArtworkUrl(string url, string alternateUrl = null)
         {
-            if (string.IsNullOrWhiteSpace(url))
+            var resultUrl = url;
+
+            if (string.IsNullOrWhiteSpace(resultUrl))
+            {
+                resultUrl = alternateUrl;
+            }
+
+            if (string.IsNullOrWhiteSpace(resultUrl))
             {
                 return null;
             }
 
-            return url.Replace("-large.jpg", "-crop.jpg");
+            return resultUrl.Replace("-large.jpg", "-t500x500.jpg");
         }
 
-        private Dictionary<string, string> CreateProvIdsUser(int userId)
+        private Dictionary<string, string> CreateProvIdsUser(int userId, string permalink)
         {
             var dic = new Dictionary<string, string>();
 
             dic.Add(new SoundCloudUserId().Key, userId.ToString());
 
+            if (!string.IsNullOrWhiteSpace(permalink))
+            {
+                dic.Add(new SoundCloudUserLink().Key, permalink);
+            }
+
             return dic;
         }
 
-        private Dictionary<string, string> CreateProvIdsPlaylist(int playlistId)
+        private Dictionary<string, string> CreateProvIdsPlaylist(int playlistId, string permalink, string purchaseLink)
         {
             var dic = new Dictionary<string, string>();
 
             dic.Add(new SoundCloudPlaylistId().Key, playlistId.ToString());
 
+            if (!string.IsNullOrWhiteSpace(permalink))
+            {
+                dic.Add(new SoundCloudPlaylistLink().Key, permalink);
+            }
+
+            if (!string.IsNullOrWhiteSpace(purchaseLink))
+            {
+                dic.Add(new SoundCloudPurchaseLink().Key, purchaseLink);
+            }
+
             return dic;
         }
 
-        private Dictionary<string, string> CreateProvIdsTrack(int trackId)
+        private Dictionary<string, string> CreateProvIdsTrack(int trackId, string permalink, string purchaseLink, string downloadLink)
         {
             var dic = new Dictionary<string, string>();
 
             dic.Add(new SoundCloudTrackId().Key, trackId.ToString());
+
+            if (!string.IsNullOrWhiteSpace(permalink))
+            {
+                dic.Add(new SoundCloudTrackLink().Key, permalink);
+            }
+
+            if (!string.IsNullOrWhiteSpace(purchaseLink))
+            {
+                dic.Add(new SoundCloudPurchaseLink().Key, purchaseLink);
+            }
+
+            if (!string.IsNullOrWhiteSpace(downloadLink))
+            {
+                dic.Add(new SoundCloudDownloadTrackLink().Key, downloadLink);
+            }
 
             return dic;
         }

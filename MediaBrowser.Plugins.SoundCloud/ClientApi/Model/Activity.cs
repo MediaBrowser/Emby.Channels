@@ -9,7 +9,7 @@ namespace MediaBrowser.Plugins.SoundCloud.ClientApi.Model
     public class Activity
     {
         public Origin origin { get; set; }
-        public object tags { get; set; }
+        public string tags { get; set; }
         public string created_at { get; set; }
         public string type { get; set; }
 

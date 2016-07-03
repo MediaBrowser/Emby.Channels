@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Plugins.SoundCloud.ClientApi
+namespace MediaBrowser.Plugins.SoundCloud.ClientApi.Model
 {
     public class MiniUser
     {

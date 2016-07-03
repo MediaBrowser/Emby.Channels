@@ -18,27 +18,30 @@ namespace MediaBrowser.Plugins.SoundCloud.ClientApi.Model
         public string permalink { get; set; }
         public int track_count { get; set; }
         public bool streamable { get; set; }
-        public bool downloadable { get; set; }
+        public bool? downloadable { get; set; }
         public string embeddable_by { get; set; }
-        public object purchase_url { get; set; }
-        public object label_id { get; set; }
+        public string purchase_url { get; set; }
+        public int? label_id { get; set; }
         public string type { get; set; }
         public string playlist_type { get; set; }
         public string ean { get; set; }
         public string description { get; set; }
         public string genre { get; set; }
         public string release { get; set; }
-        public object purchase_title { get; set; }
+        public string purchase_title { get; set; }
         public string label_name { get; set; }
         public string title { get; set; }
-        public object release_year { get; set; }
-        public object release_month { get; set; }
-        public object release_day { get; set; }
+        public int? release_year { get; set; }
+        public int? release_month { get; set; }
+        public int? release_day { get; set; }
         public string license { get; set; }
         public string uri { get; set; }
         public string permalink_url { get; set; }
         public string artwork_url { get; set; }
-        public User user { get; set; }
+        public MiniUser user { get; set; }
+        public CreatedWith created_with { get; set; }
+        public Label label { get; set; }
+        public string last_modified { get; set; }
         public Track[] tracks { get; set; }
     }
 }

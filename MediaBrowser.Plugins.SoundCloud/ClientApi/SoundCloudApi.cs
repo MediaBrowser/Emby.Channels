@@ -95,6 +95,15 @@ namespace MediaBrowser.Plugins.SoundCloud.ClientApi
 
         }
 
+        public async Task<TrackResult> GetLatestTracks(CancellationToken cancellationToken, PagingInfo pagingInfo)
+        {
+            var query = "/tracks?filter=streamable&order=created_at";
+
+            var result = await this.ExecutePaged<TrackResult>(query, pagingInfo, cancellationToken, ClientIdForTracks);
+            return result;
+
+        }
+
         public async Task<TrackResult> GetFavorites(int userId, CancellationToken cancellationToken, PagingInfo pagingInfo)
         {
             var query = string.Format("/users/{0}/favorites", userId);
@@ -133,7 +142,7 @@ namespace MediaBrowser.Plugins.SoundCloud.ClientApi
         {
             Uri uri = new Uri(BaseUrl + queryString);
             uri = uri.UriAppendingQueryString("linked_partitioning", "1");
-            uri = uri.UriAppendingQueryString("page_size", pagingInfo.PageSize.ToString());
+            uri = uri.UriAppendingQueryString("limit", pagingInfo.PageSize.ToString());
 
             int currentPage = 0;
 
@@ -196,14 +205,14 @@ namespace MediaBrowser.Plugins.SoundCloud.ClientApi
                 case HttpMethod.Get:
                     using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
                     {
-                        return this.UnzipAndDeserialize<T>(stream);
+                        return this.UnzipAndDeserialize<T>(stream, uri);
                     }
 
                 case HttpMethod.Post:
 
                     using (var stream = await _httpClient.Post(options, new Dictionary<string, string>()).ConfigureAwait(false))
                     {
-                        return this.UnzipAndDeserialize<T>(stream);
+                        return this.UnzipAndDeserialize<T>(stream, uri);
                     }
             }
 
@@ -236,7 +245,7 @@ namespace MediaBrowser.Plugins.SoundCloud.ClientApi
             return false;
         }
 
-        private T UnzipAndDeserialize<T>(Stream stream)
+        private T UnzipAndDeserialize<T>(Stream stream, Uri uri)
         {
             try
             {
@@ -245,7 +254,10 @@ namespace MediaBrowser.Plugins.SoundCloud.ClientApi
                     return _jsonSerializer.DeserializeFromStream<T>(unzipStream);
                 }
             }
-            catch (Exception) {/* no zipped response, return to normal */}
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error deserializing gzipped response from uri: {0}", ex, uri);
+            }
 
             stream.Seek(0, SeekOrigin.Begin);
 
