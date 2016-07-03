@@ -25,6 +25,11 @@
                             <input type="password" id="txtPassword" name="txtPassword" />
                         </li>
                         <li>
+                            <label id="txtState" name="txtState">
+                                Current state:
+                            </label>
+                        </li>
+                        <li>
                             <button type="submit" data-theme="b">Save</button>
                             <button type="button" onclick="history.back();">Cancel</button>
                         </li>
@@ -36,23 +41,38 @@
 
         <script type="text/javascript">
             
-            var VimeoConfigurationPage = {
+            var SoundCloudConfigurationPage = {
                 pluginUniqueId: "bb250039-f5b1-45e2-b10a-a64ae170411b"
+            };
+
+            var page;
+
+            var loadData = function () {
+                Dashboard.showLoadingMsg();
+
+                ApiClient.getPluginConfiguration(SoundCloudConfigurationPage.pluginUniqueId).then(function (config) {
+
+                    $('#txtUsername', page).val(config.Username || '');
+                    $('#txtPassword', page).val(config.Password || '');
+
+                    var state = 'Current Status: ';
+                    if (config.IsAuthenticated) {
+                        state += '<b>Successfully logged in to SoundCloud</b>';
+                    }
+                    else {
+                        state += '<b>Not logged in</b>';
+                    }
+
+                    $('#txtState', page).html(state);
+                });
+
+                Dashboard.hideLoadingMsg();
             };
 
             $('.soundcloudConfigurationPage').on('pageshow', function (event) {
 
-                var page = this;
-
-                Dashboard.showLoadingMsg();
-
-                ApiClient.getPluginConfiguration(VimeoConfigurationPage.pluginUniqueId).then(function (config) {
-
-                    $('#txtUsername', page).val(config.Username || '');
-                    $('#txtPassword', page).val(config.Password || '');
-                });
-
-                Dashboard.hideLoadingMsg();
+                page = this;
+                loadData();
             });
 
             $('.soundcloudConfigurationForm').on('submit', function (e) {
@@ -61,7 +81,7 @@
 
                 var form = this;
 
-                ApiClient.getPluginConfiguration(VimeoConfigurationPage.pluginUniqueId).then(function (config) {
+                ApiClient.getPluginConfiguration(SoundCloudConfigurationPage.pluginUniqueId).then(function (config) {
 
                     var Username = $('#txtUsername', form).val();
                     var Password = $('#txtPassword', form).val();
@@ -69,9 +89,14 @@
                     config.Username = Username ? Username : null;
                     config.Password = Password ? Password : null;
                     
-                    ApiClient.updatePluginConfiguration(VimeoConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
-                    
-                    Dashboard.hideLoadingMsg();
+                    ApiClient.updatePluginConfiguration(SoundCloudConfigurationPage.pluginUniqueId, config).then(function () {
+                        Dashboard.hideLoadingMsg();
+                        Dashboard.processPluginConfigurationUpdateResult();
+                        loadData();
+                    }, function (error) {
+                        Dashboard.processErrorResponse(error);
+                        loadData();
+                    });
                 });
 
                 // Disable default form submission
