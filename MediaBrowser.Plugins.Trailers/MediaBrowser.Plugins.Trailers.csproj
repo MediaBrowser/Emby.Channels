@@ -131,7 +131,9 @@
     <EmbeddedResource Include="Images\thumb.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Listings\listingswithmetadata.txt" />
