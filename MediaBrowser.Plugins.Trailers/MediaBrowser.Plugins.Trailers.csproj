@@ -118,6 +118,7 @@
     <Compile Include="Providers\HD\NetflixProvider.cs" />
     <Compile Include="Providers\ML\ArchiveProvider.cs" />
     <Compile Include="Providers\ML\BaseProvider.cs" />
+    <Compile Include="Providers\ML\NetflixProvider.cs" />
     <Compile Include="Providers\ML\DvdProvider.cs" />
     <Compile Include="Providers\ML\TheaterProvider.cs" />
     <Compile Include="Listings\TrailerMetadata.cs" />
