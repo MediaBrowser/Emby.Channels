@@ -7,6 +7,7 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Plugins.SoundCloud.ClientApi;
 using MediaBrowser.Plugins.SoundCloud.ClientApi.Model;
@@ -619,7 +620,13 @@ namespace MediaBrowser.Plugins.SoundCloud
                     {
                         new ChannelMediaInfo
                         {
-                            Path = AppendClientId(track.stream_url)
+                            Path = AppendClientId(track.stream_url),
+                            Container = "mp3",
+                            AudioCodec = AudioCodec.MP3,
+                            AudioBitrate = 128000,
+                            AudioChannels = 2,
+                            AudioSampleRate = 44100,
+                            RunTimeTicks = TimeSpan.FromMilliseconds(track.duration).Ticks
                         }
                     }
                 };
@@ -659,7 +666,13 @@ namespace MediaBrowser.Plugins.SoundCloud
                     {
                         new ChannelMediaInfo
                         {
-                            Path = AppendClientId(origin.stream_url)
+                            Path = AppendClientId(origin.stream_url),
+                            Container = "mp3",
+                            AudioCodec = AudioCodec.MP3,
+                            AudioBitrate = 128000,
+                            AudioChannels = 2,
+                            AudioSampleRate = 44100,
+                            RunTimeTicks = TimeSpan.FromMilliseconds(origin.duration).Ticks
                         }
                     }
                 };
