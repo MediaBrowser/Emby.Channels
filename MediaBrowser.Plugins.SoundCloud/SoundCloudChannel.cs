@@ -7,6 +7,7 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Plugins.SoundCloud.ClientApi;
 using MediaBrowser.Plugins.SoundCloud.ClientApi.Model;
@@ -316,21 +317,21 @@ namespace MediaBrowser.Plugins.SoundCloud
 
                 items.Add(this.CreatePersonInfoFromUser(user));
 
+                if (user.track_count > 0)
+                {
+                    items.Add(new ChannelItemInfo
+                    {
+                        FolderType = ChannelFolderType.Container,
+                        MediaType = ChannelMediaType.Audio,
+                        Name = string.Format("{0}: Tracks [{1}]", user.username, user.track_count),
+                        Id = string.Format("usertracks_{0}", user.id),
+                        Type = ChannelItemType.Folder,
+                        ImageUrl = this.FixArtworkUrl(user.avatar_url)
+                    });
+                }
+
                 if (user.playlist_count > 0)
                 {
-                    if (user.track_count > 0)
-                    {
-                        items.Add(new ChannelItemInfo
-                        {
-                            FolderType = ChannelFolderType.Container,
-                            MediaType = ChannelMediaType.Audio,
-                            Name = string.Format("{0}: Tracks [{1}]", user.username, user.track_count),
-                            Id = string.Format("usertracks_{0}", user.id),
-                            Type = ChannelItemType.Folder,
-                            ImageUrl = this.FixArtworkUrl(user.avatar_url)
-                        });
-                    }
-
                     items.Add(new ChannelItemInfo
                     {
                         FolderType = ChannelFolderType.Container,
@@ -488,7 +489,7 @@ namespace MediaBrowser.Plugins.SoundCloud
 
             if (result.collection != null)
             {
-                var items = result.collection.Where(e => e.IsTrack() || e.IsPlaylist()).Select(i =>
+                var items = result.collection.Where(e => e.origin != null && (e.IsTrack() || e.IsPlaylist())).Select(i =>
                     i.IsTrack() ? this.CreateInfoFromOriginTrack(i.origin, i.created_at) : this.CreateInfoFromOriginPlaylist(i.origin, i.created_at)
                 );
 
@@ -619,7 +620,13 @@ namespace MediaBrowser.Plugins.SoundCloud
                     {
                         new ChannelMediaInfo
                         {
-                            Path = AppendClientId(track.stream_url)
+                            Path = AppendClientId(track.stream_url),
+                            Container = "mp3",
+                            AudioCodec = AudioCodec.MP3,
+                            AudioBitrate = 128000,
+                            AudioChannels = 2,
+                            AudioSampleRate = 44100,
+                            RunTimeTicks = TimeSpan.FromMilliseconds(track.duration).Ticks
                         }
                     }
                 };
@@ -659,7 +666,13 @@ namespace MediaBrowser.Plugins.SoundCloud
                     {
                         new ChannelMediaInfo
                         {
-                            Path = AppendClientId(origin.stream_url)
+                            Path = AppendClientId(origin.stream_url),
+                            Container = "mp3",
+                            AudioCodec = AudioCodec.MP3,
+                            AudioBitrate = 128000,
+                            AudioChannels = 2,
+                            AudioSampleRate = 44100,
+                            RunTimeTicks = TimeSpan.FromMilliseconds(origin.duration).Ticks
                         }
                     }
                 };
@@ -677,7 +690,7 @@ namespace MediaBrowser.Plugins.SoundCloud
 
             var albumArtists = new List<string>();
 
-            foreach(var track in playlist.tracks)
+            foreach (var track in playlist.tracks)
             {
                 if (track.user != null && !string.IsNullOrEmpty(track.user.username) && !albumArtists.Contains(track.user.username))
                 {
