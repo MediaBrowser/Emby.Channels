@@ -64,9 +64,6 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SharedVersion.cs">
-      <Link>Properties\SharedVersion.cs</Link>
-    </Compile>
     <Compile Include="ClientApi\Helpers.cs" />
     <Compile Include="ClientApi\HttpMethod.cs" />
     <Compile Include="ClientApi\Model\Label.cs" />
