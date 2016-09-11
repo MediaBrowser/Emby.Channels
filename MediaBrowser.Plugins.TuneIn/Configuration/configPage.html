@@ -4,37 +4,29 @@
     <title>TuneIn</title>
 </head>
 <body>
-    <div data-role="page" class="page type-interior pluginConfigurationPage TuneInConfigurationPage">
+    <div data-role="page" class="page type-interior pluginConfigurationPage TuneInConfigurationPage" data-require="emby-input,emby-button">
 
         <div data-role="content">
             <div class="content-primary">
+
+                <h1>Tune In</h1>
+
                 <form class="TuneInConfigurationForm">
 
-                    <ul class="ulForm" data-role="listview">
-                        <li>
-                            <label for="txtUsername">
-                                Username : 
-                            </label>
-                            <input type="text" id="txtUsername" name="txtUsername" />
-                            <div class="fieldDescription">
-                                Enter your TuneIn Username.
-                            </div>
-                        </li>
-                        <li>
-                            <label for="txtLatLon">
-                                LatLon :
-                            </label>
-                            <input type="text" id="txtLatLon" name="txtLatLon" />
-                            <div class="fieldDescription">
-                                Enter your LatLon this can be found from online for example (<a href="http://dbsgeo.com/latlon/">http://dbsgeo.com/latlon/</a>).
-                            </div>
-                        </li>
-                        <li>
-                            <button type="submit" data-theme="b">Save</button>
-                            <button type="button" onclick="history.back();">Cancel</button>
-                        </li>
-                    </ul>
+                    <div class="inputContainer">
+                        <input type="text" is="emby-input" id="txtUsername" label="Your Tune In username:"/>
+                    </div>
+                    <div class="inputContainer">
+                        <input type="text" is="emby-input" id="txtLatLon" label="Your LatLon:"/>
+                        <div class="fieldDescription">
+                            Your LatLon can be found at <a target="_blank" href="http://dbsgeo.com/latlon">http://dbsgeo.com/latlon</a>.
+                        </div>
+                    </div>
 
+                    <br/>
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+                    </div>
                 </form>
             </div>
         </div>

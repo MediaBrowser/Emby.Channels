@@ -4,7 +4,7 @@
     <title>IPTV</title>
 </head>
 <body>
-    <div id="IPTVConfigurationPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-button,listViewStyle,paper-icon-button-light">
+    <div id="IPTVConfigurationPage" data-role="page" class="page type-interior pluginConfigurationPage IPTVConfigurationPage" data-require="emby-button,listViewStyle,paper-icon-button-light">
 
         <div data-role="content">
             <div class="content-primary">
@@ -146,7 +146,7 @@
                 }
             };
 
-            $('#IPTVConfigurationPage').on('pageinit', function (event) {
+            $('.IPTVConfigurationPage').on('pageinit', function (event) {
 
                 var page = this;
 
@@ -197,7 +197,7 @@
                 });
             });
 
-            $('#IPTVConfigurationPage').on('pageshow', function (event) {
+            $('.IPTVConfigurationPage').on('pageshow', function (event) {
 
                 Dashboard.showLoadingMsg();
                 var page = this;

@@ -4,7 +4,7 @@
     <title>Pod Casts Configuration</title>
 </head>
 <body>
-    <div id="PodCastsConfigurationPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-button,emby-checkbox">
+    <div id="PodCastsConfigurationPage" data-role="page" class="page type-interior pluginConfigurationPage PodCastsConfigurationPage" data-require="emby-button,emby-checkbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -114,7 +114,7 @@
                 }
             };
 
-            $('#PodCastsConfigurationPage').on('pageinit', function (event) {
+            $('.PodCastsConfigurationPage').on('pageinit', function (event) {
 
                 var page = this;
 
@@ -123,7 +123,7 @@
                 });
             });
 
-            $('#PodCastsConfigurationPage').on('pageshow', function (event) {
+            $('.PodCastsConfigurationPage').on('pageshow', function (event) {
 
                 Dashboard.showLoadingMsg();
 
