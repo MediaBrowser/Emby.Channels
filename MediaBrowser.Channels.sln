@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PodCasts", "Podcasts\PodCasts.csproj", "{30B2A395-5E43-454F-8093-DAF307D6D4FB}"
 EndProject
@@ -49,12 +49,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.LeagueOfLegends", "MediaBrowser.Channels.LeagueOfLegends\MediaBrowser.Channels.LeagueOfLegends.csproj", "{36BFCB80-14FB-4600-9D6D-45E82BCA2CBB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.TouTv", "MediaBrowser.Channels.TouTv\MediaBrowser.Channels.TouTv.csproj", "{9E014AED-5C47-4B81-96C7-F992658672C5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.HockeyStreams", "MediaBrowser.Channels.HockeyStreams\MediaBrowser.Channels.HockeyStreams.csproj", "{094173B3-8433-455A-83A5-F8F64BE8E4B4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Channels.BallStreams", "MediaBrowser.Channels.BallStreams\MediaBrowser.Channels.BallStreams.csproj", "{8FF5C55F-7DE7-49E6-A426-91701CA8E2AD}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChannelDownloader", "ChannelDownloader\ChannelDownloader.csproj", "{6DC8879D-5A92-492F-9DED-AD44671E11FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -142,18 +136,6 @@ Global
 		{9E014AED-5C47-4B81-96C7-F992658672C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E014AED-5C47-4B81-96C7-F992658672C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E014AED-5C47-4B81-96C7-F992658672C5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{094173B3-8433-455A-83A5-F8F64BE8E4B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{094173B3-8433-455A-83A5-F8F64BE8E4B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{094173B3-8433-455A-83A5-F8F64BE8E4B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{094173B3-8433-455A-83A5-F8F64BE8E4B4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8FF5C55F-7DE7-49E6-A426-91701CA8E2AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8FF5C55F-7DE7-49E6-A426-91701CA8E2AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8FF5C55F-7DE7-49E6-A426-91701CA8E2AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8FF5C55F-7DE7-49E6-A426-91701CA8E2AD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6DC8879D-5A92-492F-9DED-AD44671E11FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6DC8879D-5A92-492F-9DED-AD44671E11FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6DC8879D-5A92-492F-9DED-AD44671E11FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6DC8879D-5A92-492F-9DED-AD44671E11FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
