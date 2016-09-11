@@ -4,27 +4,26 @@
     <title>SvtPlay</title>
 </head>
 <body>
-    <div data-role="page" class="page type-interior pluginConfigurationPage svtPlayConfigurationPage">
+    <div data-role="page" class="page type-interior pluginConfigurationPage svtPlayConfigurationPage" data-require="emby-button,emby-checkbox">
 
         <div data-role="content">
             <div class="content-primary">
                 <form class="svtPlayConfigurationForm">
 
-                    <ul class="ulForm" data-role="listview">
-                        <li>
-                           
-                            <input type="checkbox" id="chkOnlyAllowedAbroad" name="chkOnlyAllowedAbroad" data-mini="true" />
-                            <label for="chkOnlyAllowedAbroad">Dont show items that are only available in Sweden</label>
-                            <div class="fieldDescription">
-                                Enable this if you use this plugin from outside Sweden
-                            </div>
-                        </li>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
 
-                        <li>
-                            <button type="submit" data-theme="b">Save</button>
-                            <button type="button" onclick="history.back();">Cancel</button>
-                        </li>
-                    </ul>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkOnlyAllowedAbroad" />
+                            <span>Dont show items that are only available in Sweden</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            Enable this if you use this plugin from outside Sweden
+                        </div>
+                    </div>
+
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+                    </div>
 
                 </form>
             </div>

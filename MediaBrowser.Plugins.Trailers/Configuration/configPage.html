@@ -4,7 +4,7 @@
     <title>Trailers</title>
 </head>
 <body>
-    <div data-role="page" class="page type-interior pluginConfigurationPage trailersConfigurationPage">
+    <div data-role="page" class="page type-interior pluginConfigurationPage trailersConfigurationPage" data-require="emby-button,emby-checkbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -12,35 +12,40 @@
                 <form class="trailersConfigurationForm">
 
                     <div>
-                        <fieldset data-role="controlgroup">
-                            <legend>Display sections:</legend>
-                            <label for="chkEnableMovieArchive">Movie trailer archive</label>
-                            <input type="checkbox" id="chkEnableMovieArchive" />
-                            <label for="chkTheaters">New and Upcoming in Theaters</label>
-                            <input type="checkbox" id="chkTheaters" />
-                            <label for="chkDvd">New and Upcoming on Dvd</label>
-                            <input type="checkbox" id="chkDvd" />
-                            <label for="chkStreaming">New and Upcoming on Netflix</label>
-                            <input type="checkbox" id="chkStreaming" />
-                        </fieldset>
+                        <h3 class="checkboxListLabel">Display sections:</h3>
+                        <div class="checkboxList paperList checkboxList-paperList">
+                            <label>
+                                <input type="checkbox" is="emby-checkbox" id="chkEnableMovieArchive" />
+                                <span>Movie trailer archive</span>
+                            </label>
+                            <label>
+                                <input type="checkbox" is="emby-checkbox" id="chkTheaters" />
+                                <span>New and Upcoming in Theaters</span>
+                            </label>
+                            <label>
+                                <input type="checkbox" is="emby-checkbox" id="chkDvd" />
+                                <span>New and Upcoming on Dvd</span>
+                            </label>
+                            <label>
+                                <input type="checkbox" is="emby-checkbox" id="chkStreaming" />
+                                <span>New and Upcoming on Netflix</span>
+                            </label>
+                        </div>
                         <div class="fieldDescription">The movie archive adds a catalog of over 1500 trailers to your library, allowing them to be utilized within Cinema Mode, recommendations, and channel browsing. After enabling this your next library scan will take longer than usual. Please be patient.</div>
+
                     </div>
                     <br />
-                    <br />
-                    <ul class="ulForm" data-role="listview">
-                        <li>
-                            <button type="submit" data-theme="b">Save</button>
-                            <button type="button" onclick="history.back();">Cancel</button>
-                        </li>
-                    </ul>
-
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+                    </div>
                 </form>
             </div>
         </div>
 
         <script type="text/javascript">
 
-            (function () {
+            (function() {
+                
                 var pluginId = "986a7283-205a-4436-862d-23135c067f8a";
 
                 $('.trailersConfigurationPage').on('pageshow', function (event) {
@@ -51,10 +56,10 @@
 
                     ApiClient.getPluginConfiguration(pluginId).then(function (config) {
 
-                        $('#chkEnableMovieArchive', page).checked(config.EnableMovieArchive).checkboxradio('refresh');
-                        $('#chkTheaters', page).checked(config.EnableTheaters).checkboxradio('refresh');
-                        $('#chkDvd', page).checked(config.EnableDvd).checkboxradio('refresh');
-                        $('#chkStreaming', page).checked(config.EnableNetflix).checkboxradio('refresh');
+                        $('#chkEnableMovieArchive', page).checked(config.EnableMovieArchive);
+                        $('#chkTheaters', page).checked(config.EnableTheaters);
+                        $('#chkDvd', page).checked(config.EnableDvd);
+                        $('#chkStreaming', page).checked(config.EnableNetflix);
 
                         Dashboard.hideLoadingMsg();
                     });
@@ -78,7 +83,6 @@
 
                     return false;
                 });
-
             })();
 
         </script>
