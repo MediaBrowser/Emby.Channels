@@ -4,43 +4,34 @@
     <title>SoundCloud</title>
 </head>
 <body>
-    <div data-role="page" class="page type-interior pluginConfigurationPage soundcloudConfigurationPage">
+    <div data-role="page" class="page type-interior pluginConfigurationPage soundcloudConfigurationPage" data-require="emby-button,emby-input">
 
         <div data-role="content">
             <div class="content-primary">
                 <form class="soundcloudConfigurationForm">
 
-                    <ul class="ulForm" data-role="listview">
-                        <li>
-                            <label for="txtUsername">
-                                Username :
-                            </label>
-                            <input type="text" id="txtUsername" name="txtUsername" />
-                        </li>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="txtUsername" autocomplete="off"  label="User Name" />
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="password" id="txtPassword" autocomplete="off"  label="Password" />
+                    </div>
 
-                        <li>
-                            <label for="txtPassword">
-                                Password :
-                            </label>
-                            <input type="password" id="txtPassword" name="txtPassword" />
-                        </li>
-                        <li>
-                            <label id="txtState" name="txtState">
-                                Current state:
-                            </label>
-                        </li>
-                        <li>
-                            <button type="submit" data-theme="b">Save</button>
-                            <button type="button" onclick="history.back();">Cancel</button>
-                        </li>
-                    </ul>
+                    <label id="txtState" name="txtState">
+                        Current state:
+                    </label>
 
+                    <br />
+                    <br />
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+                    </div>
                 </form>
             </div>
         </div>
 
         <script type="text/javascript">
-            
+
             var SoundCloudConfigurationPage = {
                 pluginUniqueId: "bb250039-f5b1-45e2-b10a-a64ae170411b"
             };
@@ -88,7 +79,7 @@
 
                     config.Username = Username ? Username : null;
                     config.Password = Password ? Password : null;
-                    
+
                     ApiClient.updatePluginConfiguration(SoundCloudConfigurationPage.pluginUniqueId, config).then(function () {
                         Dashboard.hideLoadingMsg();
                         Dashboard.processPluginConfigurationUpdateResult();
