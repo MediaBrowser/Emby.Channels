@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Channels.SvtPlay
 {
-    public class SvtPlayChannel : IChannel, IRequiresMediaInfoCallback, ISupportsLatestMedia
+    public class SvtPlayChannel : IChannel, IRequiresMediaInfoCallback, ISupportsLatestMedia, IHasCacheKey
     {
         private const string BASE_URL = "http://www.svtplay.se";
         private readonly IHttpClient _httpClient;
@@ -32,6 +32,11 @@ namespace MediaBrowser.Channels.SvtPlay
                 // Increment as needed to invalidate all caches 
                 return "5";
             }
+        }
+
+        public string GetCacheKey(string userId)
+        {
+            return (Plugin.Instance.Configuration.AvailableAbroadOnly ?? false).ToString();
         }
 
         public string Description

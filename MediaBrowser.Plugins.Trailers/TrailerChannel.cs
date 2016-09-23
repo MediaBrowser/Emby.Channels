@@ -754,7 +754,7 @@ namespace MediaBrowser.Plugins.Trailers
                 case ImageType.Primary:
                 case ImageType.Thumb:
                     {
-                        var path = GetType().Namespace + ".Images." + type.ToString().ToLower() + ".jpg";
+                        var path = GetType().Namespace + ".Images.thumb.jpg";
 
                         return Task.FromResult(new DynamicImageResponse
                         {
