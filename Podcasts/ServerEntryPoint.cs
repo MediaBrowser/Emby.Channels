@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -15,6 +14,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Entities;
 using PodCasts.Configuration;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Tasks;
 
 namespace PodCasts
 {
