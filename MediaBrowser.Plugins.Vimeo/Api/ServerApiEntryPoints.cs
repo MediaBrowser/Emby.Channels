@@ -2,8 +2,8 @@
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Services;
 using MediaBrowser.Plugins.Vimeo.Configuration;
-using ServiceStack;
 
 namespace MediaBrowser.Plugins.Vimeo.Api
 {
@@ -12,7 +12,7 @@ namespace MediaBrowser.Plugins.Vimeo.Api
     {
     }
 
-    internal class ServerApiEndpoints : IRestfulService
+    internal class ServerApiEndpoints : IService
     {
 
         public object Get(GetToken request)

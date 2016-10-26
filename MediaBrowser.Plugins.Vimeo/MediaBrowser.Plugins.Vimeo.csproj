@@ -84,7 +84,6 @@
     <Compile Include="VimeoInfo.cs" />
     <Compile Include="VimeoListingDownloader.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
-    <Compile Include="Configuration\VimeoConfigurationPage.cs" />
     <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

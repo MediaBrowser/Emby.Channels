@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Plugins.Vimeo.Configuration;
 using MediaBrowser.Plugins.Vimeo.VimeoAPI.API;
@@ -10,7 +12,7 @@ namespace MediaBrowser.Plugins.Vimeo
     /// <summary>
     /// Class Plugin
     /// </summary>
-    public class Plugin : BasePlugin<PluginConfiguration>
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         public static VimeoClient vc;
         private readonly ILogger _logger;
@@ -38,6 +40,18 @@ namespace MediaBrowser.Plugins.Vimeo
         public override string Name
         {
             get { return "Vimeo"; }
+        }
+
+        public IEnumerable<PluginPageInfo> GetPages()
+        {
+            return new[]
+            {
+                new PluginPageInfo
+                {
+                    Name = "vimeo",
+                    EmbeddedResourcePath = GetType().Namespace + ".Configuration.configPage.html"
+                }
+            };
         }
 
         /// <summary>

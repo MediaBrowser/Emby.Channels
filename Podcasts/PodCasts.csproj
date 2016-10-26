@@ -59,7 +59,6 @@
     </Compile>
     <Compile Include="Channel.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
-    <Compile Include="Configuration\MyConfigurationPage.cs" />
     <Compile Include="Entities\RSSFeed.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
