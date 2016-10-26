@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Net;
-using ServiceStack;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Plugins.Trailers.Api
 {
@@ -13,7 +13,7 @@ namespace MediaBrowser.Plugins.Trailers.Api
     {
     }
     
-    public class TrailerService : IRestfulService
+    public class TrailerService : IService
     {
         public async Task<object> Get(GetList request)
         {
