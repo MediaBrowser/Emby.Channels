@@ -78,7 +78,6 @@
     <Compile Include="ClientApi\Model\User.cs" />
     <Compile Include="ClientApi\PagingInfo.cs" />
     <Compile Include="ClientApi\SoundCloudApi.cs" />
-    <Compile Include="Configuration\ConfigurationPage.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
     <Compile Include="Drawing\Point.cs" />
     <Compile Include="Drawing\PointF.cs" />

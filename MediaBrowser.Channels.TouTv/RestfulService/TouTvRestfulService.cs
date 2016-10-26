@@ -4,10 +4,11 @@ using MediaBrowser.Channels.TouTv.TouTvApi;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Channels.TouTv.RestfulService
 {
-    internal class TouTvRestfulService : IRestfulService
+    internal class TouTvRestfulService : IService
     {
         private readonly PresentationService _presentationService;
 

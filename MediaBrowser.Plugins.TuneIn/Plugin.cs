@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Plugins.TuneIn.Configuration;
 
@@ -9,7 +11,7 @@ namespace MediaBrowser.Plugins.TuneIn
     /// <summary>
     /// Class Plugin
     /// </summary>
-    public class Plugin : BasePlugin<PluginConfiguration>
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
@@ -22,6 +24,18 @@ namespace MediaBrowser.Plugins.TuneIn
                 Instance.Configuration.GUID = Guid.NewGuid().ToString();
                 Instance.SaveConfiguration();
             }
+        }
+
+        public IEnumerable<PluginPageInfo> GetPages()
+        {
+            return new[]
+            {
+                new PluginPageInfo
+                {
+                    Name = "tunein",
+                    EmbeddedResourcePath = GetType().Namespace + ".Configuration.configPage.html"
+                }
+            };
         }
 
         /// <summary>

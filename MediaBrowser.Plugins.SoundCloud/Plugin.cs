@@ -23,7 +23,7 @@ namespace MediaBrowser.Plugins.SoundCloud
     /// <summary>
     /// Class Plugin
     /// </summary>
-    public class Plugin : BasePlugin<PluginConfiguration>
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         private readonly IEncryptionManager _encryption;
         private readonly ILogger _logger;
@@ -50,6 +50,18 @@ namespace MediaBrowser.Plugins.SoundCloud
             _channelManager = channelManager;
 
             soundCloudClient = new SoundCloudClient(_logger, _jsonSerializer, _httpClient);
+        }
+
+        public IEnumerable<PluginPageInfo> GetPages()
+        {
+            return new[]
+            {
+                new PluginPageInfo
+                {
+                    Name = "soundcloud",
+                    EmbeddedResourcePath = GetType().Namespace + ".Configuration.configPage.html"
+                }
+            };
         }
 
         public void AttemptLogin(bool createNotificationOnFailure)

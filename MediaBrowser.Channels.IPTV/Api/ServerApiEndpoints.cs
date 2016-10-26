@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Channels.IPTV.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.MediaInfo;
-using ServiceStack;
 using System;
 using System.Linq;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Channels.IPTV.Api
 {
@@ -26,7 +26,7 @@ namespace MediaBrowser.Channels.IPTV.Api
         public string ImagePath { get; set; }
     }
 
-    class ServerApiEndpoints : IRestfulService
+    class ServerApiEndpoints : IService
     {
         public void Post(VideoSend request)
         {

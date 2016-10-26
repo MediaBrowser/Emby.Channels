@@ -60,7 +60,6 @@
     <Compile Include="Api\ServerApiEndpoints.cs" />
     <Compile Include="Channel.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
-    <Compile Include="Configuration\MyConfigurationPage.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

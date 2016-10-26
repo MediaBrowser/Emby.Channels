@@ -58,7 +58,6 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="Configuration\ConfigurationPage.cs" />
     <Compile Include="FolderId.cs" />
     <Compile Include="FolderIdType.cs" />
     <Compile Include="Plugin.cs" />

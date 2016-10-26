@@ -56,7 +56,6 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="Configuration\SvtPlayConfigurationPage.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="SvtPlayChannel.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />

@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Channels.IPTV.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Channels.IPTV.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.IPTV
@@ -9,7 +11,7 @@ namespace MediaBrowser.Channels.IPTV
     /// <summary>
     /// Class Plugin
     /// </summary>
-    public class Plugin : BasePlugin<PluginConfiguration>
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         public static ILogger Logger { get; set; }
 
@@ -17,6 +19,18 @@ namespace MediaBrowser.Channels.IPTV
             : base(applicationPaths, xmlSerializer)
         {
             Instance = this;
+        }
+
+        public IEnumerable<PluginPageInfo> GetPages()
+        {
+            return new[]
+            {
+                new PluginPageInfo
+                {
+                    Name = "iptv",
+                    EmbeddedResourcePath = GetType().Namespace + ".Configuration.configPage.html"
+                }
+            };
         }
 
         /// <summary>

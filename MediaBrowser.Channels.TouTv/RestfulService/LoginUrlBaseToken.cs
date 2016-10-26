@@ -1,5 +1,5 @@
 using MediaBrowser.Model.Querying;
-using ServiceStack;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Channels.TouTv.RestfulService
 {

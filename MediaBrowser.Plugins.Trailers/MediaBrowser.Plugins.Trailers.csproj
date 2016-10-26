@@ -58,7 +58,6 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Api\TrailerService.cs" />
-    <Compile Include="Configuration\ConfigurationPage.cs" />
     <Compile Include="EntryPoint.cs" />
     <Compile Include="HtmlAgilityPack\crc32.cs" />
     <Compile Include="HtmlAgilityPack\EncodingFoundException.cs" />

@@ -1,11 +1,13 @@
-﻿using MediaBrowser.Channels.TouTv.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Channels.TouTv.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Channels.TouTv
 {
-    public class Plugin : BasePlugin<PluginConfiguration>
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         internal static string ChannelName = "ICI Tou.tv";
 
@@ -17,6 +19,18 @@ namespace MediaBrowser.Channels.TouTv
         public override string Name
         {
             get { return ChannelName; }
+        }
+
+        public IEnumerable<PluginPageInfo> GetPages()
+        {
+            return new[]
+            {
+                new PluginPageInfo
+                {
+                    Name = "toutv",
+                    EmbeddedResourcePath = GetType().Namespace + ".Configuration.configPage.html"
+                }
+            };
         }
 
         public override string Description

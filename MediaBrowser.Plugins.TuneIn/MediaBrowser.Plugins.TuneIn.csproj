@@ -59,7 +59,6 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Configuration\PluginConfiguration.cs" />
-    <Compile Include="Configuration\TuneinConfigurationPage.cs" />
     <Compile Include="HtmlAgilityPack\crc32.cs" />
     <Compile Include="HtmlAgilityPack\EncodingFoundException.cs" />
     <Compile Include="HtmlAgilityPack\HtmlAttribute.cs" />

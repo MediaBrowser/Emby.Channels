@@ -1,15 +1,17 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Plugins.Trailers.Configuration;
 using System.Threading;
+using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Plugins.Trailers
 {
     /// <summary>
     /// Class Plugin
     /// </summary>
-    public class Plugin : BasePlugin<PluginConfiguration>
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         /// <summary>
         /// Apple doesn't seem to like too many simulataneous requests.
@@ -20,6 +22,18 @@ namespace MediaBrowser.Plugins.Trailers
             : base(applicationPaths, xmlSerializer)
         {
             Instance = this;
+        }
+
+        public IEnumerable<PluginPageInfo> GetPages()
+        {
+            return new[]
+            {
+                new PluginPageInfo
+                {
+                    Name = "trailers",
+                    EmbeddedResourcePath = GetType().Namespace + ".Configuration.configPage.html"
+                }
+            };
         }
 
         /// <summary>
