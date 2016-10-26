@@ -60,6 +60,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Api\ServerApiEntryPoints.cs" />
+    <Compile Include="EntryPoint.cs" />
     <Compile Include="RegistrationInfo.cs" />
     <Compile Include="VimeoAPI\API\Activities.cs" />
     <Compile Include="VimeoAPI\API\Albums.cs" />
