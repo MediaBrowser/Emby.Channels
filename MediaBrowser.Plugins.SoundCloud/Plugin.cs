@@ -28,15 +28,13 @@ namespace MediaBrowser.Plugins.SoundCloud
         private readonly IEncryptionManager _encryption;
         private readonly ILogger _logger;
         private readonly INotificationManager _notificationManager;
-        private readonly IHttpClient _httpClient;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IChannelManager _channelManager;
 
-        private SoundCloudClient soundCloudClient;
+        private readonly SoundCloudClient _soundCloudClient;
 
         private List<string> _resourceNames = new List<string>();
         private readonly object _saveLock = new object();
-        private string ownChannelId;
+        private string _ownChannelId;
 
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IEncryptionManager encryption, ILogManager logManager, INotificationManager notificationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient, IChannelManager channelManager)
             : base(applicationPaths, xmlSerializer)
@@ -45,11 +43,9 @@ namespace MediaBrowser.Plugins.SoundCloud
             _encryption = encryption;
             _logger = logManager.GetLogger(GetType().Name);
             _notificationManager = notificationManager;
-            _jsonSerializer = jsonSerializer;
-            _httpClient = httpClient;
             _channelManager = channelManager;
 
-            soundCloudClient = new SoundCloudClient(_logger, _jsonSerializer, _httpClient);
+            _soundCloudClient = new SoundCloudClient(_logger, jsonSerializer, httpClient);
         }
 
         public IEnumerable<PluginPageInfo> GetPages()
@@ -73,7 +69,7 @@ namespace MediaBrowser.Plugins.SoundCloud
             {
                 try
                 {
-                    soundCloudClient.Authenticate(username, password);
+                    _soundCloudClient.Authenticate(username, password);
                 }
                 catch (Exception ex)
                 {
@@ -132,7 +128,7 @@ namespace MediaBrowser.Plugins.SoundCloud
         {
             get
             {
-                return soundCloudClient.IsAuthenticated;
+                return _soundCloudClient.IsAuthenticated;
             }
         }
 
@@ -140,7 +136,7 @@ namespace MediaBrowser.Plugins.SoundCloud
         {
             get
             {
-                return soundCloudClient;
+                return _soundCloudClient;
             }
         }
 
@@ -158,19 +154,19 @@ namespace MediaBrowser.Plugins.SoundCloud
         {
             get
             {
-                if (ownChannelId == null)
+                if (_ownChannelId == null)
                 {
-                    ownChannelId = string.Empty;
+                    _ownChannelId = string.Empty;
                     foreach (var channel in _channelManager.GetAllChannelFeatures())
                     {
                         if (channel.Name == SoundCloudChannel.ChannelName)
                         {
-                            ownChannelId = channel.Id;
+                            _ownChannelId = channel.Id;
                         }
                     }
                 }
 
-                return ownChannelId;
+                return _ownChannelId;
             }
         }
 
