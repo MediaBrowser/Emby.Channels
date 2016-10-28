@@ -10,12 +10,5 @@ namespace MediaBrowser.Plugins.TuneIn.Configuration
     {
         public String Username { get; set; }
         public String LatLon { get; set; }
-
-        public String GUID { get; set; }
-
-        public PluginConfiguration()
-        {
-            
-        }
     }
 }

@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Plugins.TuneIn
@@ -24,12 +25,14 @@ namespace MediaBrowser.Plugins.TuneIn
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
+        private readonly IApplicationHost _appHost;
 
         private String partnerid { get; set; }
 
-        public TuneInChannel(IHttpClient httpClient, ILogManager logManager)
+        public TuneInChannel(IHttpClient httpClient, ILogManager logManager, IApplicationHost appHost)
         {
             _httpClient = httpClient;
+            _appHost = appHost;
             _logger = logManager.GetLogger(GetType().Name);
 
             partnerid = "uD1X52pA";
@@ -109,7 +112,7 @@ namespace MediaBrowser.Plugins.TuneIn
             var page = new HtmlDocument();
             var items = new List<ChannelItemInfo>();
             var url = "http://opml.radiotime.com/Browse.ashx?c=presets&formats=mp3,aac&partnerid=" + partnerid + "&serial=" +
-                      Plugin.Instance.Configuration.GUID;
+                      _appHost.SystemId;
 
             if (Plugin.Instance.Configuration.Username != null)
             {
@@ -165,7 +168,7 @@ namespace MediaBrowser.Plugins.TuneIn
             var page = new HtmlDocument();
             var items = new List<ChannelItemInfo>();
             var url = "http://opml.radiotime.com/Browse.ashx?formats=mp3,aac&partnerid=" + partnerid + "&serial=" +
-                      Plugin.Instance.Configuration.GUID;
+                      _appHost.SystemId;
 
             if (Plugin.Instance.Configuration.LatLon != null)
             {

@@ -18,12 +18,6 @@ namespace MediaBrowser.Plugins.TuneIn
             : base(applicationPaths, xmlSerializer)
         {
             Instance = this;
-
-            if (Instance.Configuration.GUID == null)
-            {
-                Instance.Configuration.GUID = Guid.NewGuid().ToString();
-                Instance.SaveConfiguration();
-            }
         }
 
         public IEnumerable<PluginPageInfo> GetPages()
