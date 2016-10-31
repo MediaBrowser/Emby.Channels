@@ -203,9 +203,19 @@ namespace MediaBrowser.Plugins.Revision3
         {
             switch (type)
             {
+                case ImageType.Primary:
+                    {
+                        var path = GetType().Namespace + ".Images.thumb.png";
+
+                        return Task.FromResult(new DynamicImageResponse
+                        {
+                            Format = ImageFormat.Png,
+                            HasImage = true,
+                            Stream = GetType().Assembly.GetManifestResourceStream(path)
+                        });
+                    }
                 case ImageType.Thumb:
                 case ImageType.Backdrop:
-                case ImageType.Primary:
                     {
                         var path = GetType().Namespace + ".Images." + type.ToString().ToLower() + ".png";
 
