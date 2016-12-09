@@ -144,6 +144,11 @@ namespace MediaBrowser.Plugins.Vimeo
             var downloader = new VimeoCategoryDownloader(_logger, _jsonSerializer, _httpClient);
             var channels = await downloader.GetVimeoCategoryList(query.StartIndex, query.Limit, cancellationToken);
 
+            if (channels == null)
+            {
+                channels = new Categories();
+            }
+
             if (Plugin.Instance.Configuration.Token != null && Plugin.Instance.Configuration.SecretToken != null)
             {
                 channels.Add(new Category
@@ -172,6 +177,11 @@ namespace MediaBrowser.Plugins.Vimeo
         {
             var downloader = new VimeoCategoryDownloader(_logger, _jsonSerializer, _httpClient);
             var channels = await downloader.GetVimeoSubCategory(query.FolderId, cancellationToken);
+
+            if (channels == null)
+            {
+                channels = new Category();
+            }
 
             channels.subCategories.Add(new VimeoAPI.API.Channel
             {

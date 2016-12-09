@@ -39,7 +39,6 @@ namespace MediaBrowser.Plugins.Vimeo.VimeoAPI.API
         {
             _logger = logger;
             VimeoAPI = new AdvancedAPI(_logger, consumerKey, consumerSecret, permission);
-            Trace.WriteLine("This software uses VimeoDotNet to connect to Vimeo API. To support this project visit http://support.saeedoo.com.");
         }
 
         public void ChangeKey(string consumerKey, string consumerSecret, string permission = "delete")
