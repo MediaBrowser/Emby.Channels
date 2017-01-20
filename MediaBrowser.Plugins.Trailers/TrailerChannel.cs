@@ -29,6 +29,9 @@ namespace MediaBrowser.Plugins.Trailers
         private readonly ILogger _logger;
         private readonly IProviderManager _providerManager;
 
+        const char CategorySeparator = '_';
+        const string CategorySeparatorString = "_";
+
         public TrailerChannel(IJsonSerializer json, IApplicationPaths appPaths, IHttpClient httpClient, ILogger logger, IProviderManager providerManager)
         {
             _json = json;
@@ -52,8 +55,7 @@ namespace MediaBrowser.Plugins.Trailers
             return Plugin.Instance.Configuration.EnableMovieArchive + "-" +
                    Plugin.Instance.Configuration.EnableDvd + "-" +
                    Plugin.Instance.Configuration.EnableNetflix + "-" +
-                   Plugin.Instance.Configuration.EnableTheaters + "-" +
-                   Plugin.Instance.Configuration.ExcludeUnIdentifiedContent;
+                   Plugin.Instance.Configuration.EnableTheaters + "-";
         }
 
         public string Description
@@ -106,7 +108,7 @@ namespace MediaBrowser.Plugins.Trailers
                 return GetTopCategories();
             }
 
-            var idParts = query.FolderId.Split('|');
+            var idParts = query.FolderId.Split(CategorySeparator);
             var contentType = (ChannelMediaContentType)Enum.Parse(typeof(ChannelMediaContentType), idParts[0], true);
 
             if (idParts.Length == 1)
@@ -247,9 +249,7 @@ namespace MediaBrowser.Plugins.Trailers
                 {
                     var items = await i.GetChannelItems(cancellationToken).ConfigureAwait(false);
 
-                    items = items.Where(t => !string.IsNullOrWhiteSpace(t.Name) && t.MediaSources.Count > 0);
-
-                    return items;
+                    return items.Where(t => !string.IsNullOrWhiteSpace(t.Name) && t.MediaSources.Count > 0).ToList();
                 }
                 catch (Exception ex)
                 {
@@ -285,11 +285,8 @@ namespace MediaBrowser.Plugins.Trailers
                     .ToList();
             }
 
-            if (Plugin.Instance.Configuration.ExcludeUnIdentifiedContent)
-            {
-                items = items.Where(i => !string.IsNullOrWhiteSpace(i.GetProviderId(MetadataProviders.Imdb)) || !string.IsNullOrWhiteSpace(i.GetProviderId(MetadataProviders.Tmdb)))
-                    .ToList();
-            }
+            items = items.Where(i => !string.IsNullOrWhiteSpace(i.GetProviderId(MetadataProviders.Imdb)) || !string.IsNullOrWhiteSpace(i.GetProviderId(MetadataProviders.Tmdb)))
+                .ToList();
 
             return items;
         }
@@ -648,7 +645,7 @@ namespace MediaBrowser.Plugins.Trailers
                     Name = "New and Upcoming in Theaters",
                     Type = ChannelItemType.Folder,
                     MediaType = ChannelMediaType.Video,
-                    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + ExtraType.Trailer + "|" + TrailerType.ComingSoonToTheaters,
+                    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + CategorySeparatorString + ExtraType.Trailer + CategorySeparatorString + TrailerType.ComingSoonToTheaters,
 
                     ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/thumb.jpg"
                 });
@@ -662,7 +659,7 @@ namespace MediaBrowser.Plugins.Trailers
                     Name = "New and Upcoming Movies on Dvd & Blu-ray",
                     Type = ChannelItemType.Folder,
                     MediaType = ChannelMediaType.Video,
-                    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + ExtraType.Trailer + "|" + TrailerType.ComingSoonToDvd,
+                    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + CategorySeparatorString + ExtraType.Trailer + CategorySeparatorString + TrailerType.ComingSoonToDvd,
 
                     ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/bluray.jpg"
                 });
@@ -676,7 +673,7 @@ namespace MediaBrowser.Plugins.Trailers
                     Name = "New and Upcoming Movies on Netflix",
                     Type = ChannelItemType.Folder,
                     MediaType = ChannelMediaType.Video,
-                    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + ExtraType.Trailer + "|" + TrailerType.ComingSoonToStreaming,
+                    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + CategorySeparatorString + ExtraType.Trailer + CategorySeparatorString + TrailerType.ComingSoonToStreaming,
 
                     ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/netflix.png"
                 });
@@ -690,7 +687,7 @@ namespace MediaBrowser.Plugins.Trailers
                     Name = "Movie Trailer Archive",
                     Type = ChannelItemType.Folder,
                     MediaType = ChannelMediaType.Video,
-                    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + ExtraType.Trailer + "|" + TrailerType.Archive,
+                    Id = ChannelMediaContentType.MovieExtra.ToString().ToLower() + CategorySeparatorString + ExtraType.Trailer + CategorySeparatorString + TrailerType.Archive,
 
                     ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/reel.jpg"
                 });
@@ -713,7 +710,7 @@ namespace MediaBrowser.Plugins.Trailers
             //    Name = "New and coming soon to theaters",
             //    Type = ChannelItemType.Folder,
             //    MediaType = ChannelMediaType.Video,
-            //    Id = contentType.ToString().ToLower() + "|" + "TrailerComingSoonToTheaters",
+            //    Id = contentType.ToString().ToLower() + CategorySeparatorString + "TrailerComingSoonToTheaters",
 
             //    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/thumb.jpg"
             //});
@@ -724,7 +721,7 @@ namespace MediaBrowser.Plugins.Trailers
             //    Name = "New and coming soon to Dvd",
             //    Type = ChannelItemType.Folder,
             //    MediaType = ChannelMediaType.Video,
-            //    Id = contentType.ToString().ToLower() + "|" + "TrailerComingSoonToDvd",
+            //    Id = contentType.ToString().ToLower() + CategorySeparatorString + "TrailerComingSoonToDvd",
 
             //    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/bluray.jpg"
             //});
@@ -735,7 +732,7 @@ namespace MediaBrowser.Plugins.Trailers
             //    Name = "Archive",
             //    Type = ChannelItemType.Folder,
             //    MediaType = ChannelMediaType.Video,
-            //    Id = contentType.ToString().ToLower() + "|" + "TrailerArchive",
+            //    Id = contentType.ToString().ToLower() + CategorySeparatorString + "TrailerArchive",
 
             //    ImageUrl = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Channels/master/MediaBrowser.Plugins.Trailers/Images/reel.jpg"
             //});
@@ -859,7 +856,7 @@ namespace MediaBrowser.Plugins.Trailers
                 SortBy = ChannelItemSortField.DateCreated,
                 SortDescending = true,
                 UserId = request.UserId,
-                FolderId = ChannelMediaContentType.MovieExtra.ToString().ToLower() + "|" + ExtraType.Trailer + "|" + TrailerType.ComingSoonToTheaters
+                FolderId = ChannelMediaContentType.MovieExtra.ToString().ToLower() + CategorySeparatorString + ExtraType.Trailer + CategorySeparatorString + TrailerType.ComingSoonToTheaters
 
             }, cancellationToken).ConfigureAwait(false);
 

@@ -77,6 +77,8 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
             return list;
         }
 
+        private Random random = new Random();
+
         private async Task<ChannelItemInfo> GetTrailerFromUrl(string url, TrailerType type, CancellationToken cancellationToken)
         {
             var html = await EntryPoint.Instance.GetAndCacheResponse(url, TimeSpan.FromDays(14), cancellationToken)
@@ -118,9 +120,14 @@ namespace MediaBrowser.Plugins.Trailers.Providers.ML
             };
 
             // For older trailers just rely on core image providers
-            if (TrailerType != TrailerType.ComingSoonToTheaters)
+            if (type != TrailerType.ComingSoonToTheaters)
             {
                 info.ImageUrl = null;
+            }
+
+            if (random.Next(1, 10) < 2)
+            {
+                info.TrailerTypes.Add(TrailerType.ComingSoonToStreaming);
             }
 
             var metadataElements = document.DocumentNode.SelectNodes("//*[contains(@class,'cast-meta')]");

@@ -63,10 +63,10 @@ namespace MediaBrowser.Plugins.TuneIn
 
             _logger.Debug("Category ID " + query.FolderId);
 
-            if (query.FolderId == null)
+            if (string.IsNullOrWhiteSpace(query.FolderId))
             {
                 items = await GetMenu("", query, cancellationToken).ConfigureAwait(false);
-                
+
                 if (Plugin.Instance.Configuration.Username != null)
                 {
                     items.Add(new ChannelItemInfo
@@ -268,7 +268,7 @@ namespace MediaBrowser.Plugins.TuneIn
                                     ContentType = ChannelMediaContentType.Podcast,
                                     ImageUrl = node.Attributes["image"].Value,
                                     MediaType = ChannelMediaType.Audio,
-                                    
+
                                 });
                             }
                             else
@@ -285,13 +285,13 @@ namespace MediaBrowser.Plugins.TuneIn
                             }
                         }
                     }
-                    
+
                 }
             }
 
             return items.ToList();
         }
-        
+
 
         public async Task<IEnumerable<ChannelMediaInfo>> GetChannelItemMediaInfo(string id,
             CancellationToken cancellationToken)
@@ -366,20 +366,14 @@ namespace MediaBrowser.Plugins.TuneIn
                             }
                             else
                             {
-                                items.Add(new ChannelMediaInfo
-                                {
-                                    Path = url
-                                });
+                                items.Add(GetMediaInfoFromUrl(url));
                             }
                         }
                         else
                         {
                             _logger.Debug("Normal URL");
 
-                            items.Add(new ChannelMediaInfo
-                            {
-                                Path = url
-                            });
+                            items.Add(GetMediaInfoFromUrl(url));
                         }
                     }
                 }
@@ -388,6 +382,20 @@ namespace MediaBrowser.Plugins.TuneIn
             return items;
         }
 
+        private ChannelMediaInfo GetMediaInfoFromUrl(string url)
+        {
+            var container = url.EndsWith("aac", StringComparison.OrdinalIgnoreCase) ? "aac" : "mp3";
+
+            return new ChannelMediaInfo
+            {
+                Path = url,
+                Container = container,
+                AudioCodec = container,
+                AudioBitrate = 128000,
+                AudioChannels = 2,
+                SupportsDirectPlay = true
+            };
+        }
 
         public Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken)
         {

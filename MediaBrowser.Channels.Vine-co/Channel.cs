@@ -48,7 +48,7 @@ namespace MediaBrowser.Channels.Vineco
 
         public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
-            
+
             _logger.Debug("cat ID : " + query.FolderId);
 
             if (query.FolderId == null)
@@ -141,12 +141,38 @@ namespace MediaBrowser.Channels.Vineco
                             new ChannelMediaInfo
                             {
                                 Path = c.videoUrl,
-                                Container = Container.MP4
+                                Container = Container.MP4,
+
+                                AudioCodec = "aac",
+                                AudioBitrate = 128000,
+                                AudioChannels =2,
+                                Height = 1080,
+                                Width = 1920,
+                                SupportsDirectPlay = true,
+                                VideoProfile = "high",
+                                VideoLevel = 41,
+                                VideoCodec = "h264",
+                                VideoBitrate = 3000000,
+                                Protocol = MediaProtocol.Http,
+                                AudioSampleRate = 44100
                             },
                             new ChannelMediaInfo
                             {
                                 Path = c.videoLowURL,
-                                Container = Container.MP4
+                                Container = Container.MP4,
+
+                                AudioCodec = "aac",
+                                AudioBitrate = 128000,
+                                AudioChannels =2,
+                                Height = 720,
+                                Width = 1280,
+                                SupportsDirectPlay = true,
+                                VideoProfile = "high",
+                                VideoLevel = 41,
+                                VideoCodec = "h264",
+                                VideoBitrate = 1000000,
+                                Protocol = MediaProtocol.Http,
+                                AudioSampleRate = 44100
                             },
                         }
                     });
@@ -203,16 +229,16 @@ namespace MediaBrowser.Channels.Vineco
                 case ImageType.Thumb:
                 case ImageType.Backdrop:
                 case ImageType.Primary:
-                {
-                    var path = GetType().Namespace + ".Images." + type.ToString().ToLower() + ".png";
-
-                    return Task.FromResult(new DynamicImageResponse
                     {
-                        Format = ImageFormat.Png,
-                        HasImage = true,
-                        Stream = GetType().Assembly.GetManifestResourceStream(path)
-                    });
-                }
+                        var path = GetType().Namespace + ".Images." + type.ToString().ToLower() + ".png";
+
+                        return Task.FromResult(new DynamicImageResponse
+                        {
+                            Format = ImageFormat.Png,
+                            HasImage = true,
+                            Stream = GetType().Assembly.GetManifestResourceStream(path)
+                        });
+                    }
                 default:
                     throw new ArgumentException("Unsupported image type: " + type);
             }
