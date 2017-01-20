@@ -19,7 +19,7 @@ namespace MediaBrowser.Plugins.SoundCloud.ClientApi
         public const string ClientSecret = "ef6b3dbe724eff1d03298c2e787a69bd";
         public const string BaseUrl = "https://api.soundcloud.com";
 
-        public const string ClientIdForTracks = "02gUJC0hH2ct1EGOcYXQIzRFU91c72Ea";
+        public const string ClientIdForTracks = "fDoItMDbsbZz8dY16ZzARCZmzgHBPotA";
 
         public const bool EnableGZip = true;
 
