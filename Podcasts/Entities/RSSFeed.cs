@@ -108,6 +108,25 @@ namespace PodCasts.Entities
                 }
             }
 
+            string container = null;
+            string audioCodec = null;
+            int? audioBitrate = null;
+
+            if (string.Equals(Path.GetExtension(link), ".mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                container = "mp3";
+                audioCodec = "mp3";
+                // Just take a guess to try and encourage direct play
+                audioBitrate = 128000;
+            }
+            else if (string.Equals(Path.GetExtension(link), ".aac", StringComparison.OrdinalIgnoreCase))
+            {
+                container = "aac";
+                audioCodec = "aac";
+                // Just take a guess to try and encourage direct play
+                audioBitrate = 128000;
+            }
+
             return new ChannelItemInfo
             {
                 Name = title,
@@ -122,7 +141,10 @@ namespace PodCasts.Entities
                     {
                         new ChannelMediaInfo
                         {
-                            Path = link
+                            Path = link,
+                            Container = container,
+                            AudioCodec = audioCodec,
+                            AudioBitrate = audioBitrate
                         }  
                     },
 
@@ -201,6 +223,9 @@ namespace PodCasts.Entities
         /// <returns><c>true</c> if [is audio file] [the specified args]; otherwise, <c>false</c>.</returns>
         public static bool IsAudioFile(string path)
         {
+            // strip off query string
+            path = path.Split('?').FirstOrDefault() ?? string.Empty;
+
             var extension = Path.GetExtension(path);
 
             if (string.IsNullOrEmpty(extension))
