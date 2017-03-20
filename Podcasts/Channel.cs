@@ -88,7 +88,8 @@ namespace PodCasts
                         CancellationToken = cancellationToken,
 
                         // Seeing some deflate stream errors
-                        EnableHttpCompression = false
+                        EnableHttpCompression = false,
+                        EnableDefaultUserAgent = true
                     };
 
                     using (var stream = await _httpClient.Get(options).ConfigureAwait(false))

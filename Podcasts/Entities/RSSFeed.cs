@@ -41,7 +41,9 @@ namespace PodCasts.Entities
                 CancellationToken = cancellationToken,
 
                 // Seeing some deflate stream errors
-                EnableHttpCompression = false
+                EnableHttpCompression = false,
+
+                EnableDefaultUserAgent = true
             };
 
             using (Stream stream = await httpClient.Get(options).ConfigureAwait(false))

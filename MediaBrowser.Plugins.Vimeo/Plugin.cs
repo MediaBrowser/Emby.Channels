@@ -14,8 +14,21 @@ namespace MediaBrowser.Plugins.Vimeo
     /// </summary>
     public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
-        public static VimeoClient vc;
-        private readonly ILogger _logger;
+        private static VimeoClient _vc;
+
+        public static VimeoClient vc
+        {
+            get
+            {
+                if (_vc == null)
+                {
+                    _vc = new VimeoClient(_logger, "b3f7452b9822b91cede55a3315bee7e021c876c0", "eb62bfd0a204c316a4f05b1d3a9d88726718a893");
+                }
+
+                return _vc;
+            }
+        }
+        private static ILogger _logger;
 
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, ILogManager logManager)
             : base(applicationPaths, xmlSerializer)
@@ -23,7 +36,6 @@ namespace MediaBrowser.Plugins.Vimeo
             _logger = logManager.GetLogger(GetType().Name);
 
             Instance = this;
-            vc = new VimeoClient(_logger, "b3f7452b9822b91cede55a3315bee7e021c876c0", "eb62bfd0a204c316a4f05b1d3a9d88726718a893");
         }
 
         public void Login()
