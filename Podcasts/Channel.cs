@@ -116,11 +116,20 @@ namespace PodCasts
                                 {
                                     item.ImageUrl = GetValue(imageElement, "url");
                                 }
+                                else
+                                {
+                                    var iTunesImageElement = root.Element(XName.Get("image", "http://www.itunes.com/dtds/podcast-1.0.dtd"));
+                                    if (iTunesImageElement != null)
+                                    {
+                                        item.ImageUrl = GetAttribute(iTunesImageElement, "href");
+                                    }
+                                }
 
                                 items.Add(item);
                             }
                         }
                     }
+
                 }
                 catch (Exception ex)
                 {
@@ -135,18 +144,18 @@ namespace PodCasts
 
         private string GetValue(XElement element, string name, string namespaceName = null)
         {
-            if (!string.IsNullOrWhiteSpace(namespaceName))
-            {
-                var elem = element.Element(XName.Get(name, namespaceName));
+            return element.Element(GetXName(name, namespaceName))?.Value;
+        }
 
-                return elem == null ? null : elem.Value;
-            }
-            else
-            {
-                var elem = element.Element(name);
+        private string GetAttribute(XElement element, string name, string namespaceName = null)
+        {
+            return element.Attribute(GetXName(name, namespaceName))?.Value;
+        }
 
-                return elem == null ? null : elem.Value;
-            }
+        private XName GetXName(string name, string namespaceName = null)
+        {
+            return !string.IsNullOrWhiteSpace(namespaceName) ? XName.Get(name, namespaceName)
+                                                             : XName.Get(name);
         }
 
         private async Task<ChannelItemResult> GetChannelItemsInternal(InternalChannelItemQuery query, CancellationToken cancellationToken)

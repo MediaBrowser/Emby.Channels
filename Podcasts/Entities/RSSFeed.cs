@@ -63,7 +63,7 @@ namespace PodCasts.Entities
             var overview = GetValue(element, "description");
             var title = GetValue(element, "title");
             var enclosureElement = element.Element("enclosure");
-            var link = enclosureElement == null ? null : enclosureElement.Attribute("url").Value;
+            var link = enclosureElement?.Attribute("url").Value;
 
             if (string.IsNullOrWhiteSpace(link))
             {
@@ -82,7 +82,7 @@ namespace PodCasts.Entities
 
             long? runtimeTicks = null;
 
-            var itunesDuration = GetValue(element, "duration", "itunes");
+            var itunesDuration = GetValue(element, "duration", "http://www.itunes.com/dtds/podcast-1.0.dtd");
             TimeSpan runtime;
             if (!string.IsNullOrEmpty(itunesDuration) && TimeSpan.TryParse(itunesDuration, out runtime))
             {
@@ -90,7 +90,7 @@ namespace PodCasts.Entities
             }
 
             string rating = null;
-            var itunesExplicit = GetValue(element, "explicit", "itunes");
+            var itunesExplicit = GetValue(element, "explicit", "http://www.itunes.com/dtds/podcast-1.0.dtd");
             if (string.Equals(itunesExplicit, "yes", StringComparison.OrdinalIgnoreCase))
             {
                 rating = "R";
@@ -100,6 +100,11 @@ namespace PodCasts.Entities
                 rating = "R";
             }
 
+            var iTunesImageElement = element.Element(XName.Get("image", "http://www.itunes.com/dtds/podcast-1.0.dtd"));
+            if (iTunesImageElement != null)
+            {
+                posterUrl = GetAttribute(iTunesImageElement, "href");
+            }
             if (string.IsNullOrWhiteSpace(posterUrl) && !string.IsNullOrWhiteSpace(overview))
             {
                 var match = Regex.Match(overview, @"<img src=[\""\']([^\'\""]+)", RegexOptions.IgnoreCase);
@@ -178,18 +183,18 @@ namespace PodCasts.Entities
 
         private string GetValue(XElement element, string name, string namespaceName = null)
         {
-            if (!string.IsNullOrWhiteSpace(namespaceName))
-            {
-                var elem = element.Element(XName.Get(name, namespaceName));
+            return element.Element(GetXName(name, namespaceName))?.Value;
+        }
 
-                return elem == null ? null : elem.Value;
-            }
-            else
-            {
-                var elem = element.Element(name);
+        private string GetAttribute(XElement element, string name, string namespaceName = null)
+        {
+            return element.Attribute(GetXName(name, namespaceName))?.Value;
+        }
 
-                return elem == null ? null : elem.Value;
-            }
+        private XName GetXName(string name, string namespaceName = null)
+        {
+            return !string.IsNullOrWhiteSpace(namespaceName) ? XName.Get(name, namespaceName)
+                                                             : XName.Get(name);
         }
 
         /// <summary>
