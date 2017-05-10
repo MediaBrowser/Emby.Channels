@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
@@ -82,54 +80,9 @@ namespace PodCasts
             {
                 try
                 {
-                    var options = new HttpRequestOptions
-                    {
-                        Url = feedUrl,
-                        CancellationToken = cancellationToken,
-
-                        // Seeing some deflate stream errors
-                        EnableHttpCompression = false,
-                        EnableDefaultUserAgent = true
-                    };
-
-                    using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
-                    {
-                        using (var reader = new StreamReader(stream))
-                        {
-                            XDocument document = XDocument.Parse(reader.ReadToEnd());
-                            var root = document.Root.Element("channel");
-
-                            var item = new ChannelItemInfo
-                            {
-                                Name = GetValue(root, "title"),
-                                Overview = GetValue(root, "description"),
-                                Id = feedUrl,
-                                Type = ChannelItemType.Folder
-                            };
-
-                            if (!string.IsNullOrWhiteSpace(item.Name))
-                            {
-                                _logger.Debug("Found rss channel: {0}", item.Name);
-
-                                var imageElement = root.Element("image");
-                                if (imageElement != null)
-                                {
-                                    item.ImageUrl = GetValue(imageElement, "url");
-                                }
-                                else
-                                {
-                                    var iTunesImageElement = root.Element(XName.Get("image", "http://www.itunes.com/dtds/podcast-1.0.dtd"));
-                                    if (iTunesImageElement != null)
-                                    {
-                                        item.ImageUrl = GetAttribute(iTunesImageElement, "href");
-                                    }
-                                }
-
-                                items.Add(item);
-                            }
-                        }
-                    }
-
+                    var document = await GetXDocument(feedUrl, cancellationToken);
+                    var feed = CreateFeed(document);
+                    items.Add(feed.CreateChannelItemInfo(document.Root, feedUrl));
                 }
                 catch (Exception ex)
                 {
@@ -217,9 +170,79 @@ namespace PodCasts
             };
         }
 
-        private Task<IEnumerable<ChannelItemInfo>> GetChannelItemsInternal(string feedUrl, CancellationToken cancellationToken)
+        private async Task<IEnumerable<ChannelItemInfo>> GetChannelItemsInternal(string feedUrl, CancellationToken cancellationToken)
         {
-            return new RssFeed(_logger).Refresh(_providerManager, _httpClient, feedUrl, _notificationManager, cancellationToken);
+            var document = await GetXDocument(feedUrl, cancellationToken);
+            var feed = CreateFeed(document);
+
+            if (feed != null)
+            {
+                return feed.Refresh(document);
+            }
+
+            return Enumerable.Empty<ChannelItemInfo>();
+        }
+
+        private Feed CreateFeed(XDocument document)
+        {
+            switch (GetFeedFormat(document))
+            {
+                case FeedFormat.Atom:
+                    return new AtomFeed(_logger);
+
+                case FeedFormat.Rss:
+                    return new RssFeed(_logger);
+
+                default:
+                    return null;
+            }
+        }
+
+        private FeedFormat GetFeedFormat(XDocument document)
+        {
+            if (IsRss(document.Root))
+            {
+                return FeedFormat.Rss;
+            }
+            else if (IsAtom(document.Root))
+            {
+                return FeedFormat.Atom;
+            }
+            else
+            {
+                return FeedFormat.Unknown;
+            }
+        }
+
+        private async Task<XDocument> GetXDocument(string feedUrl, CancellationToken cancellationToken)
+        {
+            var options = new HttpRequestOptions
+            {
+                Url = feedUrl,
+                CancellationToken = cancellationToken,
+
+                // Seeing some deflate stream errors
+                EnableHttpCompression = false,
+                EnableDefaultUserAgent = true
+            };
+
+            using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    return XDocument.Parse(reader.ReadToEnd());
+                }
+            }
+        }
+
+        private bool IsRss(XElement root)
+        {
+            return root.Name == "rss" && root.Attribute("version") != null;
+        }
+
+        private bool IsAtom(XElement root)
+        {
+            return root.Name == "{http://www.w3.org/2005/Atom}feed";
         }
 
         public IEnumerable<ImageType> GetSupportedChannelImages()
@@ -371,6 +394,13 @@ namespace PodCasts
             }, cancellationToken).ConfigureAwait(false);
 
             return all.Items.OrderByDescending(i => i.DateCreated ?? DateTime.MinValue);
+        }
+
+        private enum FeedFormat
+        {
+            Atom,
+            Rss,
+            Unknown
         }
     }
 }
