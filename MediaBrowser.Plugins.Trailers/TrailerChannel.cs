@@ -55,7 +55,8 @@ namespace MediaBrowser.Plugins.Trailers
             return Plugin.Instance.Configuration.EnableMovieArchive + "-" +
                    Plugin.Instance.Configuration.EnableDvd + "-" +
                    Plugin.Instance.Configuration.EnableNetflix + "-" +
-                   Plugin.Instance.Configuration.EnableTheaters + "-";
+                   Plugin.Instance.Configuration.EnableTheaters + "-" +
+                   RegistrationInfo.Instance.IsRegistered;
         }
 
         public string Description
